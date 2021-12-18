@@ -1,6 +1,9 @@
 ---
 title: "Making a package from base R files"
-author: "John C. Nash"
+author: 
+   - John C. Nash \thanks{ retired professor, Telfer School of Management, University of Ottawa}
+   - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian Institute of Technology, Kanpur}
+   - based on contribution from Duncan Murdoch
 date: "11/06/2021"
 output:
   pdf_document: default

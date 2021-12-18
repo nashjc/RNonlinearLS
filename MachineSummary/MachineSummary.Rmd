@@ -1,7 +1,8 @@
 ---
 title: "A Machine Profile Summary"
 author: 
-  - John C. Nash, University of Ottawa, Canada
+   - John C. Nash \thanks{ retired professor, Telfer School of Management, University of Ottawa}
+   - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian Institute of Technology, Kanpur}
 date: "14/06/2021"
 bibliography: ../BibSupport/ImproveNLS.bib
 output: 
