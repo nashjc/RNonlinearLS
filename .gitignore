@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+scrape_CRAN.html
+taskviews_files/
+*cache*
+*html
