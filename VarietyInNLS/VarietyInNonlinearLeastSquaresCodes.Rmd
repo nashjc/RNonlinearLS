@@ -1,0 +1,1181 @@
+---
+title: "Variety in the Implementation of Nonlinear Least Squares Program Codes"
+author: 
+   - John C Nash, retired professor, University of Ottawa
+date: "16/02/2021"
+output: 
+    pdf_document:
+        keep_tex: false
+        toc: true
+bibliography: ../BibSupport/ImproveNLS.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+## ??require(bookdown) # language engine to display text??
+```
+
+# Abstract
+
+There are many ways to structure a Gauss-Newton style nonlinear least squares
+program code. In organizing and documenting the nearly half-century of programs
+in the Nashlib collection associated with @jncnm79, the author realized that this
+variety could be an instructive subject for numerical software designers.
+
+# Underlying algorithms
+
+## Gauss Newton method
+
+An overview of the method is provided by Wikipedia:
+
+\url{https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm}
+
+The method was described by C.F.Gauss in 1809 in *Theoria motus corporum 
+coelestium in sectionibus conicis solem ambientum*.
+
+In calculus we learn that a stationary point (local maximum, minimum
+or saddle point) of a function $f$ occurs where its gradient (or first
+derivative) is zero. In multiple dimensions, this is the same as
+having the gradient $g$ stationary. The so-called Newton method
+uses the second derivatives in the Hessian matrix $H$ defined as
+
+$$  H_{i,j} = \partial^2{f}/ {\partial{x_i} \partial{x_j}}$$
+
+where $f$ is a function of several variables $x_i$, $i=1,...,n$, written
+collectively as $x$. The Newton equations are defined as 
+
+$$  H \delta = - g $$
+
+where $H$ and $g$ are evaluated at a guess or estimate of $x$. $x$ is then updated
+to 
+
+$$ x \leftarrow x + \delta $$
+
+and we iterate until there is no change in $x$.
+
+There are some adjustments when our function $f(x)$ can be written as a sum of squares
+
+$$  f(x) = \sum_{i=1}^n {r_i(x)^2} = r^t r $$
+
+The final vector product form is the one I favour because it is the least fussy to write and read.
+In particular, when we try to evaluate the Hessian of this sum of squares function, we see that it is
+
+$$ H_{j,k} = 2 \sum_{i-1}^n { { [ (\partial r_i/\partial{x_j} ) } ({\partial r_i/\partial{x_k} ) + r_i (\partial^2 r_i/{\partial{x_j} \partial{x_k} ) ]}}} $$
+
+If we define the **Jacobian** matrix
+
+$$ J_{i,j} = \partial r_i/\partial{x_j} $$
+
+then the gradient is 
+
+$$ g = 2 J^t r $$
+
+and the first part of the Hessian is 
+
+$$  J^t J $$
+
+Arguing that the residuals should be "small", Gauss proposed that the 
+Newton equations could be approximated by ignoring
+the second term (using elements of the residual times second derivatives 
+of the residual).  This gives the **Gauss-Newton**
+equations (cancelling the factor 2)
+
+$$ (J^t J)  \delta  =  - J^t r $$
+
+We can use this in an iteration similar to the Newton iteration. Note that these
+equations are equivalent to the linear least squares problem that can be written
+
+$$  J \delta  \approx - r $$
+
+## Hartley's method
+
+Conditions for convergence of the Newton iteration and the Gauss-Newton 
+iteration are rather a nuisance to verify. In any case we want a solution 
+to the original nonlinear least squares problem. 
+@Hartley61 proposed that rather than use an iteration
+
+$$ x \leftarrow x + \delta$$
+
+one could do a search along the direction $\delta$. Ideally we would want to **minimize**
+
+$$ f(x + \alpha \delta) $$
+
+with respect to the (scalar) parameter $\alpha$. That one-dimensional minimization can
+take quite a lot of computational effort, however, and typically a value of $\alpha$ that
+permits a suitable reduction in the sum of squares $f(x)$ is accepted, and the iteration repeated
+from 
+
+$$ x_{new} = x + \alpha * \delta $$
+
+
+Clearly there are many tactical choices that give rise to a variety of particular algorithms.
+One concern is that the direction $\delta$ may give no lower value of the sum of squares, since
+there is an approximation involved in using $J^t J$ rather than $H$. For example, $\delta$ could
+be perpendicular to any downhill direction.
+
+@Hartley61 recommends a quadratic (parabolic) line search where two "new" points
+are evaluated, followed by a third try at the suggested minimum of the parabola fitted
+to the existing and two new sum of squares function values. Tactics are needed to deal
+with the case that the proposed point is not an improvement in the sum of squares.
+
+A different approach is the R function `nls()`, which calls the C routine `nls.c` to compute 
+the Gauss Newton direction <!-- (`incr` -- see nls-flowchart.txt) -->
+after which a step-halving "line-search" is used. 
+
+In `nls.c` we also see that once a satisfactory "new" set of parameters has been 
+obtained, we reset the $\alpha$ value to the minimum of $2 * \alpha$ and 1.0. Oddly, there
+is no provision for the user to set the tactical choices of the maximum value, the reduction
+or the increase in $\alpha$, despite our experience that other choices can be advantageous
+for some problems. Moreover, $x_{new}$ is deemed satisfactory if its **deviance** (essentially
+the weighted sum of squares of the residuals) is **no greater than** the current best
+value. Our experience is that it may be better to insist on a decrease in the value,
+or even to use an "acceptable point" approach that enforces a sufficient decrease using
+a measure based on the gradient of the deviance projected on $\delta$. 
+
+<!-- ?? Should we explain more. Possibly incorporate into code? -->
+
+## Marquardt stabilized Gauss-Newton
+
+@Marquardt1963 is perhaps one of the most important developments in nonlinear least squares
+apart from the Gauss-Newton method. There are several ways to view the method.
+
+First, considering that the $J^t J$ may be effectively singular in the computational
+environment at hand, the Gauss-Newton method may be unable to compute a search
+step that reduces the sum of squared residuals. The right hand side of the 
+normal equations, that is, $g = - J^t r$ is the gradient for the sum of squares.
+Thus a solution of 
+
+<!-- Note mathbf use below -->
+
+$$    \mathbf{1}_n \delta = - g $$
+is clearly a downhill version of the gradient. And if we solve 
+
+$$  \lambda  \mathbf{1}_n \delta =  - g $$
+
+various values of $\lambda$ will produce steps along the **steepest descents**
+direction. Solutions of the Levenberg-Marquardt equations
+
+$$ (J^t J + \lambda  \mathbf{1}_n)  \delta  = A \delta =  - J^t r $$
+
+can be thought of as yielding a step $\delta$ that merges the Gauss-Newton and 
+steepest-descents direction. This approach was actually first suggested by 
+@Levenberg1944, but it is my opinion that Levenberg 
+likely never exercised them in practice, while Marquardt actually had a well-used
+program. Before computers were commonly
+available, many papers were written with computational
+ideas that were given at most a cursory trial. (In 1984, I had the pleasure of showing
+Marquardt my own BASIC program running on a Radio Shack TRS80 Model 100 and he  
+commented on how the computations were converging to a solution as we watched
+the iterations proceed.)
+
+Note that we can define a matrix $K$ which is $J$ augmented below by a suitable diagonal
+matrix that is the square root of $\lambda$ times the unit matrix $1_n$. Then the
+Levenberg-Marquardt equations are equivalent to 
+
+$$  K \delta \approx - r_{augmented} $$
+
+where we have added $n$ zeros to $r$ to make $r_{augmented}$. Similar adjustments
+are used for scaled Marquardt methods mentioned below.
+
+
+Practical Marquardt methods require us to specify an initial $\lambda$ and ways
+to adjust its value. For example, if $$SS(x) = r^t r = f(x)$$ is the function 
+we wish to minimize to "fit" our nonlinear model, one set of choices is:
+
+- set an initial $\lambda$ of 0.0001
+
+- **A** Compute $J$ and $g$, set up Marquardt equations and find $\delta$
+
+- **B** compute new set of parameters $$x_{new} = x + \delta $$ 
+
+- if $x_{new} \ne x$, compute $SS(x_{new})$, else quit (**termination**)
+
+- if $SS(x_{new}) < SS(x)$, replace $x$ with $x_{new}$, replace $\lambda$
+with $0.4*\lambda$, then retry from **A**
+
+- ELSE increase $\lambda$ to $10*\lambda$ and retry from **B** ($J$ and $g$ do
+  NOT need to be recomputed)
+  
+In this scheme, apart from the many possibilities that "find $\delta$" allows, 
+an algorithm is defined by the initial value, decrease factor 
+(e.g., 0.4) and increase factor (e.g., 10) for $\lambda$. However, there are a number of 
+further annoying computational 
+details concerning underflow or overflow and how we measure equivalence of 
+iterates. That is, we need to ensure $\lambda$ is not so "small" that multiplying
+by 10 is meaningless, and we need to know what "not equal" means for floating
+point vectors in the arithmetic in use. 
+
+An example of choices to deal with these details:
+
+- if $\lambda$ is smaller than some pre-set tolerance, set it to the tolerance. 
+  (Otherwise do not worry if it is tiny, as long as the sum of squares still gets
+   reduced.)
+   
+- when comparing $x_{new}$ and $x$, we can use a modest number, e.g, 100.0 which
+  we will call $OFFSET$. In the arithmetic of the system at hand, if the floating-point
+  number $(x_{new} + OFFSET)$ matches bit for bit $(x + OFFSET)$, then we take the
+  unmodified numbers as equal.
+
+Many practitioners dislike using IF statements (comparisons) of floating point
+numbers. Tolerances are often suggested to define "small", but this invites users
+to make decisions that lead to poor outcomes and which ignore the precision and
+other characteristics of the arithmetic at hand.
+There are, of course, well-written codes that address the issues of what "small" means,
+but such code is generally quite involved.
+I have never seen a case where the $OFFSET$ approach caused difficulties, and it
+is trivial to code. When $x$ is tiny, we compare $OFFSET$ to 
+itself and declare equality. When $x$ is very large, $OFFSET$ does not change it and
+we compare $x$ with a value that is identical to it. 
+
+### Automatic scaling
+
+In @Marquardt1963, it is shown that the use of the diagonal elements of $J^t J$
+instead of $\mathbf{1}_n$ in the Marquardt stabilized Gauss-Newton equations is equivalent
+to having a similar scale for all the parameters. Call this diagonal matrix $D$.
+Generally this is the preferred
+approach to Levenberg-Marquardt stabilizations. However, in low-precision 
+arithmetic, elements of the diagonal may underflow to zero and cause issues of
+singularity in the equations to be solved. A simple workaround (@jn77ima) is to slightly
+modify the equations to 
+
+$$ (J^t J + \lambda (D + \phi 1_n)  \delta  =  - J^t r $$
+
+where $\phi$ is a modest number such as 1. 
+
+<!-- ?? Check the statements about how things are done and redo tests -->
+Note that we form $J^t J$ in `nlsr::nlfb()` to provide the $D$ matrix for 
+the scaled stabilization, 
+which is quite a lot of computational work. The same program, however, 
+uses a QR approach to solving the linearized least squares sub-problem.
+To avoid the formation of $D$, an experimental package
+`nlsralt` was been built to add functions `nlxbx()` and `nlfbx()` that
+use ONLY the fixed element (i.e., unit matrix) stabilization. A very
+preliminary timing ([2021-6-26]) using the Hobbs unscaled problem shows
+a slight improvement for the simplified version in timing with equivalent
+solution. ?? check
+
+## Other approaches
+
+There have been many proposed approaches to nonlinear least squares. The following
+is a non-exhaustive sample.
+
+### Spiral 
+
+@Jones70Spiral seems only to be mentioned in a single paper. There is a flowchart
+given but I have never been able to find a code (supposedly Fortran V for the Univac
+1108.) The motivations are to avoid both matrix equation solutions and one-dimensional
+line-search minimization. Jones mentions matrix inversion, and it is not clear whether
+he truly forms the inverse. The main idea in the paper (and presumably the code) is
+to use a geometric spiral that mimics the Marquadt search trajectory as $\lambda$
+is increased. It would be interesting to actually try some of the ideas, which do,
+as far as I can determine, have a reasonable basis.
+
+### Approaches to Newton's method for special models
+
+Newton (and his sometime associated worker Raphson) used the algorithm we attribute
+to them applied to a very special case and in a manner unrecognizable as that described
+above.  (See \url{https://en.wikipedia.org/wiki/Newton%27s_method}).
+
+The main attraction of the Gauss-Newton method is that the Jacobian only needs first
+derivatives, which are generally much, much easier to compute than the full second
+derivatives of the Hessian. However, there have been suggestioned
+Newton-like approaches, possibly for special types of models where some short cut
+to the Hessian is available. These may or may not make sense in the context of
+a given user or group of users. I regard these approaches as part of the
+computational infrastructure of the special cases rather than as general nonlinear
+least squares methods.
+
+?? MaxLik?? others -- Charles Geyer 
+
+https://www.stat.umn.edu/geyer/trust/
+
+CRAN trust package??
+
+?? had something for exponential models??
+
+
+### Hybrid methods
+
+The central idea of Hartley's method is a line search and that of Marquardt a
+parametrized stabilization that can be shown to reduce a sum of squares for large
+enough stabilization parameter. There is nothing to prevent use of a line
+search additional to the Marquardt stabilization, and there are, of course, 
+several reasonable choices for line search. Also we could solve the (possibly
+stabilized) Gauss-Newton equations by several quite different numerical linear
+algebra techniques, or even approximations. In certain situations, some of these
+choices may be important, but here I will not pursue them further.
+
+# Sources of implementation variety
+
+The sources of variety in implementation include:
+
+- structuring of the algorithm, that is, how we set up and sequence the
+  parts of the overall computation
+
+- Linking of data to the problem. In particular, R allows **subsetting**
+  of data at quite a high level, but this capability is almost totally
+  hidden from the user or programmer, so that the feature could be dangerous to
+  use. There appears, moreover, to be no example or test with `nls()` 
+  to show how to use this facility, even though `subset` is an argument
+  to the `nls()` function. This is discussed further below.
+
+- programming language
+
+- possible operating environment features
+
+- solver for the least squares or linear equations sub-problems
+
+- stucture of storage for the solver, that is, compact or full
+
+- sequential or full creation of the Jacobian and residual, since
+  it may be done in parts
+
+- how the Jacobian is computed or approximated
+
+- higher level presentation of the problem to the computer, as
+  in R's `nls` versus packages `minpack.lm` and `nlsr`, or as
+  a general optimization problem.
+
+
+## Algorithm structure 
+
+The R function `nls()` and also the package `minpack.lm` both set up the nonlinear
+least squares computation for estimating a model specified as a **formula** (an
+R object class) by building an `nlsModel` object, which we will label `m`. This 
+object is a set of functions that provide the information needed to compute the 
+residuals, jacobian, the search direction, and many other objects required for
+the nonlinear least squares solution as well as ancillary information used in
+the post-solution analysis and reporting.
+
+In the package `nlsr` (@nlsr-manual), the function `nlxb()` calls `model2rjfun()`
+to create functions `res()` and `jac()` that are used in `nlfb()` (the function
+`nls.lm()` in `minpack.lm` is very similar) to find a
+nonlinear least squares solution. However, post-solution information is built
+explicitly AFTER a solution is found.
+
+The essential difference is that `nls()` and `minpack.lm` build a toolbox, `m`,
+while `nlsr` creates its required objects as they are needed for the Marquardt
+computations.
+
+
+### Issues with this structure
+
+A major criticism of this approach is that the collection of information needed
+at any one time -- the "environment" in which residuals and jacobians are calculated,
+as well as the solution methods -- is not at all well-documented. If the software is
+to be updated or maintained, the location and purpose of the many elements that
+reside in different environments is difficult to determine without much effort.
+In my opinion, this renders the structure prone to collapse if there are infrastructure
+or other changes. Documentation would go a long way to correcting this problem, but
+even better would be clearer structuring. Separation of the problem from the method
+would also be useful. At the time of writing of this document, the Gauss-Newton 
+METHOD is embedded in the functions created by `nlsModel()` for a given PROBLEM.
+
+## Programming language
+
+We have a versions of the Nashlib Algorithm 23 in BASIC, Fortran, Pascal, and R, 
+with Python pending. There may be dialects of these programming languages also,
+giving rise to other variations.
+
+## Data linkage to software
+
+Quite reasonably, linking particular data to our problem is mediated by software,
+and hence is influenced by the programming language. This is particularly true
+for R, since R allows us to **subset** data. Essentially this provides an index
+to the rows of data, most easily thought of in terms of a data frame structure.
+
+### Data subsets
+
+The `nls()` function has an argument `subset` and a test included in the 
+`Croucher-example1.R` file of this project showed this works as expected. 
+However, nowhere have we found a published example of the use of the 
+`subset` argument with `nls()`. Worse, it clearly must be applied to
+many of the functions used by `nls()` but makes no explicit appearance. Thus it
+is VERY difficult to ensure subsetting is correctly applied when we wish to modify
+the code, for instance, to provide for newer features especially more reliable
+solvers.
+
+Note that the `subset` ARGUMENT to `nls()` is not the same as the `subset()` function
+that is usable to restrict the scope of an R object.
+
+OUR HYPOTHESIS: `nls()` uses `subset` to automatically adjust the data to which all
+the relevant functions are applied. We note that `minpack.lm::nlsLM` also has a `subset` argument,
+but package `nlsr` does not at time of writing (2021-7-12), but will use the **weights** mechanism
+of the next subsection of this document at some future release.
+
+### Other approaches to subsetting
+
+In order to provide a sane and well-understood mechanism for subsetting, there
+are alternatives for implementation.
+
+- **via weights**: We can weight each "row" that we do NOT wish included as 0.
+  This does require us to compute the number of observations as the count of
+  non-zero weights e.g, `sum(weights > 0). Incidentally, this underlines the 
+  need to ensure weights are non-negative. ??now in nlsj, need to add to nlsr code.??
+  
+- **via preprocessing**: We could prepare a function to pre-process the problem and
+  create a data collection that is appropriately subset. This may offend against
+  the spirit of R/S, but it has the merit that we can easily reassure ourselves
+  that we have worked with the correct information, correctly used in our methods.
+  ?? Should add this as an option.
+  
+PROPOSAL: use the "weights" approach if `nlsj` is called with `subset` active, 
+else recommend the preprocessing approach. The preprocessor could also do a lot
+of checking, which we might leave out of `nlsj()` in some cases. As of 2021-7-12,
+the weights mechanism is working in a trial `nlsj()` and should be transferrable
+to package `nlsr` fairly easily.
+
+## Operating environment
+
+Generally, for modern computers, the operating system and its localization do not
+have much influence on the way in which we set up nonlinear least squares computations,
+though the actual performance of the computations may well be influenced by such factors.
+I will comment below about some issues where speed and size of data storage may favour
+some approaches over others. However, such issues are less prominent today than in
+the past.
+
+One aspect of the computational environment that has proved important to me has
+been that of low-precision arithmetic. In the 1970s, it was common to have only
+the equivalent of 6 or 7 (decimal) digits of precision. In such environments, 
+where, moreover, guard digits and underflow and overflow behaviour were highly
+variable features, it was quite common that arguments to functions like exp()
+and log() were inadmissible for reasons of computability in the local system
+rather than underlying mathematics. In such environments, where there were also
+storage limitations, it was important to use very robust algorithms implemented
+in ways that were simple but "safe". This led to a number of choices in the
+development of the codes in @jncnm79. However, it has turned out that these
+choices fare rather well even in more capable computational systems. 
+
+
+## Solver for the least squares or linear equations sub-problems
+
+There are many choices for solver of the Gauss-Newton or related equations
+in a nonlinear least squares program. We will consider some of the options.
+Note that the choice to set up the normal equations will direct part of the
+algorithm selection.
+
+### Solution of the linear normal equations
+
+The Gauss-Newton or Marquardt eqations are a set of linear equations. Moreover, 
+the coefficient matrix is non-negative definite and symmetric. Thus it permits of
+both general and specialized methods for linear equations. Furthermore, one can also
+set up the solution without forming a coefficient matrix $A$ 
+by using several matrix decomposition methods. Thus there are many possible procedures.
+
+- Gauss elimination with partial or complete pivoting: The choice of partial or
+  complete pivoting changes greatly the program code. However, neither of these
+  choices uses the underlying structure and non-negative definite nature of 
+  the matrix $A$.
+
+- Variants of Gauss elimination that build matrix decompositions: We can apply
+  elimination to produce an LU decomposition of $A$, and this may offer some 
+  computational advantages, though in the present case such approaches do not
+  seem to be ideal. 
+
+- Gauss-Jordan inversion: Here we compute the inverse of $A$ and then work with
+  this inverse. That is, we use
+  
+  $$\delta = - A^{-1} g$$
+  
+  This uses much more computational effort than simply solving for $\delta$, 
+  though there is an interesting, and very tiny, method by @BauerReinsch71.
+  The sheer ingenuity of this code was magnetic, but it has proved to be of
+  limited value.
+
+- Choleski Decomposition and back substitution: There are a number of varieties
+  of Choleski decomposition, but they all take advantage of the symmetric and
+  non-negative definite structure of $A$. A particularly compact form was used
+  in @Nash1987a, though it is debatable whether the saving in storage was not
+  heavily outweighed by the complexity of the code and its documentation.
+
+- Eigendecompositions of the sum of squares and cross-products (SSCP) 
+  matrix: the eigenvalues of real, symmetric matrices
+  such as $A$ can be computed in many ways and the eigendecomposition used to 
+  solve the Gauss-Newton equations. The computations are much more costly than
+  simple solution of the equations, but the knowledge of the eigenvalues allows
+  us to avoid, or at least be aware of, conditioning issues.
+
+### Solution of the least squares sub-problem by matrix decomposition
+
+Here we proposed to solve using the matrix $J$ or an augmented form $K$
+directly. There are a number of approaches that can be used, which we
+will divide into two classes, QR and SVD methods. 
+
+The QR approach aims to decompose the working matrix (call it $K$,
+with $m$ rows and $n$ columns)
+
+$$ K = Q R $$
+
+where $Q$ is $m$ by $n$ orthogonal so 
+
+$$ Q^t Q = I_n $$
+
+and $R$ is upper triangular and $n$ by $n$. Some variants have $Q$ an $m$ by $m$ orthogonal
+matrix and $R$ upper triangular with $m - n$ rows of zeros appended below. 
+
+There are many ways of computing such decompostions:
+
+- Householder reflections with or without pivoting options
+- Givens plane rotations, similarly
+- Gram-Schmidt orthogonalization of the columns of $K$, either directly (one
+  column at a time orhogonalized to all previous columns) or in a modified
+  fashion that proceeds row-wise. There are a number of detailed choices.
+
+SVD approaches compute a decompostion 
+
+$$ K =  U S V^t$$
+
+where U and V have various orthogonality properties and S is a diagonal matrix
+with elements called the singular values (the square roots of the eigenvalues
+of $K^t K$ actually). There are many variations depending on whether $U$ is 
+a full $m$ by $m$ matrix, limited to $m$ by $n$ or even truncated to $m$ by $r$ where 
+$r$ is the rank of $K$.
+
+A detail in choosing our approach is the mechanism of inclusion of the
+Marquardt (or Marquardt Nash) stabilization. It turns out to be remarkably
+easy, if a little tedious. We simply augment $J$ by a diagonal matrix that
+has elements $\sqrt {(\lambda)}$ times the diagonal stabilization elements
+we wish to use. Then $K^t K$ is the appropriate $A$ for the Marquardt version
+of the Gauss-Newton. 
+
+As we explain below, we do, unfortunately, realize that Marquardt suggested a scaled 
+stabiilzation where we want to add the diagonals of $J^t J$ normal equation approach.
+This requires that we perform at least a partial computation of the SSCP matrix,
+which is relatively costly. For this reason we plan ?? to explore some proxies
+for these elements.
+
+### Avoiding re-computation of the Jacobian
+
+The "original" Gauss-Newton iteration offers no guidance in how to deal with a
+situation where $x_{new}$ has a poorer fit than $x$. @Hartley61 and @Marquardt1963,
+along with most other practical methods, need to recompute the (weighted) residuals
+and consequent loss function (sum of squares or deviance) for each value of a step-length
+or stabilization parameter ($\lambda$) until either a "better" point $x_{new}$ is found
+or we terminate the search.
+
+Thus it is useful to be able to separate the computation of residuals from that of the
+Jacobian. However, the structure of R is such that it is much easier to have the Jacobian
+as an **attribute** of the residuals object. Indeed, it is the "gradient" attribute for 
+historical reasons. This is the setup for both the finite difference approximations of
+`nlspkg::numericDeriv()` (the Jacobian routine in base R for nls() in file `./src/library/stats/R/nls.R`)
+as well as the `rjfun()` generated by `nlsr::model2rjfun()`. Nevertheless, it is likley worth 
+avoiding duplication if possible, though the computation of Jacobian elements uses a lot of the
+same steps as the computation of the residuals. 
+
+?? need to explore timings
+
+Evidence is needed as to which de-duplication efforts give worthwhile savings, and in what
+situations:
+
+- saving residual values when computing derivatives via finite differences
+- separation of the Jacobian routine completely from that of the residuals
+- other measures?
+
+
+## Storage stucture
+
+If the choice of approach to Gauss-Newton or Marquardt is to build the normal
+equations and hence the sum of squares and cross products (SSCP) matrix, we
+know by construnction that this is a symmetric matrix and also non-negative definite.
+(Generally, unless we have a strict linear dependence between the columns of
+the Jacobian, we can say "positive definite".)
+If we use an SSCP form, we can apply algorithms that specifically take advantage of both these
+properties, including programs that store the working matrix in special formats. 
+Some of these are Algorithms 7, 8 and 9 of Nashlib (@jncnm79). Algorithms 7 and 8 are the
+Cholesky decomposition and back-solution using a vector of length `n*(n+1)/2`
+to store just the lower triangle of the SSCP matrix. Algorithm 9 inverts this
+matrix *in situ*. 
+
+The original @jncnm79 Algorithm 23 (Marquardt nonlinear least squares solution) computes
+the SSCP matrix $J^t J$  and solves the Marquardt-Nash augmented normal equations
+with the Cholesky approach. This was continued in the Second Edition @nlacatvn1060620 and
+in @jnmws87. However, in the now defunct @jnnlmrt12 and successor @nlsr-manual, the choice
+has been to use a QR decomposition of an augmented Jacobian. `nls()` uses a QR decomposition
+of the Jacobian without augmentation (referred to as the "gradient", however).
+
+The particular QR calculations in these packages and in R-base are quite well-hidden in internal
+code, complicating comparisons of storage, complexity and performance. The present exposition
+is an attempt to provide some documentation.
+
+### Storage in Nash/Walker-Smith (1987) BASIC code
+
+In @Nash1987a, each major iteration generates a $A = J^t J$ matrix and the right hand side $-g = J^t r$
+at parameters $x$ using functions for the residuals and Jacobian.
+The lower triangle of $A$ is stored as a vector of $n (n+1)/2$ elements (row-wise ordering of $C$). 
+The diagonal elements are then multiplied by $(1 + \lambda)$ and $\lambda * \phi$ is added to each,
+where $\lambda$ is our Marquardt parameter and $\phi$ is the adjustment suggested in @jn77ima to
+overcome potential underflow to zero of the accumulation of the diagonal elements in low-precision
+arithmetic. Let us call the augmented SSCP matrix $C$.
+
+Solving $C \delta = -g$, we compute the new sum of squares at $x + \delta$. If this value is greater than
+or equal to the current best (i.e., lowest) sum of squares, we increase $\lambda$ and generate a new
+$C$ matrix. Note that we do not, however, need to build a new SSCP matrix or gradient $g$, just make the diagonal
+adjustment. 
+
+The code in @Nash1987a is much more complicated than this description suggests because of
+
+- bounds and masks on the parameters
+
+- tests for "non-computability", where we allow the user to provide an explicit flag that the function cannot
+  be computed at the trial parameters. This was included to avoid some of the weaknesses in evaluation of 
+  special functions, e.g., `log()` for small arguments or `exp()` for large ones, or for problem specific
+  situations where some parameter combinations might be considered inadmissible. 
+
+- situations where rounding and truncation errors make the Cholesky decomposition return with an indication
+  that $C$ is "singular", at least in the particular computational arithmetic.
+  
+### Approach in package `nlsr`
+
+In @nlsr-manual, the approach to the augmented Gauss-Newton equations is nominally equivalent to that in @Nash1987a,
+except that we perform the solution using a QR decomposition, in fact a modification of the DQRDC routine from 
+@lapack99, which uses Householder transformations.
+
+One of the issues with creating the SSCP matrix $A$ is that we lose information in finite arithmetic 
+(See @jncnm79, Chapter 5). A QR approach to the traditional Gauss-Newton codes is to solve
+
+$$  J \delta = -r $$
+
+That is, we assume a generalized inverse of $J$ can be applied to both sides of the Gauss-Newton equations.
+
+To move to the Marquardt variant of the Gauss-Newton, we need to augment $J$. Let us call this augmented matrix
+$K$. We will also need to augment $r$ by an appropriate number of zeros. For the traditional Marquardt method, we
+need to use the square roots of the diagonal elements of $J^t J$, that is, an $n$ by $n$ 
+diagonal matrix $Z1$ where 
+
+$$ Z1_{k,k}  = \sqrt(\lambda) \sqrt(J^t J)_{k,k}  $$
+
+and $r$ is extended by $n$ zeros. For the Nash modification, we add a further $n$ zeros to $r$ and augment
+the $K$ matrix with another $n$ by $n$ block $Z2$ which is a diagonal matrix where the diagonal elements are
+
+$$ Z2_{k,k}  = \sqrt(\lambda) \sqrt(\phi)  $$
+
+Unfortunately, there is a need in each major iteration to compute at least the diagonal elements of the
+SSCP matrix. It may, in fact, be more efficient to omit the $Z1$ augmentation. Package `nlsralt`, as
+mentioned, does this with functions `nlxbx()` (for formula-specified models) and `nlfbx()` (for problems
+specified with `res()` and `jac()` functions). This gives the following preliminary example using the 
+Hobbs weed problem.
+
+<!-- https://bookdown.org/yihui/rmarkdown-cookbook/source-script.html -->
+<!-- ```{r, include=FALSE} -->
+<!-- source("your-script.R", local = knitr::knit_global()) -->
+<!-- # or sys.source("your-script.R", envir = knitr::knit_global()) -->
+<!-- ``` -->
+
+??FIXME??
+
+```{r hobbtime1}
+source("HobbsTiming.R", echo=TRUE)
+```
+
+
+### Other storage approaches.
+
+?? do we want to report any other approaches here?
+In particular, should we look at minpack.lm to see how the Marquardt stabilization 
+is applied? This is a very complicated program, since it calls C to call Fortran,
+and the Fortran is layered in a way that each part is well-documented but the
+general flow and linkage of the parts is non-obvious.
+
+## Sequential or full Jacobian computation
+
+We could compute a row of the Jacobian plus the corresponding residual element
+and process this before computing the next row etc. This means the full Jacobian
+does not have to be stored. In Nashlib, Algorithms 3 and 4, we used row-wise data 
+entry in linear least squares via Givens' triangularization (QR decompostition),
+with the possibility of extending the QR to a singular value decomposition.
+Forming the SSCP matrix can also be generated row-wise as well. We do not 
+anticipate that any of these approaches will offer advantages that are so
+great that we would choose them.
+
+
+## Analytic or approximate Jacobian
+
+`nls()` and `minpack.lm` use finite difference approximations to compute the Jacobian.
+In the case of `minpack.lm` it seems that the standard `numericDeriv()` (from the 
+set of routines in file `nls.R`) is used initially for the "gradient", but within
+the iteration, the Fortran routine lmdif.f computes its own approximations for
+the Jacobian, adding another layer of potential confusion.
+
+The `nlsr` package, however, attempts to compute analytic derivatives using symbolic
+and analytic derivative possibilities from other parts of R. A great advantage of
+these is that they are for a given point, and do not suffer the issue that a step
+must be taken, thereby chancing the violation of a constraint or else an inadmissible
+set of arguments for special functions. In my experience, the use of analytic derivatives
+is not much faster than the finite difference approximations, and generally finite
+difference methods iterate as quickly as the "exact" derivative methods to the 
+neighbourhood of a solution. It is in allowing good estimates of convergence 
+criteria that the analytic derivatives seem to show their advantage i.e., knowing
+we are at a solution rather than the speed in getting there.
+
+
+## Interfacing to problems
+
+R allows the nonlinear least squares problem to be presented via a formula
+for the model. This is generally very attractive to users, since they can
+specify their problem in ways that often accord with how they think about them.
+Many (most?) researchers do not write program code, so preparing residual and
+Jacobian functions is foreign to them. 
+
+From the point of view of package or system developers, however, specifications as
+formulas pose some particular issues:
+
+- translating a formula to a function for its actual evaluation may be tricky,
+  since we must essentially parse the formula. R has some tools for this that
+  we use.
+  
+- even if we can translate a formula to a function, we need to check that we
+  have all the data and parameter inputs to enable the evaluation. Moreover,
+  we need to check if the inputs are valid or admissible. 
+  
+- checking for correctness of inputs and translations can be considered to
+  take up most of the code in a reliable and robust package.
+
+# Saving storage
+
+The obvious ways to reduce storage are:
+
+- use a row-wise generation of the Jacobian in either a Givens' QR or SSCP approach.
+  This saves space for the Jacobian as well as as well as the working matrices of
+  the Gauss-Newton or Marquardt iterations;
+
+- if the number of parameters to estimate is large enough, then a normal equations
+  approach using a compact storage of the lower triangle of the SSCP matrix. 
+  However, the scale of the saving is really very small in comparison to 
+  the size of most programs.
+  
+
+# Measuring performance
+
+Do we plan to use only timing? Or size of code and memory used? ??
+
+
+# Test problems
+
+```{r settest15}
+# set parameters
+set.seed(123456)
+a <- 1
+b <- 2
+c <- 3
+np <- 15
+tt <-1:np
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+plot.new()
+plot(tt, yy, type='l')
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+points(tt,y1,type='p', col="green")
+y2 <- yy + 5*ev
+points(tt,y2,type='p', col="blue")
+y3 <- yy + 10*ev
+lg3d15 <- data.frame(tt, yy, y1, y2, y3)
+points(tt,y3,type='p', col="red")
+library(nlsr)
+sol0 <- nlxb(yy ~ a0/(1+b0*exp(-c0*tt)), data=lg3d15, start=list(a0=1, b0=1, c0=1))
+print(sol0)
+sol1 <- nlxb(y1 ~ a1/(1+b1*exp(-c1*tt)), data=lg3d15, start=list(a1=1, b1=1, c1=1))
+print(sol1)
+sol2 <- nlxb(y2 ~ a2/(2+b2*exp(-c2*tt)), data=lg3d15, start=list(a2=1, b2=1, c2=1))
+print(sol2)
+sol3 <- nlxb(y3 ~ a3/(3+b3*exp(-c3*tt)), data=lg3d15, start=list(a3=1, b3=1, c3=1))
+print(sol3)
+```
+
+
+The following is a larger dataset version of this test.
+
+```{r settest150, eval=FALSE}
+np <- 150
+tt <- (1:np)/10
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+y2 <- yy + 5*ev
+y3 <- yy + 10*ev
+lg3d150 <- data.frame(tt, yy, y1, y2, y3)
+np <- 1500
+tt <- (1:np)/100
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+y2 <- yy + 5*ev
+y3 <- yy + 10*ev
+lg3d1500 <- data.frame(tt, yy, y1, y2, y3)
+f0 <- yy ~ a0/(1+b0*exp(-c0*tt))
+f1 <- y1 ~ a1/(1+b1*exp(-c1*tt))
+f2 <- y2 ~ a2/(2+b2*exp(-c2*tt))
+f3 <- y3 ~ a3/(3+b3*exp(-c3*tt))
+```
+
+
+# Implementation comparisons
+
+Here want to explore the ideas. First we will examine the sub-problem of solving
+the Gauss-Newton equations or their Marquardt variants.
+
+## Linear least squares and storage considerations
+
+Without going into too many details, we will present the linear least squares 
+problem as 
+
+$$  A x \tilde = b  $$
+
+In this case $A$ is an $m$ by $n$ matrix with $m \ge n$ and $b$ a vector of lenght $m$.
+We write **residuals** as
+
+$$  r  =  A x - b  $$
+or as 
+
+$$  r_1  = b - A x  $$
+
+Then we wish to minimize the sum of squares $r^t r$. This problem does not necessarily
+have a unique solution, but the **minimal length least squares solution** which is 
+the $x$ that has the smallest $x' x$ that also minimizes $r' r$ is unique.
+
+### Example setup and run in lm()
+
+Let us set up a simple problem in R:
+
+```{r ls1, echo=TRUE}
+# simple linear least squares examples
+v <- 1:6
+v2 <- v^2
+vx <- v+5
+one <- rep(1,6)
+Ad <- data.frame(one, v, v2)
+A <- as.matrix(Ad)
+print(A)
+Ax <- as.matrix(data.frame(one, v, vx, v2))
+print(Ax)
+y <- -3 + v + v2
+print(y)
+set.seed(12345)
+ee <- rnorm(6)
+ee <- ee - mean(ee)
+ye <- y + 0.5*ee
+print(ye)
+sol1 <- lm.fit(A, y)
+print(sol1)
+cat("Residual SS=",as.numeric(crossprod(sol1$residuals)),"\n")
+sol1e <- lm.fit(A,ye)
+print(sol1e)
+crossprod(sol1e$residuals)
+sol2<-lm.fit(Ax,y)
+# Note the NA in the coefficients -- Ax is effectively singular
+print(sol2)
+S2 <- sol2$coefficients
+J <- which(is.na(S2))
+S2[J]<-0
+crossprod(S2)
+```
+
+The above uses the intermediate code in function `lm.fit()`. This uses a QR solver, but
+it is written as a wrapper in C calling a Fortran routine (in the Fortran 77 dialect).
+
+?? Should we put in the structure and where the code is located?
+
+I believe that the structure of lm() predates the availability of the family
+of `qr.xxx()` functions for R. These allow us to access the QR approach 
+directly.
+
+```{r ls2, echo=TRUE}
+x <- qr.solve(A,y)
+print(x)
+xe<-qr.solve(A, ye)
+print(xe)
+# But then we get an error when we try to solve the singular system
+# This was NOT caught above.
+xx <- try(qr.solve(Ax,y))
+print(xx)
+xxe<-try(qr.solve(Ax, ye))
+print(xxe)
+```
+
+## Traditional Normal equations approach
+
+The historically traditional method for solving the **linear** least squares problem was
+to apply calculus to set the partial derivatives of the sum of squares with respect to
+each parameter to zero. This forms the **normal equations**
+
+$$ A^t A x  = A^t b $$
+
+
+This was attractive to early computational workers, since while $A$ is $m$ by $n$, $A^t A$
+is only $n$ by $n$. Unfortunately, this **sum of squares and cross-products** (SSCP) matrix
+can make the solution less reliable, and this is discussed with examples in @jncnm79 and
+@nlacatvn1060620.
+
+```{r lm5, echo=TRUE}
+AtA <- t(A)%*%A
+print(AtA)
+Aty <- t(A)%*%y
+print(t(Aty))
+x<-solve(AtA,Aty)
+print(t(x))
+```
+
+Let us try this with the extended matrix `Ax`
+
+```{r lm6, echo=TRUE}
+AxA <- t(Ax)%*%Ax
+print(AxA)
+Axy <- t(Ax)%*%y
+print(t(Axy))
+xx<-try(solve(AxA,Axy))
+print(t(xx))
+```
+
+### Dealing with singularity
+
+The `lm.fit()` function has a parameter `singular.ok` which defaults to TRUE.
+By setting this to FALSE, we get.
+
+```{r lm3, echo=TRUE}
+sol2b<-try(lm.fit(Ax,y, singular.ok=FALSE))
+print(sol2b)
+```
+
+We've already seen above that the solution `sol2` has a size of 
+
+```{r num1}
+eval(as.numeric(crossprod(S2)))
+```
+
+The solution `sol2` is, it turns out, not unique, since the variables `v` and
+`vx` and `one` are related, namely
+
+```{r num2, echo=TRUE}
+print(vx - (v+5*one))
+```
+Thus we can find a "new" solution as follows and show (essentially) the same 
+residuals
+
+```{r num3, echo=TRUE}
+res2<-Ax%*%S2-y
+print(t(res2))
+print(S2)
+S2b<-S2+c(10,2,-2,0)
+res2b<-Ax%*%S2b-y
+print(t(res2b))
+cat("Sum of squares of S2b=", as.numeric(crossprod(S2b)),"\n")
+```
+
+### Approximate solution -- Ridge regression
+
+An approximate solution via the normal equations can be found by adding a small 
+diagonal matrix to the sum of squares and
+cross products `AxA`.
+
+```{r lm7, echo=TRUE}
+AxA <- AxA + diag(rep(1e-10,4))
+print(AxA)
+xxx<-try(solve(AxA,Axy))
+print(t(xxx))
+print(t(Ax %*% xxx - y))
+```
+
+We note that this solution is rather different from `S2` or `S2b`.
+There is a large (and often misguided and confusing) literature 
+about this sort of approach under the title **ridge regression**.
+Note that the Marquardt stabilization of the Gauss-Newton equations
+uses the same general idea.
+
+### Dealing with singularity in QR solutions
+
+We already saw that we got errors when trying to use `qr.solve()`, but there
+are ways to use the QR decomposition that overcome the singularity. Here
+are some illustrations. Note that the size of the solution as measured by
+the sum of squares of the coefficients (ignoring the NA usng `na.rm=TRUE`)
+are different. Moreover, they are different from the minimum length solution
+in the next subsection.
+
+```{r qrsing1, echo=TRUE}
+## This fails
+xx <- try(qr.solve(Ax,y))
+print(xx)
+## So does this
+xxe<-try(qr.solve(Ax, ye))
+print(xxe)
+## Let us compute a QR decomposition, using LINPACK then LAPACK
+qrd1<-qr(Ax, LAPACK=FALSE)
+qrd2<-qr(Ax, LAPACK=TRUE)
+# and get the solutions
+xx1 <- try(qr.coef(qrd1,y))
+print(xx1)
+xx2 <- try(qr.coef(qrd2,y))
+print(xx2)
+# and computer the sum of squares of the coefficients (size of solution)
+try(sum(xx1^2))
+try(sum(xx1^2, na.rm=TRUE))
+try(sum(xx2^2))
+```
+### Minimum length least squares solution
+
+The minimum length least squares solution, which is unique, 
+is found using the Moore-Penrose inverse of `Ax`
+(the article https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse gives a quite good
+overview) which can be computed from the Singular Value Decomposition. R has a function `svd()`
+which is adequate to our needs here.
+
+```{r lm4, echo=TRUE}
+Z<-svd(Ax) # get the svd
+D1 <- 1/Z$d # invert S, the singular values diagonal matrix
+print(D1) 
+D1[4]<-0 # to remove linear dependency (small singvals are set to zero)
+# D1 is diagonal of S+ now
+# minimum length LS solution A+ = V S+ t(U)
+minsol2 <- Z$v %*% (diag(D1) %*% (t(Z$u) %*% y))
+print(minsol2)
+cat("SS of minsol2=",as.numeric(crossprod(minsol2)),"\n")
+resminsol<-Ax%*%minsol2-y
+print(t(resminsol))
+```
+
+### QR decomposition variants
+
+There are a number of ways to compute a QR decomposition. 
+
+- Householder transformations have good vector-computation performance and properties.
+  They use matrix transformations that can be called **reflections** to be used to
+  build the Q matrix as a product of these transformation matrices as the initial
+  rectangular matrix $A$ is rendered upper triangular, or $R$
+  
+- Givens transformations (@Bindel2002Givens) are **plane rotations** that zero one element at a time of
+  the current working matrix that starts out as $A$. Once again, $Q$ is a product of
+  the transformations and $R$ the result of zeroing out sub-diagonal elements. 
+  
+- The Gram-Schmidt method, which has several forms, builds the Q matrix by 
+  subtracting a multiple of the first column of $A$ from the second and then 
+  normalizing those columns so their sum of squares is 1. The process is then 
+  applied to the third column by subtracting multiples of the first two. The $R$
+  matrix is formed from the norms and subtraction multipliers in the process. 
+  There are row- and column-wise approaches. 
+  See https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process 
+
+### Using a QR approach
+
+Let us try to form a QR decomposition of $A$, for example with Givens rotations.
+
+$$ A =  Q R$$
+
+
+where $Q$ is orthogonal (by construction for plane rotations) and $R$ is upper triangular.
+We can rewrite our original form of the least squares problem as 
+
+$$  Q^t A = Q^t Q R = R \tilde= Q^t b$$
+
+
+$R$ is an upper triangular matrix $R_n$ stacked on an $m-n$ by $n$ matrix of zeros. But 
+$z = Q^t b$ can be thought of as $n$-vector $z_1$ stacked on ($m-n$)-vector $z_2$. 
+It can easily be shown (we won't do so here) that a least squares solution is the
+rather easily found (by back-substitution) solution of 
+
+$$  R_n x = z_1$$
+
+and the minimal sum of squares turns out to be the cross-product $z_2^t z_2$. Sometimes
+the elements of $z_2$ are called **uncorrelated residuals**. The solution for $x$ can
+actually be formed in the space used to store $z_1$ as a further storage saving,
+since back-substitution forms the elements of $x$ in reverse order.
+
+All this is very nice, but how can we use the ideas to both avoid forming the SSCP
+matrix and keep our storage requirements low? 
+
+Let us think of the row-wise application of the Givens transformations, and use a 
+working array that is $n+1$ by $n+1$. (We can actually add more columns if we have
+more than one $b$ vector.)
+
+Suppose we put the first $n+1$ rows of a merged $A | b$ working matrix into this
+storage and apply the row-wise Givens transformations until we have an $n$ by $n$
+upper triangular matrix in the first $n$ rows and columns of our working array.
+We further want row $n+1$ to have $n$ zeros (which is possible by simple transformations)
+and a single number in the $n+1$, $n+1$ position. This is the first element of $z_2$.
+We can write it out to external storage if was want to have it available, or else
+we can begin to accumulate the sum of squares. 
+
+We then put row $n+2$ of [$A | b$] into the bottom row of our working storage and
+eliminate the first $n$ columns of this row with Givens transformations. This
+gives us another element of $z_2$. Repeat until all the data has been processed.
+
+We can at this point solve for $x$. Algorithm 4 of @jncnm79, however, applies the one-sided
+Jacobi method to get a singular value decomposition of $A$ allowing of a minimal
+length least squares solution as well as some useful diagnostic information about
+the condition of our problem. This was also published as @LefkovitchNash1976.
+
+### QR approach to the Marquardt stabilization
+
+We can arrange to solve the normal equations approximately as under Ridge Regression
+above by adding a unit matrix scaled by e.g., 1e-5, and padding the RHS with zeros.
+The solution is "almost but not quite" the same because the formation of the sum of squares and
+cross products matrix explicitly in the normal equations can introduce errors that
+are partially avoidable in the QR approach below.
+
+```{r lm7a, echo=TRUE}
+Dx <- diag(rep(1e-5,4))
+print(Dx)
+Ap<-rbind(Ax, Dx)
+print(Ap)
+## we need to pad y with zeros
+yp<-c(y, rep(0,4))
+xxp<-qr.solve(Ap,yp)
+print(xxp)
+## Previous solution via normal equations
+print(as.vector(xxx))
+```
+
+### Choices when solving the normal equations
+
+Whether the normal equations arise from the original Gauss-Newton or Marquardt
+approaches to nonlinear least squares, we have several choices of how to solve
+them. 
+
+Traditional solutions to the solution of linear equations used elimination 
+techniques under names such as **Gaussian Elimination**, **Gauss-Doolittle**,
+**Crout's Method**, **Gauss-Jordan** and many others. All these can be considered
+as LU decompositions. That is, they can be expressed as a transformation of the
+matrix $A = J^t J$ or its Marquardt stabilized variant into a product of a lower
+triangular and an upper triangular matrix, possibly with permutations of rows and/or
+columns. Row permutations of A give 
+
+$$ P A = L U$$
+
+The origin of our matrix $A$ means that it is at least non-negative definite. 
+This means that we can form a special LU decomposition that does NOT need
+permutations and has
+
+$$ A = L L^t$$
+
+which is called the Choleski decomposition. In practice, we need $A$ computationally
+non-singular (not just theoretically so), but the Marquardt stabilization can be used
+to ensure this. 
+
+If we are very worried about storage space, we can note that $A$ is symmetric, so
+that we only need to store the lower (or upper) triangle, including diagonals. 
+And some bright programmers realized we could do our storage in a single array,
+so that a matrix of order $n$ could be stored in a vector of length $n (n+1)/2$.
+@Nash1987a uses this Cholesky decomposition structure in BASIC code.
+
+Similarly, a Gauss Jordan variant could be programmed using such a format for
+$A$ and with only a temporary storage of size $n$, matrix $A$ could be overwritten
+with its inverse. This is the code of @BauerReinsch71 which is Algorithm 9 of
+@jncnm79. 
+
+Both these "single vector" storage programs are challenging to check and maintain.
+While I embraced them in the age when 16K of storage was the norm for personal
+computers, they are simply too finicky to follow easily, and highly prone to
+coding and maintenance errors.
+
+
+# Implementation choices for an R package
+
+??2021 update to nlsr and ideas for the "Improvements to nls()" project.
+
+
+
+
+# References
