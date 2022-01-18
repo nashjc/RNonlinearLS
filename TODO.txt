@@ -1,0 +1,26 @@
+TODO.txt
+
+- edit 20220118
+
+- Should we move "good" or "to be made good" parts of the work to 
+  a new Github repository that records our work and serves to 
+  protect it from plagiarism?
+
+-- Github, JN to set up, public, JN to send list of proposed current
+   items.
+
+- nlsCompare to be rigorously cleaned and checked, ready for submission
+  when CRAN reopens in January 2022
+
+- review of each of the "papers". Which to work on?
+	--	DerivsNLS  -- blog post
+	--	MachineSummary -- no reply from Gillespie?? -- AB to check that
+                    it is fixed, blog post
+	--	nlsCompareArticle -- vignette in package and R-Journal shortened
+                      should send to Heather
+	--	PkgFromRbase -- blog -- AB, JN with material from Duncan Murdoch
+	--	RefactoringNLS -- R Journal -- after more consideration
+	--	VarietyInNonlinearLeastSquaresCodes -- JN --> JSS
+	--	WorkingDocument4ImproveNLS -- internal
+	--	Tests/TestsDoc -- AB blogpost
+
