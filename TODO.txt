@@ -2,13 +2,6 @@ TODO.txt
 
 - edit 20220118
 
-- Should we move "good" or "to be made good" parts of the work to 
-  a new Github repository that records our work and serves to 
-  protect it from plagiarism?
-
--- Github, JN to set up, public, JN to send list of proposed current
-   items.
-
 - nlsCompare to be rigorously cleaned and checked, ready for submission
   when CRAN reopens in January 2022
 
@@ -29,3 +22,4 @@ TODO.txt
 
 COMPLETED OR CLOSED
 
+- RNonlinearLS public repo has been set up
