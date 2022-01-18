@@ -3,7 +3,7 @@ title: "A Machine Profile Summary"
 author: 
    - John C. Nash \thanks{ retired professor, Telfer School of Management, University of Ottawa}
    - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian Institute of Technology, Kanpur}
-date: "14/06/2021"
+date: "14/06/2021 revised 18/01/2022"
 bibliography: ../BibSupport/ImproveNLS.bib
 output: 
   pdf_document:
@@ -20,42 +20,46 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Providing a characterization of a particular computing environment for R calculations
 
-I have looked at this.
-
 If we want to compare results computed on different machines, we need a way to provide 
-measures and identifiers of the particular computing environment at hand. This document
+measures and identifiers of the particular computing environment at hand. This write-up
 attempts to summarize some possibilities available in the R statistical software and language.
 
 # Some possible information desired
 
 There are multiple ways to get information of the type useful for characterizing the
-computing infrastructure used for a particular test or timing. We will need to
+computing infrastructure used for a particular test or timing. However, we need to
 ensure that identifiers of particular pieces of information are unique, and that 
-common identifiers really do specify identical information. Otherwise, we need
-to develop new names for our set of information.
+common identifiers really do specify identical, or at least equivalent, information. 
+Otherwise, new names for some pieces of our set of capability information are needed.
 
 ## Temporal information
 
-Most computatins should have a time/date stamp that is unlikely to be confused with any
-other, at least in combination with a machine name and/or other tags.
+When we wish to analyze performance results, it is extremely helpful to have 
+information on when the calculations were performed. 
+Most computations should have a time/date stamp that is unlikely to be confused with any
+other, at least in combination with a machine name and/or other tags. Here is one
+suggestion based on the R `Sys.time()` function.
 
 ```{r tdstamp}
 #get a timestamp
 tsstr<- format(Sys.time(), "%Y%m%d%H%M") # tsstr == time stamp string in form YYYYmmddHHMM
 cat("Date and Time stamp:",tsstr,"\n")
 ```
-## Identifier for the computing environment
+
+## Identifier for the computing software environment
 
 Some of the important information elements concerning the computing environment that 
 we need for reporting tests are
 
-- machine name. While most systems (and Linux in particular) offer to let the user
+- a machine name. While most systems (and Linux in particular) offer to let the user
   provide a machine name, there are generally defaults that many people accept, and
   these are often uninformative and may be non-unique. We note that VirtualBox with
   a Windows 10 guest machine gave the name DESKTOP-HF4CKVA. Where this name was 
   generated we are not sure. Settings / System allows "rename this PC".
   
-- operating system and version
+- operating system and version. For Linux systems, we note that besides the distribution
+  variant, e.g., Linux Mint 20.3 MATE 64 bit, it is necessary to add the Linux kernel
+  identifier, e.g.,  5.13.0-25-generic, from the `uname` command. 
 
 - compiler or interpreter version. For our needs, it is obvious that the R version
   will be important. However, if any code is compiled or linked to libraries, we
@@ -70,26 +74,33 @@ we need for reporting tests are
   a machine is running background tasks, or if some special steps have been 
   taken to speed up or slow down the operation e.g., overclocking.
   
-
-
 ## Hardware information
 
 Some of the factors relating to hardware that could be important are:
 
-- cpu
-- cores
-- operating cycle speed (While the cpu is generally specified )
-- RAM total
-- RAM available, possibly indicating swap space and usage
-- RAM speed (could be variable)
+- cpu (i.e., processor)
+- number of cores
+- operating cycle speed (this is sometimes specific to the cpu specified )
+- RAM size total
+- RAM size available, possibly indicating swap space and usage
+- RAM speed (which could be variable)
+- GPU (i.e, additional processors) information. 
 
 ## Software information
 
-?? what to put in.
+Clearly it is important to identify which software packages are active, and the
+R `sessionInfo()` command is useful for this. However, there may be additional 
+features that should be mentioned if the user has modified the software in any
+way.
 
-## R tools for machine information
+The use of tools to carry out computations in parallel, using multiple cores or
+GPUs, is clearly an issue. In our opinion, such possibilities are not well supported
+by common R functions, or indeed in other computing languages, though we would very
+much like to hear of tools to provide such information.
 
-### sessionInfo()
+# R tools for machine information
+
+## sessionInfo()
 
 ```{r sessionInfox}
 si <- sessionInfo()
@@ -97,7 +108,9 @@ si <- as.vector(si)
 si
 ```
 
-### benchmarkme
+## benchmarkme
+
+?? Need to comment on 
 
 - uses `proc.time()` for timings
 - has single core and parallel timings
@@ -122,28 +135,74 @@ gsd<-get_sys_details()
 ?? get_ram may not work in Windows 10. 
 
 
-### calceps.R
+## calceps.R
 
+Until the IEEE 754 standard (??ref) became availaible in the 1980s, 
+computers used multiple forms of floating point arithmetic. With
+some ingenuity, it is possible to detect many aspects of the 
+floating point properties.
 This is a port of Mike Malcolm's ENVRON to R. ??ref. It computes the 
 machine precision, radix and number of radix digits. 
 
-?? get file into chunk
+?? mention Kahan's Paranoia
 
+```{r envrontest}
+envron<-function(){
+D1<-as.numeric(1) # use variable to avoid constants when double precision invoked
+E5 <- 10 #arbitrary scaling for additive equality tests
+B9 <- 1E+35 # big number, not necessarily biggest possible
+E6 <- 1 # initial value for radix 
+E9 <- 1 # initial value for machine precision
+D0 <- E6 
+repeat{
+  E9 <- E9/2 #start of loop to decrease estimated machine precision
+  D0 <- E6+E9 #force storage of sum into a floating-point scalar
+  if (D0 <= E6) break
+} # repeat reduction while (1+E9) > 1
+E9 <- E9*2 # restore smallest E9 which gives (1+E9) > 1
+repeat {
+   E6 <- E6+1 # try different radix values
+   D0 <- E6+E9
+   if (D0 <= E6) break
+} # until a shift is observed
+J1 <- 1 # initial count of radix digits in mantissa
+E9 <- 1 # use radix for exact machine precision
+repeat {  
+  E9 <- E9/E6 #loop while dividing by radix
+  J1 <- J1+1 #increment counter
+  D0 <- D1+E9 #add tp 1
+  if (D0<=D1) break #test and repeat until equality
+}
+E9 <- E9*E6 #recover last value of machine precision
+J1 <- J1-1 #and adjust the number of digits
+mpvals<-list(eps=E9, radix=E6, ndigits=J1)
+}
+mp<-envron()
+E9<-mp$eps
+E6<-mp$radix
+J1<-mp$ndigits
+cat("E9 = ",E9,"  -- the machine precision,  E9=MIN (X  1+X>1)\n")
+cat( "E9*1E+16=",E9*1E+16,"\n")
+cat( "E6 = ",E6,"  -- the radix of arithmetic","\n")
+cat( "J1 = ",J1,"  -- the number of radix digits in mantissa of FP numbers","\n")
+cat( "E6^(-J1+1) * 1E+16=",1E+16*(E6^(-J1+1)),"\n")
+cat(".Machine$double.eps=",.Machine$double.eps,"\n")
 ```
-calceps.R
-
 
 - calceps.R example
 
-### Sys.info()
+
+??JN exp(sin(cos())) benchmark
+
+
+
+## Sys.info()
 
 ```{r sysinfox}
 Sys.info()
 ```
 
-
-
-## Issues relateing to RNG
+## Issues relating to random number generation
 
 ## Issues relating to compilation of R 
 
@@ -164,9 +223,6 @@ sys.on.exit()
 sys.parents()
 sys.calls()
 ```
-
-??JN exp(sin(cos())) benchmark
-
 # Choices
 
 For use in recording tests of R functions and packages for optimization and nonlinear 
