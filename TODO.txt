@@ -12,15 +12,20 @@ TODO.txt
 - nlsCompare to be rigorously cleaned and checked, ready for submission
   when CRAN reopens in January 2022
 
-- review of each of the "papers". Which to work on?
-	--	DerivsNLS  -- blog post
-	--	MachineSummary -- no reply from Gillespie?? -- AB to check that
-                    it is fixed, blog post
-	--	nlsCompareArticle -- vignette in package and R-Journal shortened
-                      should send to Heather
-	--	PkgFromRbase -- blog -- AB, JN with material from Duncan Murdoch
-	--	RefactoringNLS -- R Journal -- after more consideration
-	--	VarietyInNonlinearLeastSquaresCodes -- JN --> JSS
-	--	WorkingDocument4ImproveNLS -- internal
-	--	Tests/TestsDoc -- AB blogpost
+- review each potential "contribution".
+
+   --	nlsCompareArticle -- vignette in package and R-Journal shortened version
+                      should send to Heather when AB has draft
+   --	MachineSummary -- With fixup to benchmarkme (20220116 approx. by Gillespie)
+		JN will draft blog post,  AB to check then we post to R-bloggers??
+   --	Tests/TestsDoc -- AB blogpost
+   --	DerivsNLS  -- blog post JN
+   --	PkgFromRbase -- blog -- JN with material from Duncan Murdoch, AB to edit, 
+                then R-bloggers??
+   --	RefactoringNLS -- R Journal -- JN to write 
+                AB to review
+   --	VarietyInNonlinearLeastSquaresCodes -- JN --> JSS
+   --	WorkingDocument4ImproveNLS -- internal JN will tidy and upload to repo
+
+COMPLETED OR CLOSED
 
