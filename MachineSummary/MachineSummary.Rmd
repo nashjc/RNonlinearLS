@@ -117,7 +117,8 @@ si
 An important tool for acquiring machine information is the CRAN package
 `benchmarkme` (@benchmarkme). We found a minor bug in the `get_ram()`
 function of this package for some Windows 10 versions which is now 
-corrected (??check it is uploaded). ??Do we wish to comment on the
+corrected on https://github.com/csgillespie/benchmarkme, but at the 
+time of writing is not yet on the CRAN repository. ??Do we wish to comment on the
 "GB" issue?
 
 ?? Need to comment on 
