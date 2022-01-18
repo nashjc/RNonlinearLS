@@ -23,6 +23,10 @@ knitr::opts_chunk$set(echo = TRUE)
 If we want to compare results computed on different machines, we need a way to provide 
 measures and identifiers of the particular computing environment at hand. This write-up
 attempts to summarize some possibilities available in the R statistical software and language.
+Note that one of our interests is to have tools that work in R **across different platforms**.
+That is, we want to be able to call an R function to get machine and computing environment
+characterizations regardless of the particular platform which we are currently using.
+Moreover, we want to have a succinct output of such information.
 
 # Some possible information desired
 
@@ -110,6 +114,12 @@ si
 
 ## benchmarkme
 
+An important tool for acquiring machine information is the CRAN package
+`benchmarkme` (@benchmarkme). We found a minor bug in the `get_ram()`
+function of this package for some Windows 10 versions which is now 
+corrected (??check it is uploaded). ??Do we wish to comment on the
+"GB" issue?
+
 ?? Need to comment on 
 
 - uses `proc.time()` for timings
@@ -132,10 +142,8 @@ gla<-get_linear_algebra()
 gsd<-get_sys_details()
 ```
 
-?? get_ram may not work in Windows 10. 
 
-
-## calceps.R
+## Calculating the machine precision
 
 Until the IEEE 754 standard (??ref) became availaible in the 1980s, 
 computers used multiple forms of floating point arithmetic. With
@@ -187,13 +195,44 @@ cat( "E6 = ",E6,"  -- the radix of arithmetic","\n")
 cat( "J1 = ",J1,"  -- the number of radix digits in mantissa of FP numbers","\n")
 cat( "E6^(-J1+1) * 1E+16=",1E+16*(E6^(-J1+1)),"\n")
 cat(".Machine$double.eps=",.Machine$double.eps,"\n")
+cat("From R  .Machine:\n")
+cat("double.eps=", .Machine$double.eps,"\n", 
+    "double.base=", .Machine$double.base,"\n", 
+    "double.digits=", .Machine$double.digits,"\n" )
 ```
 
-- calceps.R example
+## Simple performance examples
 
+There are many performance examples used for testing the speed of computers. A 
+well-known example is the @linbench03 LINPACK test used for ranking supercomputers.
+These generally employ linear algebra calculations. The example below, by
+contrast, focuses on the special function computations. Variations on this
+simple performance test have been used by one of the authors for nearly half
+a century. Note the use of the `microbenchmark` timing package (@microbench13).
 
-??JN exp(sin(cos())) benchmark
+```{r loopesc}
+loopesc <- function(nn){
+  ss<-0
+  for (i in 1:nn) {
+    xx<-exp(sin(cos(1.0*i)))
+    ss<-ss+xx
+  }
+  xx
+}
+require("microbenchmark")
+nvals<-c(1000, 10000, 100000, 1000000)
+tvals<-rep(NA,length(nvals))
+i<-0
+for (nn in nvals) {
+  i<-i+1
+  cat(nn,"\n")
+  tt<-microbenchmark(loopesc(nn), unit='us')
+  print(tt)
+  tvals[i]<-mean(tt$time)
+}
+plot(log10(nvals),log(tvals))
 
+```
 
 
 ## Sys.info()
@@ -229,11 +268,16 @@ For use in recording tests of R functions and packages for optimization and nonl
 least squares, it seems that the `benchmarkme` function `get_sys_details()`
 provides more than sufficient information for our needs. 
 
-From the above discussion, the following offers a possible compact solution.
+From the above discussion, the following offers a possible compact solution. Users may
+wish to modify this to their own particular needs.
 
 ```{r code=xfun::read_utf8('MachID.R')}
 ```
 
 Note that we are reading from the file `MachID.R` so that this file is usable elsewhere
 and the current document does not become out of sync with the working MachID.
+
+
+## References
+
 
