@@ -150,7 +150,7 @@ do so with R functions. They may then be documented as needed.
 
 It is worth mentioning that the NAMESPACE file provided by Duncan is an
 important part of the packaging. It could be worthwhile to document each
-elements in that file needed for a package such as `nlspkg`, but at the
+element in that file needed for a package such as `nlspkg`, but at the
 time of writing, this is yet to be carried out. However, we must note 
 that in renaming the package from `nlspkg` to something
 else, the change of name must be mirrored in the line
