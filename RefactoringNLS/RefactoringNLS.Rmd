@@ -953,8 +953,7 @@ Some considerations for our test scrips:
 
 # Outputs of the project
 
-The project output is available in the Git repository https://gitlab.com/nashjc/improvenls
-?? Arkajyoti -- do you want to change to Github
+The project output is available in the Git repository https://github.com/nashjc/RNonlinearLS .
 
 ## Formal reports or documentation 
 
@@ -976,21 +975,18 @@ The project output is available in the Git repository https://gitlab.com/nashjc/
 ## Informal reports
 
 These are documents used to discuss particular aspects of our work. These are part
-of the repository https://gitlab.com/nashjc/improvenls.
+of the repository https://github.com/nashjc/RNonlinearLS.
 
 - DerivsNLS.Rmd: a document to explain different ways in which Jacobian information
   is supplied to nonlinear least squares computation in R. File `ExDerivs.R` is
   a DRAFT of a script to provide examples.
 
 - ImproveNLS.bib: a consolidated BibTex bibliography for all documents in this
-  project, possibly with wider application to nonlinear least squares in general
+  project, possibly with wider application to nonlinear least squares in general.
 
-- MachineSummary.Rmd: an informal investigation of ways to report the characteristics
-  and identity of machines running tests. `MachID.R` offers a concise summary function
+- MachineSummary.Rmd: an investigation of ways to report the characteristics
+  and identity of machines running tests. `MachID.R` offers a suggested concise summary function
   to identify a particular computational system used for tests. 
-  Note that there remains an open issue that the get_ram() for Windows 10 in the `benchmarkme`
-  package may report the RAM size as "NA". We are collaborating with Colin Gillespie, 
-  maintainer of `benchmarkme` to seek a workaround.
 
 - VarietyInNonlinearLeastSquaresCodes.Rmd: a review of the different algorithms and
   the many choices in their implementation for nonlinear least squares. This is still
@@ -1136,6 +1132,7 @@ an `nls()` style program. Possibly a simpler algorithm may be found.
 
 # Acknowledgement
 
-Hans Werner Borchers was helpful in developing the proposal for this project.
+Hans Werner Borchers has been helpful in developing the proposal for this project
+and in comments on this and related work.
 
 # References

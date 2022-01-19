@@ -12,8 +12,6 @@ output:
 
 <!-- date: "`r format(Sys.time(), '%d %B, %Y')`" -->
 
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
