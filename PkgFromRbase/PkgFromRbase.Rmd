@@ -18,9 +18,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This article tries to explain an approach to developing alternative versions of
 functions which are in the distributed base of R. Our interest was in developing
-improvements to the nls() function and related features in R as part of a Google
+improvements to the `nls()` function and related features in R as part of a Google
 Summer of Code project for which Arkajyoti Bhattacharjee was the funded student.
-However, nls() has many tentacles involving a number of files and functions that
+However, `nls()` has many tentacles involving a number of files and functions that
 may or may not be called as `nls()` is executed.
 
 Part of the difficulty in carrying out such development of alternative versions
@@ -33,7 +33,7 @@ There are several ways to do this:
 
 - build or install the two versions of R in separate directory trees and
   invoke them with separate launch scripts or programs, such as described
-  in https://support.rstudio.com/hc/en-us/articles/215488098-Installing-multiple-versions-of-R-on-Linux ;
+  in \url{https://support.rstudio.com/hc/en-us/articles/215488098-Installing-multiple-versions-of-R-on-Linux};
   
 - use virtual machines with different R versions;
 
@@ -57,7 +57,7 @@ a "standard" version (if one exists) by use of the double colon syntax, namely,
 ```
 nlspkg::Anyfn() # existing functionality or code
 # and
-nlsalt::Anyfn() # New functionality of code
+nlsalt::Anyfn() # New functionality of code.
 ```
 
 # Packaging from base R files
@@ -101,7 +101,7 @@ internals.  That's probably true for most functions in stats, but would
 not be true for other base packages (except datasets).
 ```
 
-After we downloaded the ZIP file of Duncan's package from his Github repository, 
+After we downloaded the ZIP file of Duncan's package from his GitHub repository, 
 we built and checked the package. There were two WARNING messages:
 
 ```
@@ -204,10 +204,10 @@ At this stage, we can begin to substitute for calls to C code and remove that
 code once replacement R material is present. Frequent build and CHECK cycles
 are helpful.
 
-For Rstudio users, note that each package directory needs its own (name).Rproj
-file, created using Rstudio's "File/New Project" etc. dialog. However, the package
+For RStudio users, note that each package directory needs its own (name).Rproj
+file, created using RStudio's "File/New Project" etc. dialog. However, the package
 directories with their Rproj files can be within the umbrella version control 
-project `improvenls` for the Git version control. (We used a Gitlab
+project `improvenls` for the Git version control. (We used a GitLab
 repository.)
 
 # Windows issue
@@ -215,9 +215,10 @@ repository.)
 While all the above worked well in a Linux environment, when we tried running
 the build and CHECK in a Windows environment, we found errors. (JN normally
 runs in Linux Mint 20.x, but AB uses Windows 10. Each of us
+<!-- Decided abbreviations are obvious, so not explained. -->
 has a VirtualBox VM for the alternative OS to allow for checking of our work.)
 There is a load error for functions from the BLAS (Basic Linear Algebra Subroutines)
-collection in a 32 bit Windows architecture. This is revealed by the Rstudio "Build / Clean and rebuild"
+collection in a 32 bit Windows architecture. This is revealed by the RStudio "Build / Clean and Rebuild"
 feature. Using the `CMD.exe` terminal window showed that `R CMD build` worked, but
 that `R CMD INSTALL` gave the load errors.
 
@@ -225,10 +226,11 @@ After some exchange of emails with others and with the
 R-package-devel mailing list, a Google search using terms suggested in the emails
 found the posting
 
-\url{https://stackoverflow.com/questions/42118561/error-in-r-cmd-shlib-compiling-c-code}
+\url{https://stackoverflow.com/questions/42118561/error-in-r-cmd-shlib-compiling-c-code}.
 
 This suggested that a file `Makevars.win` is needed in the `src/` directory of the package(s),
-and that this file should contain just one line
+and that this file should contain just the following line.
+<!-- Changed sentence to avoid period in line below which might cause errors if left in code. -->
 
 ```
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
@@ -239,8 +241,10 @@ not `makevars.win`. There is a lot of material on `Makevars` in the Writing R
 Extensions manual (@R-extns), but these points do not seem to be presented, or at least are
 not obvious.
 
-Our packaged version of nls() from July 2021 is at 
-https://gitlab.com/nashjc/improvenls/-/tree/master/nlspkg 
+Our packaged version of `nls()` from July 2021 is at
+
+\url{https://gitlab.com/nashjc/improvenls/-/tree/master/nlspkg}.
+
 Note that this is drawn from the version of R of that date (R 4.1.0), so will not necessarily reflect
 the distributed version of R when this document is read.
 
