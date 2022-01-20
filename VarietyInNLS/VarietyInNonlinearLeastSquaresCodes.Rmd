@@ -187,7 +187,7 @@ $$  \lambda  \mathbf{1}_n \delta =  - g $$
 various values of $\lambda$ will produce steps along the **steepest descents**
 direction. Solutions of the Levenberg-Marquardt equations
 
-$$ (J^t J + \lambda  \mathbf{1}_n)  \delta  = A \delta =  - J^t r $$
+$$ (J^t J + \lambda  \mathbf{1}_n)  \delta  = C \delta =  - J^t r $$
 
 can be thought of as yielding a step $\delta$ that merges the Gauss-Newton and 
 steepest-descents direction. This approach was actually first suggested by 
@@ -487,48 +487,49 @@ algorithm selection.
 
 The Gauss-Newton or Marquardt eqations are a set of linear equations. Moreover, 
 the coefficient matrix is non-negative definite and symmetric. Thus it permits of
-both general and specialized methods for linear equations. Furthermore, one can also
-set up the solution without forming a coefficient matrix $A$ 
+both general and specialized solution methods for linear equations. Furthermore, one can 
+often set up the solution to a linear least squares problem without forming a coefficient matrix $C$ 
 by using several matrix decomposition methods. Thus there are many possible procedures.
 
 - Gauss elimination with partial or complete pivoting: The choice of partial or
   complete pivoting changes greatly the program code. However, neither of these
   choices uses the underlying structure and non-negative definite nature of 
-  the matrix $A$.
+  the matrix $A = J^t J$ or stabilized versions $C$ thereof.
 
 - Variants of Gauss elimination that build matrix decompositions: We can apply
-  elimination to produce an LU decomposition of $A$, and this may offer some 
+  elimination to produce an LU decomposition of $C$, and this may offer some 
   computational advantages, though in the present case such approaches do not
   seem to be ideal. 
 
-- Gauss-Jordan inversion: Here we compute the inverse of $A$ and then work with
+- Gauss-Jordan inversion: Here we compute the inverse of $C$ and then work with
   this inverse. That is, we use
   
-  $$\delta = - A^{-1} g$$
+  $$\delta = - C^{-1} g$$
   
   This uses much more computational effort than simply solving for $\delta$, 
   though there is an interesting, and very tiny, method by @BauerReinsch71.
   The sheer ingenuity of this code was magnetic, but it has proved to be of
   limited value.
 
-- Choleski Decomposition and back substitution: There are a number of varieties
-  of Choleski decomposition, but they all take advantage of the symmetric and
-  non-negative definite structure of $A$. A particularly compact form was used
+- Cholesky Decomposition and back substitution: There are a number of varieties
+  of Cholesky decomposition, but they all take advantage of the symmetric and
+  non-negative definite structure of $C$. A particularly compact form was used
   in @Nash1987a, though it is debatable whether the saving in storage was not
   heavily outweighed by the complexity of the code and its documentation.
 
 - Eigendecompositions of the sum of squares and cross-products (SSCP) 
   matrix: the eigenvalues of real, symmetric matrices
-  such as $A$ can be computed in many ways and the eigendecomposition used to 
+  such as $C$ can be computed in many ways and the eigendecomposition used to 
   solve the Gauss-Newton equations. The computations are much more costly than
   simple solution of the equations, but the knowledge of the eigenvalues allows
   us to avoid, or at least be aware of, conditioning issues.
 
 ### Solution of the least squares sub-problem by matrix decomposition
 
-Here we proposed to solve using the matrix $J$ or an augmented form $K$
+Here we propose to solve the linear least squares sub-problem 
+using the matrix $J$ or an augmented form $K$
 directly. There are a number of approaches that can be used, which we
-will divide into two classes, QR and SVD methods. 
+will divide into two classes, QR and singular value decomposition (SVD) methods. 
 
 The QR approach aims to decompose the working matrix (call it $K$,
 with $m$ rows and $n$ columns)
@@ -542,10 +543,10 @@ $$ Q^t Q = I_n $$
 and $R$ is upper triangular and $n$ by $n$. Some variants have $Q$ an $m$ by $m$ orthogonal
 matrix and $R$ upper triangular with $m - n$ rows of zeros appended below. 
 
-There are many ways of computing such decompostions:
+There are many ways of computing such decompositions:
 
-- Householder reflections with or without pivoting options
-- Givens plane rotations, similarly
+- Householder reflections with or without pivoting options;
+- Givens plane rotations, again with pivoting variants;
 - Gram-Schmidt orthogonalization of the columns of $K$, either directly (one
   column at a time orhogonalized to all previous columns) or in a modified
   fashion that proceeds row-wise. There are a number of detailed choices.
@@ -561,18 +562,20 @@ a full $m$ by $m$ matrix, limited to $m$ by $n$ or even truncated to $m$ by $r$ 
 $r$ is the rank of $K$.
 
 A detail in choosing our approach is the mechanism of inclusion of the
-Marquardt (or Marquardt Nash) stabilization. It turns out to be remarkably
+Marquardt (or Marquardt-Nash) stabilization. It turns out to be remarkably
 easy, if a little tedious. We simply augment $J$ by a diagonal matrix that
-has elements $\sqrt {(\lambda)}$ times the square roots of the 
-diagonal stabilization elements
-we wish to use. Then $K^t K$ is the appropriate $A$ for the Marquardt version
-of the Gauss-Newton. 
+has elements that the square roots of  $\lambda (D + \phi 1_n)$. 
+Then $K^t K$ is the appropriate $C$ for the Marquardt version
+of the Gauss-Newton. Clearly it is equivalent to augment $J$ by **both** $\lambda D$
+and $\lambda \phi 1_n$.
 
-As we explain below, we do, unfortunately, realize that Marquardt suggested a scaled 
-stabiilzation where we want to add the diagonals of $J^t J$ normal equation approach.
-This requires that we perform at least a partial computation of the SSCP matrix,
-which is relatively costly. For this reason we plan ?? to explore some proxies
-for these elements.
+Unfortunately, if we decide to use the stabilization involving $D$, then 
+we must perform at least a partial computation of the SSCP matrix,
+which is relatively costly. For this reason, it may be preferred to use
+the unscaled stabilization using $1_n$ only. It may then be important to
+provide an explicit (and fixed) parameter scaling.
+
+?? manual scaling -- is it part of nlsr??
 
 ### Avoiding re-computation of the Jacobian
 
@@ -585,16 +588,18 @@ or we terminate the search. However, as we have seen, Hartley does not have to a
 the search direction.
 
 Thus it could be helpful to separate the computation of residuals from that of the
-Jacobian. However, the structure of R is such that it is much easier to have the Jacobian
+Jacobian. However, the structure of R is such that it is often much easier to have the Jacobian
 as an **attribute** of the residuals object. Indeed, it is the "gradient" attribute for 
-historical reasons. This is the setup for both the finite difference approximations of
-`nlspkg::numericDeriv()` (the Jacobian routine in base R for nls() in file `./src/library/stats/R/nls.R`)
-as well as the `rjfun()` generated by `nlsr::model2rjfun()`. On the other hand, 
+historical reasons. This is the setup for both the finite difference approximations to the 
+Jacobian in 
+`nlspkg::numericDeriv()` which is the Jacobian approximation routine in base R for nls() in file
+`./src/library/stats/R/nls.R`. It is also the structure of `rjfun()` generated by `nlsr::model2rjfun()`. 
+On the other hand, 
 the computation of Jacobian elements can share many calculations with the computation of the residuals. 
 Evidence is needed as to which de-duplication efforts give worthwhile savings, and in what
 situations, but is likely of importance only to users with extremely time consuming problems.
 
-## Storage stucture
+## Storage of algorithm objects
 
 If the choice of approach to Gauss-Newton or Marquardt is to build the normal
 equations and hence the sum of squares and cross products (SSCP) matrix, we
@@ -611,15 +616,14 @@ matrix *in situ*.
 The original @jncnm79 Algorithm 23 (Marquardt nonlinear least squares solution) computes
 the SSCP matrix $J^t J$  and solves the Marquardt-Nash augmented normal equations
 with the Cholesky approach. This was continued in the Second Edition @nlacatvn1060620 and
-in @jnmws87. However, in the now defunct @jnnlmrt12 and successor @nlsr-manual, the choice
-has been to use a QR decomposition of an augmented Jacobian. `nls()` uses a QR decomposition
-of the Jacobian without augmentation (referred to as the "gradient", however).
+in @jnmws87. Even storing the full $A$ matrix uses only $n^2$ numbers.
 
-The particular QR calculations in these packages and in R-base are quite well-hidden in internal
-code, complicating comparisons of storage, complexity and performance. The present exposition
-is an attempt to provide some documentation.
-
-?? sort out $A$ and $C$
+However, in the now defunct @jnnlmrt12 and successor @nlsr-manual, the choice
+has been to use a QR decomposition of an augmented Jacobian. Similarly, `nls()` uses a QR decomposition
+of the Jacobian (referred to as the "gradient") without augmentation. Clearly the $K$ matrix is
+at least $m$ by $n$, which for most nonlinear modelling problems is much larger than the $C$ matrix.
+The particular QR calculations in `nls()` and its packaged version are quite well-hidden in internal
+code, complicating comparisons of storage, complexity and performance. 
 
 ### Storage in Nash/Walker-Smith (1987) BASIC code
 
@@ -1179,7 +1183,7 @@ permutations and has
 
 $$ A = L L^t$$
 
-which is called the Choleski decomposition. In practice, we need $A$ computationally
+which is called the Cholesky decomposition. In practice, we need $A$ computationally
 non-singular (not just theoretically so), but the Marquardt stabilization can be used
 to ensure this. 
 
