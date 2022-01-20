@@ -24,7 +24,7 @@ variety could be an instructive subject for numerical software designers.
 
 # The Problem to be solved
 
-Given a function 
+Given a function that can be written as a sum of squared residuals
 
 $$  f(x) = \sum_{i=1}^n {r_i(x)^2} = r^t r $$
 
@@ -42,9 +42,9 @@ the problem such as
   altered in value or allowed to vary in an optimization of the sum of squares.
 
 - inequality constraints, which in general may be written as 
-  $$ C_k(x) >=0 $$, which can be written as a vector form $$ C(x) >= 0 $$
-  A special and important case is that of **linear inequalities** $$ A x >= b $$,
-  that is, $$ C(x) = A x - b $$.
+  $$ C_k(x) >=0 $$ which can be written as a vector form $$ C(x) >= 0 $$
+  A special and important case is that of **linear inequalities** $$ A x >= b $$
+  that is, $$ C(x) = A x - b $$
   
   
   
@@ -52,17 +52,15 @@ the problem such as
 
 ## Gauss Newton method
 
-An overview of the method is provided by Wikipedia:
-
+An overview of this method is provided by Wikipedia: 
 \url{https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm}
-
 The method was described by C.F.Gauss in 1809 in *Theoria motus corporum 
 coelestium in sectionibus conicis solem ambientum*.
 
 In calculus we learn that a stationary point (local maximum, minimum
 or saddle point) of a function $f$ occurs where its gradient (or first
 derivative) is zero. In multiple dimensions, this is the same as
-having the gradient $g$ stationary. The so-called Newton method
+having the gradient $g$ stationary. The so-called **Newton method**
 uses the second derivatives in the Hessian matrix $H$ defined as
 
 $$  H_{i,j} = \partial^2{f}/ {\partial{x_i} \partial{x_j}}$$
@@ -77,14 +75,19 @@ to
 
 $$ x \leftarrow x + \delta $$
 
-and we iterate until there is no change in $x$.
+and we iterate until there is no change in $x$, assuming that the method does indeed
+converge for the problem at hand. Newton (and his sometimes associated worker Raphson) 
+used the algorithm we attribute
+to them in a very special case and in a manner unrecognizable as that described
+above.  (See \url{https://en.wikipedia.org/wiki/Newton%27s_method}).
 
-There are some adjustments when our function $f(x)$ can be written as a sum of squares
+For our present situation, the $f(x)$ can be written as a sum of squares as above. It is worth
+repeating the vector form of this
 
-$$  f(x) = \sum_{i=1}^n {r_i(x)^2} = r^t r $$
+$$  f(x) = r^t r $$
 
-The final vector product form is the one I favour because it is the least fussy to write and read.
-In particular, when we try to evaluate the Hessian of this sum of squares function, we see that it is
+because it is less fussy to write and read. This is clear when we expand the evaluation
+of the Hessian of this sum of squares function.
 
 $$ H_{j,k} = 2 \sum_{i-1}^n { { [ (\partial r_i/\partial{x_j} ) } ({\partial r_i/\partial{x_k} ) + r_i (\partial^2 r_i/{\partial{x_j} \partial{x_k} ) ]}}} $$
 
@@ -92,7 +95,7 @@ If we define the **Jacobian** matrix
 
 $$ J_{i,j} = \partial r_i/\partial{x_j} $$
 
-then the gradient is 
+then the gradient, in vector form, is 
 
 $$ g = 2 J^t r $$
 
@@ -102,9 +105,9 @@ $$  J^t J $$
 
 Arguing that the residuals should be "small", Gauss proposed that the 
 Newton equations could be approximated by ignoring
-the second term (using elements of the residual times second derivatives 
+the second term (which have elements of the residual vector times second derivatives 
 of the residual).  This gives the **Gauss-Newton**
-equations (cancelling the factor 2)
+equations (cancelling a factor 2)
 
 $$ (J^t J)  \delta  =  - J^t r $$
 
@@ -112,6 +115,9 @@ We can use this in an iteration similar to the Newton iteration. Note that these
 equations are equivalent to the linear least squares problem that can be written
 
 $$  J \delta  \approx - r $$
+
+Like most other treatments, we will skate over the thin ice that $J^t J$ is a 
+good approximation of the Hessian and that the resulting method converges.
 
 ## Hartley's method
 
@@ -126,18 +132,12 @@ one could do a search along the direction $\delta$. Ideally we would want to **m
 
 $$ f(x + \alpha \delta) $$
 
-with respect to the (scalar) parameter $\alpha$. That one-dimensional minimization can
+with respect to the (scalar) parameter $\alpha$. This one-dimensional minimization can
 take quite a lot of computational effort, however, and typically a value of $\alpha$ that
 permits a suitable reduction in the sum of squares $f(x)$ is accepted, and the iteration repeated
 from 
 
 $$ x_{new} = x + \alpha * \delta $$
-
-
-Clearly there are many tactical choices that give rise to a variety of particular algorithms.
-One concern is that the direction $\delta$ may give no lower value of the sum of squares, since
-there is an approximation involved in using $J^t J$ rather than $H$. For example, $\delta$ could
-be perpendicular to any downhill direction.
 
 @Hartley61 recommends a quadratic (parabolic) line search where two "new" points
 are evaluated, followed by a third try at the suggested minimum of the parabola fitted
@@ -159,6 +159,12 @@ or even to use an "acceptable point" approach that enforces a sufficient decreas
 a measure based on the gradient of the deviance projected on $\delta$. 
 
 <!-- ?? Should we explain more. Possibly incorporate into code? -->
+
+Clearly there are many tactical choices that give rise to a variety of particular algorithms.
+One concern is that the direction $\delta$ may give no lower value of the sum of squares, since
+there is an approximation involved in using $J^t J$ rather than $H$. For example, $\delta$ could
+be perpendicular to any downhill direction.
+
 
 ## Marquardt stabilized Gauss-Newton
 
@@ -210,9 +216,10 @@ we wish to minimize to "fit" our nonlinear model, one set of choices is:
 
 - set an initial $\lambda$ of 0.0001
 
-- **A** Compute $J$ and $g$, set up Marquardt equations and find $\delta$
+- **A** Compute $J$ and $g$, 
 
-- **B** compute new set of parameters $$x_{new} = x + \delta $$ 
+- **B** set up Marquardt equations for current $\lambda$ and find $\delta$, 
+   compute new set of parameters $$x_{new} = x + \delta $$ 
 
 - if $x_{new} \ne x$, compute $SS(x_{new})$, else quit (**termination**)
 
@@ -240,14 +247,15 @@ An example of choices to deal with these details:
 - when comparing $x_{new}$ and $x$, we can use a modest number, e.g, 100.0 which
   we will call $OFFSET$. In the arithmetic of the system at hand, if the floating-point
   number $(x_{new} + OFFSET)$ matches bit for bit $(x + OFFSET)$, then we take the
-  unmodified numbers as equal.
+  unmodified numbers as equal. 
 
 Many practitioners dislike using IF statements (comparisons) of floating point
 numbers. Tolerances are often suggested to define "small", but this invites users
 to make decisions that lead to poor outcomes and which ignore the precision and
 other characteristics of the arithmetic at hand.
 There are, of course, well-written codes that address the issues of what "small" means,
-but such code is generally quite involved.
+but such code is generally quite involved. The R function `all.equal()` presents
+a well-considered approach. However,
 I have never seen a case where the $OFFSET$ approach caused difficulties, and it
 is trivial to code. When $x$ is tiny, we compare $OFFSET$ to 
 itself and declare equality. When $x$ is very large, $OFFSET$ does not change it and
@@ -275,65 +283,55 @@ which is quite a lot of computational work. The same program, however,
 uses a QR approach to solving the linearized least squares sub-problem.
 To avoid the formation of $D$, an experimental package
 `nlsralt` was been built to add functions `nlxbx()` and `nlfbx()` that
-use ONLY the fixed element (i.e., unit matrix) stabilization. A very
-preliminary timing ([2021-6-26]) using the Hobbs unscaled problem shows
-a slight improvement for the simplified version in timing with equivalent
-solution. ?? check
+use ONLY the fixed element (i.e., unit matrix) stabilization. A
+preliminary timing (using @microbench13) with the Hobbs unscaled problem 
+(@cnm79, Example 12.2) shows
+a slight advantage for `nlsralt` in execution timing with an equivalent solution.
 
 ## Other approaches
 
-There have been many proposed approaches to nonlinear least squares. The following
-is a non-exhaustive sample.
+While the above ideas are the dominant theme in nonlinear least squares, there have been many 
+other proposed approaches. The following is a non-exhaustive sample.
 
 ### Spiral 
 
 @Jones70Spiral seems only to be mentioned in a single paper. There is a flowchart
 given but I have never been able to find a code (supposedly Fortran V for the Univac
 1108.) The motivations are to avoid both matrix equation solutions and one-dimensional
-line-search minimization. Jones mentions matrix inversion, and it is not clear whether
+line-search minimization. Jones mentions matrix inversion, but it is not clear whether
 he truly forms the inverse. The main idea in the paper (and presumably the code) is
 to use a geometric spiral that mimics the Marquadt search trajectory as $\lambda$
 is increased. It would be interesting to actually try some of the ideas, which do,
-as far as I can determine, have a reasonable basis.
+as far as I can determine, have a reasonable basis and could possibly offer some
+efficiencies.
 
 ### Approaches to Newton's method for special models
 
-Newton (and his sometime associated worker Raphson) used the algorithm we attribute
-to them applied to a very special case and in a manner unrecognizable as that described
-above.  (See \url{https://en.wikipedia.org/wiki/Newton%27s_method}).
-
 The main attraction of the Gauss-Newton method is that the Jacobian only needs first
 derivatives, which are generally much, much easier to compute than the full second
-derivatives of the Hessian. However, there have been suggestioned
+derivatives of the Hessian. However, there have been suggested
 Newton-like approaches, possibly for special types of models where some short cut
-to the Hessian is available. These may or may not make sense in the context of
-a given user or group of users. I regard these approaches as part of the
-computational infrastructure of the special cases rather than as general nonlinear
-least squares methods.
+to the Hessian is available. I regard these approaches as part of the
+computational infrastructure of the special cases, as it is usually 
+difficult to apply them outside of their context. 
 
-?? MaxLik?? others -- Charles Geyer 
-
-https://www.stat.umn.edu/geyer/trust/
-
-CRAN trust package??
-
-?? had something for exponential models??
-
+Two such examples are the R packages `maxLik` (@maxLik2011) and `trust` (@p-trust).
 
 ### Hybrid methods
 
 The central idea of Hartley's method is a line search and that of Marquardt a
-parametrized stabilization that can be shown to reduce a sum of squares for large
+parametrized stabilization that can be shown to reduce a sum of squares for a large
 enough stabilization parameter. There is nothing to prevent use of a line
 search additional to the Marquardt stabilization, and there are, of course, 
 several reasonable choices for line search. Also we could solve the (possibly
 stabilized) Gauss-Newton equations by several quite different numerical linear
 algebra techniques, or even approximations. In certain situations, some of these
-choices may be important, but here I will not pursue them further.
+choices may be important. Unfortunately, the effort to benchmark the possibilities
+seems higher than any benefit in replacing quite good existing methods.
 
 # Sources of implementation variety
 
-The sources of variety in implementation include:
+The sources of variety in implementation of nonlinear least-squares methods include:
 
 - structuring of the algorithm, that is, how we set up and sequence the
   parts of the overall computation
@@ -354,7 +352,7 @@ The sources of variety in implementation include:
 - stucture of storage for the solver, that is, compact or full
 
 - sequential or full creation of the Jacobian and residual, since
-  it may be done in parts
+  this may be done in parts
 
 - how the Jacobian is computed or approximated
 
