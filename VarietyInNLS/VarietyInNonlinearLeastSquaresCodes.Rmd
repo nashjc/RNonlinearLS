@@ -2,7 +2,7 @@
 title: "Variety in the Implementation of Nonlinear Least Squares Program Codes"
 author: 
    - John C Nash, retired professor, University of Ottawa
-date: "16/02/2021"
+date: "16/02/2021 revised 20/01/2022"
 output: 
     pdf_document:
         keep_tex: false
@@ -12,7 +12,7 @@ bibliography: ../BibSupport/ImproveNLS.bib
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-## ??require(bookdown) # language engine to display text??
+## require(bookdown) # language engine to display text??
 ```
 
 # Abstract
@@ -22,6 +22,32 @@ program code. In organizing and documenting the nearly half-century of programs
 in the Nashlib collection associated with @jncnm79, the author realized that this
 variety could be an instructive subject for numerical software designers.
 
+# The Problem to be solved
+
+Given a function 
+
+$$  f(x) = \sum_{i=1}^n {r_i(x)^2} = r^t r $$
+
+where $x$ is a set of real valued parameters, we wish to find the minimum of $f(x)$
+with respect to x. There may be additional conditions that add to the complexity of
+the problem such as 
+
+- bounds (or box) constraints of the form  $$ l_i <= x_i <= u_i $$ alternatively
+  written in vector form $$ l <= x <=u $$
+  
+- masks (or fixed parameters), for example, $$ x_i = value_i $$. Such constraints
+  reduce the dimensionality of the nonlinear least squares problem, and we could
+  specify the problem without the masked parameters. However, it is sometimes very
+  convenient to be able to write our problem with such paramters that may later be
+  altered in value or allowed to vary in an optimization of the sum of squares.
+
+- inequality constraints, which in general may be written as 
+  $$ C_k(x) >=0 $$, which can be written as a vector form $$ C(x) >= 0 $$
+  A special and important case is that of **linear inequalities** $$ A x >= b $$,
+  that is, $$ C(x) = A x - b $$.
+  
+  
+  
 # Underlying algorithms
 
 ## Gauss Newton method
