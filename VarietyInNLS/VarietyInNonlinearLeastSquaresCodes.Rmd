@@ -19,8 +19,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 There are many ways to structure a Gauss-Newton style nonlinear least squares
 program code. In organizing and documenting the nearly half-century of programs
-in the Nashlib collection associated with @jncnm79, the author realized that this
-variety could be an instructive subject for numerical software designers.
+in the Nashlib collection associated with @jncnm79 and with similar packages
+for the R Project for Statistical Computing, the author realized that an overview
+of this variety could be instructive for numerical software designers.
 
 # The Problem to be solved
 
@@ -285,8 +286,9 @@ To avoid the formation of $D$, an experimental package
 `nlsralt` was been built to add functions `nlxbx()` and `nlfbx()` that
 use ONLY the fixed element (i.e., unit matrix) stabilization. A
 preliminary timing (using @microbench13) with the Hobbs unscaled problem 
-(@cnm79, Example 12.2) shows
-a slight advantage for `nlsralt` in execution timing with an equivalent solution.
+(@cnm79, Example 12.2), presented later, shows
+a slight advantage for `nlsralt` in execution timing, but we caution
+that this is but a single example.
 
 ## Other approaches
 
@@ -566,16 +568,16 @@ Marquardt (or Marquardt-Nash) stabilization. It turns out to be remarkably
 easy, if a little tedious. We simply augment $J$ by a diagonal matrix that
 has elements that the square roots of  $\lambda (D + \phi 1_n)$. 
 Then $K^t K$ is the appropriate $C$ for the Marquardt version
-of the Gauss-Newton. Clearly it is equivalent to augment $J$ by **both** $\lambda D$
-and $\lambda \phi 1_n$.
+of the Gauss-Newton. Clearly it is equivalent to augment $J$ by **both** $Z1 = \lambda D$
+and $Z2 = \lambda \phi 1_n$.
 
 Unfortunately, if we decide to use the stabilization involving $D$, then 
 we must perform at least a partial computation of the SSCP matrix,
 which is relatively costly. For this reason, it may be preferred to use
 the unscaled stabilization using $1_n$ only. It may then be important to
-provide an explicit (and fixed) parameter scaling.
-
-?? manual scaling -- is it part of nlsr??
+provide an explicit (and fixed) parameter scaling. The function minimization
+package `optimx` (@p-optimx) includes such a possibility, but appears to be
+missing from nonlinear least squares possibilities in R.
 
 ### Avoiding re-computation of the Jacobian
 
@@ -663,27 +665,25 @@ except that we perform the solution using a QR decomposition, in fact a modifica
 @lapack99, which uses Householder transformations.
 
 One of the issues with creating the SSCP matrix $A$ is that we lose information in finite arithmetic 
-(See @jncnm79, Chapter 5). A QR approach to the traditional Gauss-Newton codes is to solve
+(See @jncnm79, Chapter 5). As noted above, a QR approach to the traditional Gauss-Newton codes is to solve
 
 $$  J \delta = -r $$
 
-That is, we assume a generalized inverse of $J$ can be applied to both sides of the Gauss-Newtx
+That is, we assume a generalized inverse of $J$ can be applied to both sides of the Gauss-Newton equations.
 
-To move to the Marquardt variant of the Gauss-Newton, we need to augment $J$. Let us call this augmented matrix
-$K$. We will also need to augment $r$ by an appropriate number of zeros. 
-For the traditional Marquardt method, we
-need to use the square roots of the diagonal elements of $J^t J$, that is, an $n$ by $n$ 
-diagonal matrix $Z1$ where 
+To move to the Marquardt variant of the Gauss-Newton, we need to augment $J$. Also as described above,
+augmented matrix $K$ is a row-wise appending $Z1$ and, for the Nash modification $Z2$, to $J$.
+We will also need to augment $r$ by an appropriate number of zeros. 
+As a reminder, $Z1$ and $Z2$ are given by 
 
 $$ Z1_{k,k}  = \sqrt(\lambda) \sqrt(J^t J)_{k,k}  $$
-
-and $r$ is extended by $n$ zeros. For the Nash modification, we add a further $n$ zeros to $r$ and augment
-the $K$ matrix with another $n$ by $n$ block $Z2$ which is a diagonal matrix where the diagonal elements are
+and
 
 $$ Z2_{k,k}  = \sqrt(\lambda) \sqrt(\phi)  $$
 
-Unfortunately, there is a need in each major iteration to compute at least the diagonal elements of the
-SSCP matrix. It may, in fact, be more efficient to omit the $Z1$ augmentation. Package `nlsralt`, as
+We have noted that, at each major iteration, the construction of $Z1$ requires the diagonal elements of the
+SSCP matrix. Thus it could be more efficient to omit the $Z1$ augmentation and use an explicit scaling
+in the original setup. Package `nlsralt`, as
 mentioned, does this with functions `nlxbx()` (for formula-specified models) and `nlfbx()` (for problems
 specified with `res()` and `jac()` functions). This gives the following preliminary example using the 
 Hobbs weed problem.
@@ -693,8 +693,6 @@ Hobbs weed problem.
 <!-- source("your-script.R", local = knitr::knit_global()) -->
 <!-- # or sys.source("your-script.R", envir = knitr::knit_global()) -->
 <!-- ``` -->
-
-??FIXME??
 
 ```{r hobbtime1}
 source("HobbsTiming.R", echo=TRUE)

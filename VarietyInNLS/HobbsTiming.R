@@ -15,7 +15,6 @@ weeddata1  <-  data.frame(y=ydat, tt=tdat)
 
 library(microbenchmark)
 library(nlsralt)
-library(nlsr)
 tnlsrh1<-microbenchmark(nlsrh1<-nlxb(eunsc, data=weeddata1, start=start1))
 tnlsrxh1<-microbenchmark(nlsrxh1<-nlxbx(eunsc, data=weeddata1, start=start1))
 nlsrh1
