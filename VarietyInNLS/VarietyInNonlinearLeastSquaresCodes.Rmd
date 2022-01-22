@@ -347,7 +347,8 @@ The sources of variety in implementation of nonlinear least-squares methods incl
   to show how to use this facility, even though `subset` is an argument
   to the `nls()` function. This is discussed further below.
 
-- programming language
+- programming language (which might include called functions that have been
+  constructed outside the current computing environment)
 
 - possible operating environment features
 
@@ -762,7 +763,7 @@ formulas pose some particular issues:
 - checking for correctness of inputs and translations may
   take up most of the code in a reliable and robust package.
 
-# Saving storage
+## Saving storage
 
 The obvious ways to reduce storage are:
 
@@ -787,30 +788,41 @@ For example, we can form sums of squares in R using `for` loops, a vectorized
 `sum()` or the `crossprod()` function. These have different performance profiles.
 We can time the sums of squares calculation of different length random vectors
 using these three approaches and get the ratio to the time using `crossprod()`.
-This reveals that the time for summing 100 elements is much longer than that
+This reveals that the time for summing 100 elements may be much longer than that
 of summing 1000, which seems very strange. If we first "compile" the functions
 using `compiler::cmpfun()` we get the second line of timings, which are ordered
-by the size of the vector. Thus we are suspicious that R is trying to compile
-the functions "on the fly" and this may be taking time when the program
-is initiated. Timings in microseconds were run on a machine with the profile (@RMachID2022)
+by the size of the vector. The third line times just the direct statements, and 
+we see that explicit loops executed directly are quite inefficient unless compiled
+first. Note that `crossprod()` calls code from whatever BLAS is linked to R (@BLAS79 
+and subsequent evolution of these ideas).
+
+Because of the differences and orderings of the timings, we are suspicious that R 
+is trying to compile functions "on the fly" and this may be taking time when the program
+is initiated. R is constantly being reworked, with new releases several times per
+year, with possible changes in how program code is parsed and executed. 
+Timings in microseconds were run on a machine with the profile (see @RMachID2022)
 
 ```
 M21:john-Linux-5.13.0-27-generic|Intel(R) Core(TM) i5-10400 CPU @ 2.90GHz|33474072576bytesRAM 
 ```
 
-
 ```
  n         t(forloop) : ratio         t(sum) : ratio        t(crossprod)  all.equal 
 100       26686.85 :  1.883607     12721.49  :  0.8979062   14167.95      TRUE 
            3968.35 :  2.074802       953.36  :  0.4984524    1912.64 
+        1767952    :  1172.25       1120.33  :  0.7428407 	 1508.17 
 1000      33413.23 :  12.08929      2372.34  :  0.8583399    2763.87      TRUE 
           32894.62 :  11.96442      2319.56  :  0.8436696    2749.37 
+        1827674    :  747.1422 	    2645.11  :  1.081305 	   2446.22 
 10000    325475.7  :  28.14976     15694.36  :  1.357375    11562.29      TRUE 
          331670.1  :  28.24715     16511.91  :  1.40626     11741.72 
+        2090288    :  180.5873     15792.13  :  1.364338    11574.94 
 1e+05   3234528    :  31.81066    346601.8   :  3.408729   101680.6       TRUE 
         3178637    :  30.75105    346969     :  3.356677   103366.8 
+        5104998    :  48.30487    361242.5   :  3.418175 	 105682.9 
 1e+06  31728237    :  29.08711   4057012     :  3.719297  1090801         TRUE 
        31837624    :  29.11575   4051945     :  3.705535  1093485 
+       33884253    :  27.14376 	 4560980     :  3.653678  1248326 
 ```
 
 It is also possible to measure the computational effort in terms of Jacobian and residual
@@ -823,75 +835,6 @@ In situations where storage is critical, or for gauging the complexity of code, 
 be useful to report program size or number of lines of code. These measures are all
 influenced by comments, program structure, and computing environment issues.
 
-
-# Test problems
-
-It is worth including some sample test problems in this article to illustrate
-the discussion. 
-
-?? here or later
-
-```{r settest15}
-# set parameters
-set.seed(123456)
-a <- 1
-b <- 2
-c <- 3
-np <- 15
-tt <-1:np
-yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-plot.new()
-plot(tt, yy, type='l')
-set.seed(123456)
-ev <- runif(np)
-ev <- ev - mean(ev)
-y1 <- yy + ev
-points(tt,y1,type='p', col="green")
-y2 <- yy + 5*ev
-points(tt,y2,type='p', col="blue")
-y3 <- yy + 10*ev
-lg3d15 <- data.frame(tt, yy, y1, y2, y3)
-points(tt,y3,type='p', col="red")
-library(nlsr)
-sol0 <- nlxb(yy ~ a0/(1+b0*exp(-c0*tt)), data=lg3d15, start=list(a0=1, b0=1, c0=1))
-print(sol0)
-sol1 <- nlxb(y1 ~ a1/(1+b1*exp(-c1*tt)), data=lg3d15, start=list(a1=1, b1=1, c1=1))
-print(sol1)
-sol2 <- nlxb(y2 ~ a2/(2+b2*exp(-c2*tt)), data=lg3d15, start=list(a2=1, b2=1, c2=1))
-print(sol2)
-sol3 <- nlxb(y3 ~ a3/(3+b3*exp(-c3*tt)), data=lg3d15, start=list(a3=1, b3=1, c3=1))
-print(sol3)
-```
-
-
-The following is a larger dataset version of this test.
-
-```{r settest150, eval=FALSE}
-np <- 150
-tt <- (1:np)/10
-yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-set.seed(123456)
-ev <- runif(np)
-ev <- ev - mean(ev)
-y1 <- yy + ev
-y2 <- yy + 5*ev
-y3 <- yy + 10*ev
-lg3d150 <- data.frame(tt, yy, y1, y2, y3)
-np <- 1500
-tt <- (1:np)/100
-yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-set.seed(123456)
-ev <- runif(np)
-ev <- ev - mean(ev)
-y1 <- yy + ev
-y2 <- yy + 5*ev
-y3 <- yy + 10*ev
-lg3d1500 <- data.frame(tt, yy, y1, y2, y3)
-f0 <- yy ~ a0/(1+b0*exp(-c0*tt))
-f1 <- y1 ~ a1/(1+b1*exp(-c1*tt))
-f2 <- y2 ~ a2/(2+b2*exp(-c2*tt))
-f3 <- y3 ~ a3/(3+b3*exp(-c3*tt))
-```
 
 
 # Implementation comparisons
@@ -1251,9 +1194,79 @@ computers, they are simply too finicky to follow easily, and highly prone to
 coding and maintenance errors.
 
 
-# Implementation choices for an R package
+<!-- # Implementation choices for an R package -->
 
-??2021 update to nlsr and ideas for the "Improvements to nls()" project.
+<!-- ??2021 update to nlsr and ideas for the "Improvements to nls()" project. -->
+
+
+# Test problems
+
+It is worth including some sample test problems in this article to illustrate
+the discussion. 
+
+?? here or later
+
+```{r settest15}
+# set parameters
+set.seed(123456)
+a <- 1
+b <- 2
+c <- 3
+np <- 15
+tt <-1:np
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+plot.new()
+plot(tt, yy, type='l')
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+points(tt,y1,type='p', col="green")
+y2 <- yy + 5*ev
+points(tt,y2,type='p', col="blue")
+y3 <- yy + 10*ev
+lg3d15 <- data.frame(tt, yy, y1, y2, y3)
+points(tt,y3,type='p', col="red")
+library(nlsr)
+sol0 <- nlxb(yy ~ a0/(1+b0*exp(-c0*tt)), data=lg3d15, start=list(a0=1, b0=1, c0=1))
+print(sol0)
+sol1 <- nlxb(y1 ~ a1/(1+b1*exp(-c1*tt)), data=lg3d15, start=list(a1=1, b1=1, c1=1))
+print(sol1)
+sol2 <- nlxb(y2 ~ a2/(2+b2*exp(-c2*tt)), data=lg3d15, start=list(a2=1, b2=1, c2=1))
+print(sol2)
+sol3 <- nlxb(y3 ~ a3/(3+b3*exp(-c3*tt)), data=lg3d15, start=list(a3=1, b3=1, c3=1))
+print(sol3)
+```
+
+
+The following is a larger dataset version of this test.
+
+```{r settest150, eval=FALSE}
+np <- 150
+tt <- (1:np)/10
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+y2 <- yy + 5*ev
+y3 <- yy + 10*ev
+lg3d150 <- data.frame(tt, yy, y1, y2, y3)
+np <- 1500
+tt <- (1:np)/100
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+y2 <- yy + 5*ev
+y3 <- yy + 10*ev
+lg3d1500 <- data.frame(tt, yy, y1, y2, y3)
+f0 <- yy ~ a0/(1+b0*exp(-c0*tt))
+f1 <- y1 ~ a1/(1+b1*exp(-c1*tt))
+f2 <- y2 ~ a2/(2+b2*exp(-c2*tt))
+f3 <- y3 ~ a3/(3+b3*exp(-c3*tt))
+```
 
 
 
