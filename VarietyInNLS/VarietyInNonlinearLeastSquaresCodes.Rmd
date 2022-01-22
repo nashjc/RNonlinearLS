@@ -785,44 +785,32 @@ a quite large effect.
 
 For example, we can form sums of squares in R using `for` loops, a vectorized
 `sum()` or the `crossprod()` function. These have different performance profiles.
-Let us form the sums of squares of different length random vectors.
+We can time the sums of squares calculation of different length random vectors
+using these three approaches and get the ratio to the time using `crossprod()`.
+This reveals that the time for summing 100 elements is much longer than that
+of summing 1000, which seems very strange. If we first "compile" the functions
+using `compiler::cmpfun()` we get the second line of timings, which are ordered
+by the size of the vector. Thus we are suspicious that R is trying to compile
+the functions "on the fly" and this may be taking time when the program
+is initiated. Timings in microseconds were run on a machine with the profile (@RMachID2022)
 
 ```
- n        t(forloop) : ratio          t(sum) : ratio       t(crossprod)    all.equal 
-100           31701  :  2.1996        15541  :  1.0784           14412       TRUE 
-1000          35604  :  13.004       2900.1  :  1.0592            2737.9     TRUE 
-10000        323969  :  27.826        21051  :  1.8081           11643       TRUE 
-1e+05       3120277  :  30.604       291234  :  2.8564          101957       TRUE 
-1e+06      31140093  :  29.231      4701221  :  4.4131         1065296       TRUE 
-1e+07     317191471  :  21.776     40540123  :  2.7832        14565799       TRUE 
+M21:john-Linux-5.13.0-27-generic|Intel(R) Core(TM) i5-10400 CPU @ 2.90GHz|33474072576bytesRAM 
 ```
 
-These are averages of 100 executions of each sum, and we would expect them to be
-stable, but there is some variation, likely due to other processes running in an
-active computer, as seen by rerunning the script `sstimer.R`. 
 
 ```
- n        t(forloop) : ratio          t(sum) : ratio        t(crossprod)   all.equal 
-100           35643  :  2.4688        13258  :  0.91831           14437      TRUE 
-1000          33172  :  12.142         3689  :  1.3503             2731.9    TRUE 
-10000        324269  :  27.958        28028  :  2.4166            11598      TRUE 
-1e+05       3132152  :  30.765       304086  :  2.9868           101810      TRUE 
-1e+06      31262348  :  28.846      3759337  :  3.4688          1083772      TRUE 
-1e+07     313522217  :  21.538     38746311  :  2.6618         14556401      TRUE 
-``` 
-
-We also note the very strange result for `n=1000`. ?? No explanation.
-Moreover, results in a Windows 10 virtual machine (under VirtualBox)
-give the results
-
-```
- n      t(forloop) : ratio            t(sum) : ratio        t(crossprod)   all.equal 
-100         43781  :  2.592126        14442  :  0.8550622         16890      TRUE 
-1000        34241  :  12.59323         2452  :  0.9018021          2719      TRUE 
-10000      348003  :  19.6058         15038  :  0.8472113         17750      TRUE 
-1e+05     3404639  :  20.32475       293930  :  1.75468           67512      TRUE 
-1e+06    34379874  :  19.36951      3571310  :  2.012065        1774948      TRUE 
-1e+07   376569416  :  17.45253     36871902  :  1.70887        21576778      TRUE 
+ n         t(forloop) : ratio         t(sum) : ratio        t(crossprod)  all.equal 
+100       26686.85 :  1.883607     12721.49  :  0.8979062   14167.95      TRUE 
+           3968.35 :  2.074802       953.36  :  0.4984524    1912.64 
+1000      33413.23 :  12.08929      2372.34  :  0.8583399    2763.87      TRUE 
+          32894.62 :  11.96442      2319.56  :  0.8436696    2749.37 
+10000    325475.7  :  28.14976     15694.36  :  1.357375    11562.29      TRUE 
+         331670.1  :  28.24715     16511.91  :  1.40626     11741.72 
+1e+05   3234528    :  31.81066    346601.8   :  3.408729   101680.6       TRUE 
+        3178637    :  30.75105    346969     :  3.356677   103366.8 
+1e+06  31728237    :  29.08711   4057012     :  3.719297  1090801         TRUE 
+       31837624    :  29.11575   4051945     :  3.705535  1093485 
 ```
 
 It is also possible to measure the computational effort in terms of Jacobian and residual

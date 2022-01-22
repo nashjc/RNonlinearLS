@@ -1,0 +1,82 @@
+R version 4.1.2 (2021-11-01) -- "Bird Hippie"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> source("sstimer2.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 3770.46  :  1.489317 	 907.53  :  0.3584709 	 2531.67 	 TRUE 
+1000 	 32490.94  :  12.27426 	 2284.3  :  0.8629509 	 2647.08 	 TRUE 
+10000 	 313710.6  :  28.59607 	 22408.14  :  2.042598 	 10970.41 	 TRUE 
+1e+05 	 3056407  :  30.73657 	 311859  :  3.136191 	 99438.77 	 TRUE 
+1e+06 	 30668127  :  28.93034 	 3475575  :  3.278635 	 1060068 	 TRUE 
+> source("sstimer2.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 3772.83  :  2.115894 	 901.98  :  0.5058522 	 1783.09 	 TRUE 
+1000 	 32154.08  :  11.82266 	 2263.87  :  0.832397 	 2719.7 	 TRUE 
+10000 	 315097.6  :  27.98681 	 22165.49  :  1.968728 	 11258.79 	 TRUE 
+1e+05 	 3053126  :  30.29979 	 305433.9  :  3.031183 	 100763.9 	 TRUE 
+1e+06 	 30382101  :  28.26001 	 3480957  :  3.237823 	 1075092 	 TRUE 
+> source("sstimer2.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 3758.03  :  2.118465 	 1032.07  :  0.5817953 	 1773.94 	 TRUE 
+1000 	 32135.13  :  11.89525 	 2265.2  :  0.838494 	 2701.51 	 TRUE 
+10000 	 315822.9  :  28.02624 	 15269.57  :  1.355027 	 11268.83 	 TRUE 
+1e+05 	 3082495  :  29.49055 	 305663.9  :  2.924319 	 104524.8 	 TRUE 
+1e+06 	 30379229  :  28.38475 	 3479141  :  3.250726 	 1070266 	 TRUE 
+> source("sstimer.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 30343.88  :  2.366321 	 11647.51  :  0.9083133 	 12823.23 	 TRUE 
+1000 	 32281.47  :  12.15284 	 2311.82  :  0.8703191 	 2656.29 	 TRUE 
+10000 	 316124.5  :  28.22978 	 15394.75  :  1.374745 	 11198.26 	 TRUE 
+1e+05 	 3064532  :  31.17129 	 298474.2  :  3.03597 	 98312.64 	 TRUE 
+1e+06 	 30380598  :  28.0264 	 3488132  :  3.217835 	 1083999 	 TRUE 
+> source("sstimer.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 25142.41  :  1.97332 	 13059.21  :  1.024962 	 12741.17 	 TRUE 
+1000 	 32191.7  :  12.06296 	 2255.34  :  0.8451271 	 2668.64 	 TRUE 
+10000 	 316913.9  :  27.61596 	 15155.41  :  1.320647 	 11475.75 	 TRUE 
+1e+05 	 3073208  :  31.15692 	 296401  :  3.004984 	 98636.44 	 TRUE 
+1e+06 	 30675454  :  29.1226 	 3489540  :  3.312892 	 1053321 	 TRUE 
+> source("sstimer.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 28908.49  :  2.181356 	 11373.14  :  0.8581863 	 13252.53 	 TRUE 
+1000 	 32642.31  :  12.23723 	 2237.1  :  0.838663 	 2667.46 	 TRUE 
+10000 	 314593.1  :  27.99297 	 14632.84  :  1.302052 	 11238.29 	 TRUE 
+1e+05 	 3065183  :  30.39145 	 298072.8  :  2.955407 	 100856.8 	 TRUE 
+1e+06 	 30406357  :  28.68152 	 3479810  :  3.282414 	 1060137 	 TRUE 
+> source("sstimer3.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 4104.76  :  0.3244508 	 11950.17  :  0.9445722 	 12651.41 	 TRUE 
+1000 	 34420.17  :  12.93005 	 2146.25  :  0.8062456 	 2662.03 	 TRUE 
+10000 	 317311.3  :  28.40746 	 18806.77  :  1.683686 	 11170 	 TRUE 
+1e+05 	 3079862  :  31.06917 	 299581.7  :  3.022134 	 99129.21 	 TRUE 
+1e+06 	 30504444  :  29.07246 	 3142784  :  2.995251 	 1049256 	 TRUE 
+> source("sstimer3.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 3691.39  :  0.2933537 	 11635.22  :  0.9246476 	 12583.41 	 TRUE 
+1000 	 33764.98  :  12.77979 	 2227.19  :  0.8429748 	 2642.06 	 TRUE 
+10000 	 316699.9  :  28.37254 	 18205.97  :  1.631038 	 11162.2 	 TRUE 
+1e+05 	 3058446  :  30.93078 	 300915.6  :  3.043229 	 98880.35 	 TRUE 
+1e+06 	 30434724  :  29.14039 	 3134048  :  3.000763 	 1044417 	 TRUE 
+> source("sstimer3.R")
+ n  	  t(forloop) : ratio 	  t(sum) : ratio 	 t(crossprod) 	 all.equal 
+100 	 3623.15  :  0.2897433 	 11304.32  :  0.9040064 	 12504.69 	 TRUE 
+1000 	 34225.12  :  12.80162 	 2208.59  :  0.8261044 	 2673.5 	 TRUE 
+10000 	 316203.2  :  28.30772 	 18559.49  :  1.661517 	 11170.21 	 TRUE 
+1e+05 	 3077262  :  30.76946 	 300137.7  :  3.001068 	 100010.3 	 TRUE 
+1e+06 	 30464754  :  29.1766 	 3164104  :  3.030315 	 1044150 	 TRUE 
+> 

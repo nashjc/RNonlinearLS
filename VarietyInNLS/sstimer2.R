@@ -13,15 +13,21 @@ sumc<-function(vv) {
   ss<-as.numeric(crossprod(vv))
   ss  
 }
-## ll <- c(100, 1000, 10000, 100000, 1000000, 10000000)
+
+csuml<-compiler::cmpfun(suml)
+csumc<-compiler::cmpfun(sumc)
+csums<-compiler::cmpfun(sums)
+
+# ll <- c(100, 1000, 10000, 100000, 1000000, 10000000)
 ll <- c(100, 1000, 10000, 100000, 1000000)
+
 cat(" n  \t  t(forloop) : ratio \t  t(sum) : ratio \t t(crossprod) \t all.equal \n")
 for (nn in ll ){
    set.seed(1234)
    vv <- runif(nn)
-   tsuml<-microbenchmark(sl<-suml(vv), unit="us")
-   tsums<-microbenchmark(ss<-sums(vv), unit="us")
-   tsumc<-microbenchmark(sc<-sumc(vv), unit="us")
+   tsuml<-microbenchmark(sl<-csuml(vv), unit="us")
+   tsums<-microbenchmark(ss<-csums(vv), unit="us")
+   tsumc<-microbenchmark(sc<-csumc(vv), unit="us")
    ml<-mean(tsuml$time)
    ms<-mean(tsums$time)
    mc<-mean(tsumc$time)
