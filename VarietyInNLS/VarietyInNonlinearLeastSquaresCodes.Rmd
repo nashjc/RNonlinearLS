@@ -698,26 +698,26 @@ Hobbs weed problem.
 source("HobbsTiming.R", echo=TRUE)
 ```
 
+<!-- ### Other storage approaches. -->
 
-### Other storage approaches.
+<!-- ?? do we want to report any other approaches here? -->
+<!-- In particular, should we look at minpack.lm to see how the Marquardt stabilization  -->
+<!-- is applied? This is a very complicated program, since it calls C to call Fortran, -->
+<!-- and the Fortran is layered in a way that each part is well-documented but the -->
+<!-- general flow and linkage of the parts is non-obvious. -->
 
-?? do we want to report any other approaches here?
-In particular, should we look at minpack.lm to see how the Marquardt stabilization 
-is applied? This is a very complicated program, since it calls C to call Fortran,
-and the Fortran is layered in a way that each part is well-documented but the
-general flow and linkage of the parts is non-obvious.
+### Sequential or full Jacobian computation
 
-## Sequential or full Jacobian computation
-
-We could compute a row of the Jacobian plus the corresponding residual element
-and process this before computing the next row etc. This means the full Jacobian
-does not have to be stored. In Nashlib, Algorithms 3 and 4, we used row-wise data 
-entry in linear least squares via Givens' triangularization (QR decompostition),
+It is possible to compute a row of the Jacobian plus the corresponding residual element
+and process these, for example, into the SSCP matrix $J^t J$ and gradient $- J^t r$  before computing 
+the next row etc. This means the full Jacobian does not have to be stored. 
+In Nashlib, Algorithms 3 and 4, we used row-wise data 
+entry in **linear** least squares via Givens' triangularization (QR decompostition),
 with the possibility of extending the QR to a singular value decomposition.
-Forming the SSCP matrix can also be generated row-wise as well. We do not 
-anticipate that any of these approaches will offer advantages that are so
-great that we would choose them.
-
+While such approaches were forced upon us in the early 1970s when they were devised,
+we do not anticipate that any of these approaches will now offer enough advantage that
+we would use them as a general choice. They may, however, be appropriate for some 
+problems where the number of observations is extremely large.
 
 ## Analytic or approximate Jacobian
 
@@ -732,19 +732,19 @@ and analytic derivative possibilities from other parts of R. A great advantage o
 these is that they are for a given point, and do not suffer the issue that a step
 must be taken, thereby chancing the violation of a constraint or else an inadmissible
 set of arguments for special functions. In my experience, the use of analytic derivatives
-is not much faster than the finite difference approximations, and generally finite
-difference methods iterate as quickly as the "exact" derivative methods to the 
-neighbourhood of a solution. It is in allowing good estimates of convergence 
-criteria that the analytic derivatives seem to show their advantage i.e., knowing
-we are at a solution rather than the speed in getting there.
-
+does **not** give a much faster solution than the finite difference approximations.
+Indeed, finite difference methods iterate as quickly as the "exact" derivative methods to the 
+neighbourhood of a solution. This is much along the same lines as secant versus Newton
+methods for solving nonlinear equations. Analytic derivatives do, however, show their
+advantage in allowing us to more reliably compute convergence 
+criteria. That is, we know we are at a solution and do not attempt further iterations.
 
 ## Interfacing to problems
 
-R allows the nonlinear least squares problem to be presented via a formula
+R allows the nonlinear least squares problem to be presented via a **formula**
 for the model. This is generally very attractive to users, since they can
 specify their problem in ways that often accord with how they think about them.
-Many (most?) researchers do not write program code, so preparing residual and
+Many, possibly most, researchers do not write program code, so preparing residual and
 Jacobian functions is foreign to them. 
 
 From the point of view of package or system developers, however, specifications as
@@ -752,35 +752,96 @@ formulas pose some particular issues:
 
 - translating a formula to a function for its actual evaluation may be tricky,
   since we must essentially parse the formula. R has some tools for this that
-  we use.
+  we use. Nevertheless, the automated conversion may risk setting up calculations
+  in ways that could incur ill-conditioning.
   
 - even if we can translate a formula to a function, we need to check that we
   have all the data and parameter inputs to enable the evaluation. Moreover,
   we need to check if the inputs are valid or admissible. 
   
-- checking for correctness of inputs and translations can be considered to
+- checking for correctness of inputs and translations may
   take up most of the code in a reliable and robust package.
 
 # Saving storage
 
 The obvious ways to reduce storage are:
 
-- use a row-wise generation of the Jacobian in either a Givens' QR or SSCP approach.
-  This saves space for the Jacobian as well as as well as the working matrices of
+- use a row-wise generation of the Jacobian in either a Givens' QR or SSCP approach, 
+  as mentioned above. 
+  This saves space for the Jacobian as well as as well as some of the working storage of
   the Gauss-Newton or Marquardt iterations;
 
 - if the number of parameters to estimate is large enough, then a normal equations
-  approach using a compact storage of the lower triangle of the SSCP matrix. 
+  approach using a compact storage of the lower triangle of the SSCP matrix may help. 
   However, the scale of the saving is really very small in comparison to 
   the size of most programs.
   
-
 # Measuring performance
 
-Do we plan to use only timing? Or size of code and memory used? ??
+Most workers report execution timings as the principal measure of performance.
+This is generally acceptable for comparing programs, and we often then attribute
+the results to the underlying methods, though clearly programming choices can have
+a quite large effect. 
+
+For example, we can form sums of squares in R using `for` loops, a vectorized
+`sum()` or the `crossprod()` function. These have different performance profiles.
+Let us form the sums of squares of different length random vectors.
+
+```
+ n        t(forloop) : ratio          t(sum) : ratio       t(crossprod)    all.equal 
+100           31701  :  2.1996        15541  :  1.0784           14412       TRUE 
+1000          35604  :  13.004       2900.1  :  1.0592            2737.9     TRUE 
+10000        323969  :  27.826        21051  :  1.8081           11643       TRUE 
+1e+05       3120277  :  30.604       291234  :  2.8564          101957       TRUE 
+1e+06      31140093  :  29.231      4701221  :  4.4131         1065296       TRUE 
+1e+07     317191471  :  21.776     40540123  :  2.7832        14565799       TRUE 
+```
+
+These are averages of 100 executions of each sum, and we would expect them to be
+stable, but there is some variation, likely due to other processes running in an
+active computer, as seen by rerunning the script `sstimer.R`. 
+
+```
+ n        t(forloop) : ratio          t(sum) : ratio        t(crossprod)   all.equal 
+100           35643  :  2.4688        13258  :  0.91831           14437      TRUE 
+1000          33172  :  12.142         3689  :  1.3503             2731.9    TRUE 
+10000        324269  :  27.958        28028  :  2.4166            11598      TRUE 
+1e+05       3132152  :  30.765       304086  :  2.9868           101810      TRUE 
+1e+06      31262348  :  28.846      3759337  :  3.4688          1083772      TRUE 
+1e+07     313522217  :  21.538     38746311  :  2.6618         14556401      TRUE 
+``` 
+
+We also note the very strange result for `n=1000`. ?? No explanation.
+Moreover, results in a Windows 10 virtual machine (under VirtualBox)
+give the results
+
+```
+ n      t(forloop) : ratio            t(sum) : ratio        t(crossprod)   all.equal 
+100         43781  :  2.592126        14442  :  0.8550622         16890      TRUE 
+1000        34241  :  12.59323         2452  :  0.9018021          2719      TRUE 
+10000      348003  :  19.6058         15038  :  0.8472113         17750      TRUE 
+1e+05     3404639  :  20.32475       293930  :  1.75468           67512      TRUE 
+1e+06    34379874  :  19.36951      3571310  :  2.012065        1774948      TRUE 
+1e+07   376569416  :  17.45253     36871902  :  1.70887        21576778      TRUE 
+```
+
+It is also possible to measure the computational effort in terms of Jacobian and residual
+evaluations, as well as the number of "iterations" used to achieve a solution. The
+Hobbs timing above comparing `nlxb()` and `nlxbx()` (i.e., scaled and unscaled Marquardt
+approaches) show different numbers of Jacobian computations, which for these methods are
+the same as the number of major iterations.
+
+In situations where storage is critical, or for gauging the complexity of code, it may
+be useful to report program size or number of lines of code. These measures are all
+influenced by comments, program structure, and computing environment issues.
 
 
 # Test problems
+
+It is worth including some sample test problems in this article to illustrate
+the discussion. 
+
+?? here or later
 
 ```{r settest15}
 # set parameters
@@ -1205,7 +1266,6 @@ coding and maintenance errors.
 # Implementation choices for an R package
 
 ??2021 update to nlsr and ideas for the "Improvements to nls()" project.
-
 
 
 
