@@ -1,6 +1,6 @@
 TODO.txt
 
-- edit 20220118
+- edit 20220527
 
 - nlsCompare to be rigorously cleaned and checked, ready for submission
   when CRAN reopens in January 2022
@@ -13,9 +13,7 @@ TODO.txt
 		JN will draft blog post,  AB to check then we post to R-bloggers??
    --	Tests/TestsDoc -- AB blogpost
    --	DerivsNLS  -- blog post JN
-   --	PkgFromRbase -- blog -- JN with material from Duncan Murdoch, AB to edit, 
-                then R-bloggers??
-   --	RefactoringNLS -- R Journal -- JN to write 
+   --	RefactoringNLS -- R Journal -- JN to continue work
                 AB to review
    --	VarietyInNonlinearLeastSquaresCodes -- JN --> JSS
    --	WorkingDocument4ImproveNLS -- internal JN will tidy and upload to repo
@@ -23,3 +21,6 @@ TODO.txt
 COMPLETED OR CLOSED
 
 - RNonlinearLS public repo has been set up
+- PkgFromRbase -- blog -- JN with material from Duncan Murdoch, AB to edit, 
+        Now on R-bloggers 
+        https://www.r-bloggers.com/2022/01/making-a-package-from-base-r-files/
