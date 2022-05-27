@@ -1,5 +1,5 @@
 nlsj <- function (formula, data = parent.frame(), start=NULL, 
-            control = nlsj.control(),
+            control = list(),
             algorithm = "default", weights=NULL, subset=NULL, trace = FALSE,
             na.action, model=FALSE, lower = -Inf, upper = Inf, ...) {
 # ?? left out -- FIXME??    na.action, model = FALSE, (masked from nlxb)
@@ -10,6 +10,18 @@ nlsj <- function (formula, data = parent.frame(), start=NULL,
 
 ##?? ... args may NOT be well-defined for this function. CAUTION  
   
+ctrl <- nlsj.control()
+ncontrol <- names(control)
+nctrl <- names(ctrl)
+for (onename in ncontrol) {
+    if (onename %in% nctrl) {
+       if (! is.null(control[onename]) || ! is.na(control[onename]) )
+       ctrl[onename]<-control[onename]
+    }
+}
+control<-ctrl
+ctrl<-NULL
+
 # Controls
    if (is.null(control$derivmeth)) control$derivmeth="default" # for safety
    epstol <- (.Machine$double.eps * control$offset) 
@@ -48,9 +60,8 @@ getlen <- function(lnames) {
       warning("Data is not declared explicitly. Caution!")
       data <- environment(formula) # this will handle variables in the parent frame??
       dnames <- vnames[which(vnames %in% ls(data))]
-      ldata<-getlen(vnames) # lengths of data
-      dnames <- vnames[which(ldata > 1)]
-      pnames <- vnames[which(ldata == 1)] # could 
+      ldata <- getlen(dnames)
+      pnames <- dnames[ which(ldata == 1)] 
    }
    else if (is.list(data)){
           data <- list2env(data, parent = environment(formula))
@@ -349,6 +360,8 @@ getlen <- function(lnames) {
       # ?? Don't continue with Gauss-Newton; delta can't be computed
       # ?? marquardt is using J (augmented Jacobian) in convergence test. This may
       # ?? not be exactly what we want. Leave it there for now.
+      cat("control$smallsstest =",control$smallsstest,"\n") # ??diagnostic
+      cat("ssmin and epstol4:",ssmin," ",epstol4,"\n")      # ??diagnostic
       convInfo <- convCrit() # This is the convergence test
       if (control$watch) print(convInfo)
       if (marqalg && trace) cat("slam =",slam," ")

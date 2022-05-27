@@ -1,3 +1,7 @@
 TODO
 
 - check why resid(fit) and resid(fit0) for linear model not working
+
+
+20220527 -- nlsj is NOT getting right dnames and pnames for linear models.
+Also having issues with I().

@@ -303,8 +303,8 @@ lines(x, predict(nlmod), col = 2)
 ##  differentiation; this gives Error: "step factor .. reduced below 'minFactor' .."
 options(digits = 10) # more accuracy for 'trace'
 ## IGNORE_RDIFF_BEGIN
-try(nlm1 <- update(nlmod, control = list(tol = 1e-7))) # where central diff. work here:
-   (nlm2 <- update(nlmod, control = list(tol = 8e-8, nDcentral=TRUE), trace=TRUE))
+#try(nlm1 <- update(nlmod, control = list(tol = 1e-7))) # where central diff. work here:
+#   (nlm2 <- update(nlmod, control = list(tol = 8e-8, nDcentral=TRUE), trace=TRUE))
 ## --> convergence tolerance  4.997e-8 (in 11 iter.)
 ## IGNORE_RDIFF_END
 
@@ -315,12 +315,12 @@ try(nlm1 <- update(nlmod, control = list(tol = 1e-7))) # where central diff. wor
 ## (identifier of muscle), Conc (Cacl concentration) and Length
 ## (resulting length of muscle section).
 ## IGNORE_RDIFF_BEGIN
-if(requireNamespace("MASS", quietly = TRUE)) withAutoprint({
+## if(requireNamespace("MASS", quietly = TRUE)) withAutoprint({
 ## The non linear model considered is
 ##       Length = alpha + beta*exp(-Conc/theta) + error
 ## where theta is constant but alpha and beta may vary with Strip.
 
-with(MASS::muscle, table(Strip)) # 2, 3 or 4 obs per strip
+## with(MASS::muscle, table(Strip)) # 2, 3 or 4 obs per strip
 
 ## We first use the plinear algorithm to fit an overall model,
 ## ignoring that alpha and beta might vary with Strip.
@@ -338,7 +338,7 @@ with(MASS::muscle, table(Strip)) # 2, 3 or 4 obs per strip
 #? musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), MASS::muscle,
 #?               start = list(a = rep(b[2], 21), b = rep(b[3], 21), th = b[1]))
 #? summary(musc.2)
-})
+#})
 ## IGNORE_RDIFF_END
 \dontshow{options(od)}
 }

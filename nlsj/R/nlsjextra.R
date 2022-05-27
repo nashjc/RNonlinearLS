@@ -48,7 +48,7 @@ print.nlsj <- function(x, digits = max(3L, getOption("digits") - 3L), ...)
 	"residual sum-of-squares: ", format(x$m$deviance(), digits = digits),
 	"\n", sep = "")
 #    .p.nlsj.convInfo(x, digits = digits)
-    print(x$convInfo)
+#    print(x$convInfo)
     invisible(x)
 }
 
@@ -84,7 +84,7 @@ print.summary.nlsj <-
     }
 
 #    .p.nlsj.convInfo(x, digits = digits)
-    print(x$convInfo)
+#    print(x$convInfo)
 
     if(nzchar(mess <- naprint(x$na.action))) cat("  (", mess, ")\n", sep = "")
     cat("\n")
