@@ -46,22 +46,41 @@ ctrl<-NULL
         stop(msg) }
    ) # end switch choices
 
-getlen <- function(lnames) {
-      nn<-length(lnames)
-      ll<-rep(NA,nn)
-      for (i in 1:nn) ll[i]=length(get(lnames[i]))
-      ll
+getlen <- function(ln) {
+  nn<-length(ln)
+  ll<-rep(NA,nn)
+  for (i in 1:nn) ll[i]=length(get(ln[i]))
+  ll
+}
+
+datpar <- function(frm){ # return dn and pn for data and parameter names
+  # check formulas
+  vn <- all.vars(frm)
+  cat("vn:"); print(vn)
+  data<-environment(frm)
+  lstdat <- ls(data)
+  cat("lstdat:"); print(lstdat)
+  dn <- vn[which(vn %in% lstdat)]
+  cat("dn:"); print(dn)
+  pn <- vn[- which(vn %in% dn)]
+  cat("pn:"); print(pn)
+  ll <- getlen(dn)
+  cat("ll:"); print(ll)
+  if (any(ll < 2)) {
+     pn<-dn[which(ll < 2)]
+     dn <- dn[ -which(dn %in% pn) ]
+  }
+  res<-list(dn=dn, pn=pn)
+  res
 }
    
 # Data
    stopifnot(inherits(formula, "formula"))
    vnames <- all.vars(formula) # all names in the formula
    if (missing(data)) {  ## rather than   #  if (is.null(data)) {
-      warning("Data is not declared explicitly. Caution!")
-      data <- environment(formula) # this will handle variables in the parent frame??
-      dnames <- vnames[which(vnames %in% ls(data))]
-      ldata <- getlen(dnames)
-      pnames <- dnames[ which(ldata == 1)] 
+      dp <- datpar(formula)
+      dnames <- dp$dn
+      pnames <- dp$pn
    }
    else if (is.list(data)){
           data <- list2env(data, parent = environment(formula))
