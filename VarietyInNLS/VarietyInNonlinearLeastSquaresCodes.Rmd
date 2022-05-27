@@ -1206,7 +1206,7 @@ the discussion.
 
 ?? here or later
 
-```{r settest15}
+```{r settest15, fig.width=5}
 # set parameters
 set.seed(123456)
 a <- 1
@@ -1215,8 +1215,9 @@ c <- 3
 np <- 15
 tt <-1:np
 yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-plot.new()
-plot(tt, yy, type='l')
+# plot.new()
+plot(tt, yy)
+#plot(tt, yy, type='l')
 set.seed(123456)
 ev <- runif(np)
 ev <- ev - mean(ev)
@@ -1226,7 +1227,7 @@ y2 <- yy + 5*ev
 points(tt,y2,type='p', col="blue")
 y3 <- yy + 10*ev
 lg3d15 <- data.frame(tt, yy, y1, y2, y3)
-points(tt,y3,type='p', col="red")
+ points(tt,y3,type='p', col="red")
 library(nlsr)
 sol0 <- nlxb(yy ~ a0/(1+b0*exp(-c0*tt)), data=lg3d15, start=list(a0=1, b0=1, c0=1))
 print(sol0)
