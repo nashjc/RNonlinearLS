@@ -4,4 +4,7 @@ TODO
 
 
 20220527 -- nlsj is NOT getting right dnames and pnames for linear models.
-Also having issues with I().
+         Seemingly fixed later in day.
+
+         Also having issues with I().
+	    How to deal with this?
