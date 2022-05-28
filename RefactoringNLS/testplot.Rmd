@@ -1,0 +1,55 @@
+---
+title: "testplot"
+author: "John C. Nash"
+date: '2022-05-21'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+
+```{r settest15, fig.width=6}
+# set parameters
+set.seed(123456)
+a <- 1
+b <- 2
+c <- 3
+np <- 15
+tt <-1:np
+yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
+# plot.new()
+# plot(tt, yy)
+plot(tt, yy, type='l')
+set.seed(123456)
+ev <- runif(np)
+ev <- ev - mean(ev)
+y1 <- yy + ev
+points(tt,y1,type='p', col="green")
+y2 <- yy + 5*ev
+points(tt,y2,type='p', col="blue")
+y3 <- yy + 10*ev
+lg3d15 <- data.frame(tt, yy, y1, y2, y3)
+ points(tt,y3,type='p', col="red")
+library(nlsr)
+sol0 <- nlxb(yy ~ a0/(1+b0*exp(-c0*tt)), data=lg3d15, start=list(a0=1, b0=1, c0=1))
+print(sol0)
+sol1 <- nlxb(y1 ~ a1/(1+b1*exp(-c1*tt)), data=lg3d15, start=list(a1=1, b1=1, c1=1))
+print(sol1)
+sol2 <- nlxb(y2 ~ a2/(2+b2*exp(-c2*tt)), data=lg3d15, start=list(a2=1, b2=1, c2=1))
+print(sol2)
+sol3 <- nlxb(y3 ~ a3/(3+b3*exp(-c3*tt)), data=lg3d15, start=list(a3=1, b3=1, c3=1))
+print(sol3)
+```

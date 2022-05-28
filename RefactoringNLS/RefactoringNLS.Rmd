@@ -6,7 +6,7 @@ author:
 date: "2021-8-20"
 output: 
     pdf_document:
-        keep_tex: false
+        keep_tex: true
         toc: true
 bibliography: ../BibSupport/ImproveNLS.bib
 link-citations: yes
@@ -22,21 +22,23 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Abstract
 
-This article reports the particular activities of our Google Summer of Code
-project "Improvements to `nls()`" that relate to the R code for that function, which
-is intended for the estimation of models written as a formula that has at least
-one parameter that is "nonlinear", that is, not estimable via solving a set of 
+This article considers the features and limitations of the R function `nls()`. It
+arose from a Google Summer of Code project "Improvements to `nls()`", a tool 
+intended for the estimation of models written as a formula that has at least
+one parameter that is "nonlinear". That is, the model is not estimable via solving a 
+finite set of 
 linear equations. A companion document **Variety in Nonlinear Least Squares Codes** 
 presents an overview of methods for the problem which takes a much wider view of the
 problem of minimizing a function that can be written as a sum of squared
-terms.
+terms, and of the even more general case of nonlinear regression.
 
-Our work has not fully addressed all the issues that we would like to see
-resolved, but we believe we have made sufficient progress to demonstrate that
-there are worthwhile improvements that can be made to the R function `nls()`.
 An important overall consideration in our work has been the maintainability of
 the code base that supports the `nls()` functionality, as we believe that the
-existing code makes maintenance and improvement very difficult.
+existing code makes maintenance and improvement very difficult. Moreover, legacy
+applications and examples mean some improvments are blocked. Thus we have not
+addressed all the issues raised, but we believe that the discussion and trials
+so far are relevant to improving both `nls()` and R generally.
+
 
 # The `nls()` function: strengths and shortcomings
 
@@ -57,54 +59,61 @@ nonlinear models that are expressed as formulas. In particular, we note that it
 With such a range of features and a long history, it is not surprising that the code has become untidy 
 and overly patched. It is, to
 our mind, essentially unmaintainable. Moreover, its underlying methods can and should be improved. Let
-us review some of the issues. We will then propose corrective actions, some of which we have carried out.
+us review some of the issues. We will then propose corrective actions, some of which we have carried out
+either in demonstrations or in the distributed coed.
 
 ## Feature: Convergence and termination tests (FIXED)
 
 A previous issue with `nls()` that prevented it from providing parameter estimates for zero-residual
-(i.e., perfect fit) data was corrected thanks to suggestions by one of us. The release 
-notes for R 4.1.0 state:
+(i.e., perfect fit) data was corrected thanks to suggestions by one of us. 
 
- - For nls(), an optional constant scaleOffset may be added to the denominator of the relative offset
-   convergence test for cases where the fit of a model is expected to be exact, thanks to a proposal by 
-   John Nash. nls(*, trace=TRUE) now also shows the convergence criterion.
+In the manual page for `nls()` in R 4.0.0 there is the warning
 
-Within the previous standard documentation (**man** or ".Rd" file) `nls()` warned
+  **Do not use `nls` on artificial "zero-residual" data.**
 
->  **The default settings of nls generally fail on artificial “zero-residual” data problems.**
+  The `nls` function uses a relative-offset convergence criterion
+  that compares the numerical imprecision at the current parameter
+  estimates to the residual sum-of-squares.  This performs well on data of
+  the form 
+  
+  $$  y = f(x, \theta) + eps $$
+  
+  (with `var(eps) > 0`).  It fails to indicate convergence on data of the form
 
->  The nls function uses a relative-offset convergence criterion that compares the numerical imprecision at
-  the current parameter estimates to the residual sum-of-squares. This performs well on data of the form $$y = f(x, \theta) + eps$$
+  $$  y = f(x, \theta)  $$ 
+  
+  because the criterion amounts to comparing two components of the round-off 
+  error.
+  
+  
+  If you wish to test `nls` on artificial data please add a noise component, 
+  as shown in the example below.
 
->  (with var(eps) > 0). It fails to indicate convergence on data of the form $$y = f(x, \theta)$$
+This amounts to admitting R cannot solve perfectly well-posed problems. The 
+suggestion that one needs to pollute data with errors is one that should be offensive
+to good science.
 
->  because the criterion amounts to comparing two components of the round-off error. To avoid a zero-divide in
-  computing the convergence testing value, a positive constant `scaleOffset` should be added to the denominator
-  sum-of-squares; it is set in control; this does not yet apply to algorithm = "port".
-
-It turns out that this issue can be quite easily resolved. The key "convergence test" -- more properly
-a "termination test" for the **program** rather than testing for convergence of the underlying **algorithm** --
+It turns out that this issue can be easily resolved. The key "convergence test" -- more properly
+a "termination test" for the **program** rather than for convergence of the underlying **algorithm** --
 is the Relative Offset Convergence Criterion (see @BatesWatts81). This works by projecting the proposed
 step in the parameter vector on the gradient and estimating how much the sum of squares loss function 
-will decrease. To avoid scale issues, we use the current size of the loss function as a measure and divide
-by it. When we have "converged", the estimated
-decrease is very small, as usually is its ratio to the sum of squares. However, in some cases we have the 
-possibility of an exact fit and the sum of squares is (almost) zero and we get the possibility of a 
+will decrease. This is divide by the current size of the loss function to avoid scale issues.
+When we have "converged", the estimated
+decrease is very small, as usually is its ratio to the sum of squares. However, with small residuals,
+the sum of squares loss function is (almost) zero and we get the possibility of a 
 zero-divide failure. 
 
-The issue is easily resolved by adding a small quantity to the loss function. To preserve legacy behaviour,
-in 2021, one of us (J. Nash) proposed that `nls.control()` have an additional parameter `scaleOffset` 
-with a default value of zero for legacy behaviour. Setting it to a small number -- 1.0 is 
+Adding a small quantity to the loss function before dividing avoids trouble. 
+In 2021, one of us (J. Nash) proposed that `nls.control()` have an additional parameter `scaleOffset` 
+with a default value of zero. Setting it to a small number -- 1.0 is 
 a reasonable choice --
 allows small-residual problems (i.e., near-exact fits) to be dealt with easily. We call this the
-**safeguarded relative offset convergence criterion**.
-
-As noted, we are pleased to report that this improvement is now in the R distributed code as of version 4.1.0.
+**safeguarded relative offset convergence criterion**. The default value gives the legacy behaviour.
+We are pleased to note that this improvement is now in the R distributed code as of version 4.1.0.
 
 ### Example of a small-residual problem
 
 ```
-rm(list=ls())
 t <- -10:10
 y <- 100/(1+.1*exp(-0.51*t))
 lform<-y~a/(1+b*exp(-c*t))
@@ -122,12 +131,12 @@ sessionInfo()
 Edited output of running this function follows:
 
 ```
-> rm(list=ls())
 > t <- -10:10
 > y <- 100/(1+.1*exp(-0.51*t))
 > lform<-y~a/(1+b*exp(-c*t))
 > ldata<-data.frame(t=t, y=y)
 > plot(t,y)
+> lstartbad<-c(a=1, b=1, c=1)
 > lstart2<-c(a=100, b=10, c=1)
 > nlsr::nlxb(lform, data=ldata, start=lstart2)
 nlsr object: x 
@@ -137,7 +146,6 @@ residual sumsquares =  1.007e-19  on  21 observations
 a                    100     2.679e-11  3.732e+12  1.863e-216  -6.425e-11       626.6  
 b                    0.1      3.78e-13  2.646e+11  9.125e-196  -3.393e-08       112.3  
 c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       2.791  
-# Note that this has succeeded. The test in nlsr recognizes small residual problems.
 > nls(lform, data=ldata, start=lstart2, trace=TRUE)
 40346.    (1.08e+00): par = (100 10 1)
 11622.    (2.93e+00): par = (101.47 0.49449 0.71685)
@@ -150,49 +158,11 @@ c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       
 4.7017e-19 (1.86e+04): par = (100 0.1 0.51)
 1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
 1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
+... (approx 40 lines omitted)
 1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
 Error in nls(lform, data = ldata, start = lstart2, trace = TRUE) : 
   number of iterations exceeded maximum of 50
-
+> # Fix with scaleOffset
 > nls(lform, data=ldata, start=lstart2, trace=TRUE, control=list(scaleOffset=1.0))
 40346.      (1.08e+00): par = (100 10 1)
 11622.      (2.91e+00): par = (101.47 0.49449 0.71685)
@@ -209,14 +179,10 @@ Nonlinear regression model
      a      b      c 
 100.00   0.10   0.51 
  residual sum-of-squares: 4.7e-19
-
 Number of iterations to convergence: 8 
 Achieved convergence tolerance: 1.62e-10
 
-> sessionInfo()
-R version 4.1.0 (2021-05-18)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Linux Mint 20.2
+Running under: Linux Mint 20.3
 ```
 
 ### More general termination tests
@@ -225,9 +191,8 @@ The single convergence criterion of `nls()` leaves out some possibilities that c
 be useful for some problems. The package `nlsr` (@nlsr-manual) already offers both 
 the safeguarded relative offset test (**roffset**) as well as a **small sum of 
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
-(weighted) residuals to a very small multiple of the initial sum of squares. The
-multiple uses a control setting `offset` which defaults to 100.0 and we compute
-the 4th power of the machine epsilon times this offset.
+(weighted) residuals to `e4` times the initial sum of squares. The value of 
+`e4` is computed as
 
 ```{r meps4, echo=TRUE}
 epstol<-100*.Machine$double.eps
@@ -235,9 +200,10 @@ e4 <- epstol^4
 e4
 ```
 
-We do note that `nls()` stops after `maxiter` "iterations". However, for almost all
+We note that `nls()` uses a termination test to stop after `maxiter` "iterations". 
+Unfortunately, for almost all
 iterative algorithms, the meaning of "iteration" requires careful examination of the
-code. Instead, we prefer to record the number of times the residuals or the jacobian have
+code. we prefer to express such tests using the number of times the residuals or the jacobian have
 been computed and put upper limits on these. Our codes exit (terminate) when these limits
 are reached. Generally we prefer larger limits than the default `maxiter=50` of `nls()`,
 but that may simply reflect our history of dealing with more difficult problems as we are
@@ -256,42 +222,66 @@ gets over 4000 hits that are spread over the years.
 In some cases this is due
 to the failure of the simple finite difference approximation of the Jacobian in the
 `numericDeriv()` function that is a part of `nls()`. `nlsr` can use analytic
-derivatives, and we can import this functionality to the `nls()` code as an
+derivatives, and we could import this functionality to the `nls()` code as an
 improvement. See below in the section **Jacobian computation**.
 
-However, the more common source of the issue is that the Jacobian is very close
+A common source of the issue is that the Jacobian is very close
 to singular for some values of the model parameters. In such cases we need to find
 an alternative algorithm to the Gauss-Newton iteration of `nls()`. The most common
 work-around is the Levenberg-Marquardt stabilization (see @Marquardt1963, @Levenberg1944, 
 @jn77ima). Versions of this have been implemented in packages `minpack.lm` and `nlsr`.
-and we have prepared very preliminary versions of an `nls` replacement that can incorporate a
-version of the Levenberg-Marquardt stabilization. (There are some issues of 
-integration with other code structures and of complexity of the computations that
-suggest we should use a simplified LM stabilization.) Unfortunately, making this code
-work across all of the features of `nls()` has not proved straightforward.
+and we have prepared experimental versions of `nls` replacements that can incorporate
+stabilizations. Integration of such ideas with other code structures so that all the
+features of `nls()` work properly has unfortunately proved difficult.
 
-<!-- ?? JN: I forget exact details, but I recall that we could not get this to work with -->
-<!-- some ways in which call could be set up. May need to revisit. this. -->
+Let us consider an example which presents the infamous 'singular gradient' error message.
+This was posted on StackExchange. 
+*https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*
 
+
+```{r SESingGrad}
+reala=-3
+realb=5
+realc=0.5
+realr=0.7
+realm=1
+x=1:11 #x values 11 timepoint data
+#linear+exponential function
+y=reala + realb*realr^(x-realm) + realc*x
+testdat=data.frame(x,y)
+strt<-list(a=-3, b=5, c=0.5, r=0.7, m=1)
+jform<-y~a+b*r^(x-m)+c*x # Formula
+linexp=try(nls(jform, data=testdat, start=strt, trace=F))
+library(nlsr)
+# Note singular values of Jacobian in rightmost column
+linexp2<-try(nlxb(jform, data=testdat, start=strt, trace=F))
+linexp2
+```
+
+In the above, we see that the Jacobian is essentially singular as shown by its singular
+values. Note that we DISPLAY the singular values in a single column for convenience in
+the output. The values do NOT correspond to individual parameters, but are a property
+of the whole problem.
 
 ## Feature: Jacobian computation
 
 `nls()`, with the `numericDeriv()` function, computes the Jacobian as the "gradient"
 attribute of the residual vector. This is implemented as a mix of R and C code, but
-we have created a rather more compact version entirely in R in this Google Summer of
-Code project. See the document **DerivsNLS.pdf**. 
+we have created a rather more compact version entirely in R.
+Code project. See the companion document **Jacobian Calculations for nls()**
+(?? need citation -- currently **DerivsNLS.pdf**).
 
-Let us consider an example which presents the infamous error message.
-
-```{r code=xfun::read_utf8('SESingGrad.R')}
-```
+The Jacobian used by `nlsr::nlxb()` is computed from analytic expressions, while that
+of `nls()` will use a numerical approximation. In the most recent example above,
+the singularity is not due to the numerical approximation.
 
 It should be noted that the selfStart models in the `./src/library/stats/R/zzModels.R` file
 provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines each
 model, and these Jacobians may be the analytic forms. The `nls()` function, after computing the
 "right hand side" or `rhs` of the residual, then checks to see if the "gradient" attribute is
 defined, and, if not, uses `numericDeriv` to compute a Jacobian into that attribute. This code
-is within the `nlsModel()` or `nlsModel.pliner()` functions. 
+is within the `nlsModel()` or `nlsModel.pliner()` functions. The use of analytic Jacobians
+almost certainly contributes to the performance of `nls()` on selfStart models.
 
 ## Feature: Subsetting
 
@@ -303,7 +293,8 @@ While the implementation of subset at the level of the call to `nls()` has a cer
 attractiveness, it does mean that the programmer of the solver needs to be aware of the
 source (and value) of objects such as the data, residuals and Jacobian. By preference, 
 we would implement subsetting by means of zero-value weights, with observation counts
-(and degrees of freedom) computed via the numbers of non-zero weights.
+(and degrees of freedom) computed via the numbers of non-zero weights. Alternatively,
+we would extract a working dataframe from the relevant elements in the original.
 
 ## Feature: na.action
 
@@ -319,7 +310,7 @@ containing any missing values (i.e. any row of a data frame with an NA) omitted.
 that predictions are in the correct row position. We recommend that workers actually test 
 output to verify behaviour is as wanted.
 
-A succinct description of the issue is given in: https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r
+A succinct description of the issue is given in: *https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r*
 
 > The only benefit of `na.exclude` over `na.omit` is that the former will retain the 
 original number of rows in the data. This may be useful where you need to retain the 
