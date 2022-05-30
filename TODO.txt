@@ -15,6 +15,8 @@ TODO.txt
    --	DerivsNLS  -- blog post JN
    --	RefactoringNLS -- R Journal -- JN to continue work
                 AB to review
+                Need to add section on bounds and issue that nls() can only use
+                them with "port" algorithm (nlminb)
    --	VarietyInNonlinearLeastSquaresCodes -- JN --> JSS
    --	WorkingDocument4ImproveNLS -- internal JN will tidy and upload to repo
 
