@@ -35,7 +35,7 @@ terms, and of the even more general case of nonlinear regression.
 An important overall consideration in our work has been the maintainability of
 the code base that supports the `nls()` functionality, as we believe that the
 existing code makes maintenance and improvement very difficult. Moreover, legacy
-applications and examples mean some improvments are blocked. Thus we have not
+applications and examples mean some improvements are blocked. Thus we have not
 addressed all the issues raised, but we believe that the discussion and trials
 so far are relevant to improving both `nls()` and R generally.
 
@@ -60,7 +60,7 @@ With such a range of features and a long history, it is not surprising that the 
 and overly patched. It is, to
 our mind, essentially unmaintainable. Moreover, its underlying methods can and should be improved. Let
 us review some of the issues. We will then propose corrective actions, some of which we have carried out
-either in demonstrations or in the distributed coed.
+either in demonstrations or in the distributed code.
 
 ## Feature: Convergence and termination tests (FIXED)
 
@@ -69,24 +69,24 @@ A previous issue with `nls()` that prevented it from providing parameter estimat
 
 In the manual page for `nls()` in R 4.0.0 there is the warning
 
-  **Do not use `nls` on artificial "zero-residual" data.**
+>  **Do not use `nls` on artificial "zero-residual" data.**
 
-  The `nls` function uses a relative-offset convergence criterion
+>  The `nls` function uses a relative-offset convergence criterion
   that compares the numerical imprecision at the current parameter
   estimates to the residual sum-of-squares.  This performs well on data of
   the form 
   
-  $$  y = f(x, \theta) + eps $$
+>  $$  y = f(x, \theta) + eps $$
   
-  (with `var(eps) > 0`).  It fails to indicate convergence on data of the form
+>  (with `var(eps) > 0`).  It fails to indicate convergence on data of the form
 
-  $$  y = f(x, \theta)  $$ 
+>  $$  y = f(x, \theta)  $$ 
   
-  because the criterion amounts to comparing two components of the round-off 
+>  because the criterion amounts to comparing two components of the round-off 
   error.
   
   
-  If you wish to test `nls` on artificial data please add a noise component, 
+>  If you wish to test `nls` on artificial data please add a noise component, 
   as shown in the example below.
 
 This amounts to admitting R cannot solve perfectly well-posed problems. The 
@@ -115,16 +115,16 @@ We are pleased to note that this improvement is now in the R distributed code as
 
 ```
 t <- -10:10
-y <- 100/(1+.1*exp(-0.51*t))
-lform<-y~a/(1+b*exp(-c*t))
-ldata<-data.frame(t=t, y=y)
-plot(t,y)
-lstartbad<-c(a=1, b=1, c=1)
-lstart2<-c(a=100, b=10, c=1)
-nlsr::nlxb(lform, data=ldata, start=lstart2)
-nls(lform, data=ldata, start=lstart2, trace=TRUE)
+y <- 100/(1 + .1 * exp(-0.51 * t))
+lform <- y ~ a/(1 + b * exp(-c * t))
+ldata <- data.frame(t = t, y = y)
+plot(t, y)
+lstartbad <- c(a = 1, b = 1, c = 1)
+lstart2 <- c(a = 100, b = 10, c = 1)
+nlsr::nlxb(lform, data = ldata, start = lstart2)
+nls(lform, data = ldata, start = lstart2, trace = TRUE)
 # Fix with scaleOffset
-nls(lform, data=ldata, start=lstart2, trace=TRUE, control=list(scaleOffset=1.0))
+nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0))
 sessionInfo()
 ```
 
@@ -132,13 +132,13 @@ Edited output of running this function follows:
 
 ```
 > t <- -10:10
-> y <- 100/(1+.1*exp(-0.51*t))
-> lform<-y~a/(1+b*exp(-c*t))
-> ldata<-data.frame(t=t, y=y)
+> y <- 100/(1 + .1 * exp(-0.51 * t))
+> lform <- y ~ a/(1 + b * exp(-c * t))
+> ldata <- data.frame(t=t, y=y)
 > plot(t,y)
-> lstartbad<-c(a=1, b=1, c=1)
-> lstart2<-c(a=100, b=10, c=1)
-> nlsr::nlxb(lform, data=ldata, start=lstart2)
+> lstartbad <- c(a = 1, b = 1, c = 1)
+> lstart2 <- c(a = 100, b = 10, c = 1)
+> nlsr::nlxb(lform, data = ldata, start = lstart2)
 nlsr object: x 
 residual sumsquares =  1.007e-19  on  21 observations
     after  13    Jacobian and  19 function evaluations
@@ -146,7 +146,7 @@ residual sumsquares =  1.007e-19  on  21 observations
 a                    100     2.679e-11  3.732e+12  1.863e-216  -6.425e-11       626.6  
 b                    0.1      3.78e-13  2.646e+11  9.125e-196  -3.393e-08       112.3  
 c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       2.791  
-> nls(lform, data=ldata, start=lstart2, trace=TRUE)
+> nls(lform, data = ldata, start = lstart2, trace = TRUE)
 40346.    (1.08e+00): par = (100 10 1)
 11622.    (2.93e+00): par = (101.47 0.49449 0.71685)
 5638.0    (1.08e+01): par = (102.23 0.38062 0.52792)
@@ -163,7 +163,7 @@ c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       
 Error in nls(lform, data = ldata, start = lstart2, trace = TRUE) : 
   number of iterations exceeded maximum of 50
 > # Fix with scaleOffset
-> nls(lform, data=ldata, start=lstart2, trace=TRUE, control=list(scaleOffset=1.0))
+> nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0))
 40346.      (1.08e+00): par = (100 10 1)
 11622.      (2.91e+00): par = (101.47 0.49449 0.71685)
 5638.0      (9.23e+00): par = (102.23 0.38062 0.52792)
@@ -240,21 +240,21 @@ This was posted on StackExchange.
 
 
 ```{r SESingGrad}
-reala=-3
-realb=5
-realc=0.5
-realr=0.7
-realm=1
-x=1:11 #x values 11 timepoint data
+reala = -3
+realb = 5
+realc = 0.5
+realr = 0.7
+realm = 1
+x = 1:11 #x values; 11 timepoint data
 #linear+exponential function
-y=reala + realb*realr^(x-realm) + realc*x
-testdat=data.frame(x,y)
-strt<-list(a=-3, b=5, c=0.5, r=0.7, m=1)
-jform<-y~a+b*r^(x-m)+c*x # Formula
-linexp=try(nls(jform, data=testdat, start=strt, trace=F))
+y=reala + realb * realr^(x - realm) + realc * x
+testdat = data.frame(x, y)
+strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1)
+jform <- y ~ a + b * r^(x - m) + c * x # Formula
+linexp=try(nls(jform, data = testdat, start = strt, trace = F))
 library(nlsr)
 # Note singular values of Jacobian in rightmost column
-linexp2<-try(nlxb(jform, data=testdat, start=strt, trace=F))
+linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = F))
 linexp2
 ```
 
@@ -315,7 +315,7 @@ we would extract a working dataframe from the relevant elements in the original.
 `na.action` is an argument to the `nls()` function, but it does not appear obviously in the
 source code, often being handled behind the scenes after referencing the option `na.action`.
 A useful, but possibly dated, description is given in:
-https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/  
+https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/. 
 
 The typical default action, which can be seen by using the command `getOption("na.action")`
 is `na.omit`. This option essentially presents computations with data with all observations
