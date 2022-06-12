@@ -433,7 +433,11 @@ We have a versions of the Nashlib Algorithm 23 in BASIC, Fortran, Pascal, Matlab
 with Python under consideration. There may be dialects of these programming languages,
 giving rise to other variations. Features of these computing environments can greatly
 ease or hinder the building of well-structured codes. See
-*git@github.com:pcolsen/Nash-Compact-Numerical-Methods.git*.
+*git@github.com:pcolsen/Nash-Compact-Numerical-Methods.git*. The principal merit
+of having these multiple implementations is that they illustrate the interaction between
+algorithm and programming language. Unfortunately, creating them is a lot of effort for
+no appreciable new capability. That is, they are an interesting intellectual exercise
+that may incidentally afford minor benefits to a few individual users.
 
 ## Data linkage to software
 
@@ -941,12 +945,16 @@ crossprod(S2)
 ```
 
 The above uses the intermediate code in function `lm.fit()`. This uses a QR solver, but
-it is written as a wrapper in C calling a Fortran routine (in the Fortran 77 dialect).
-
-?? Should we put in the structure and where the code is located?
+it is written as an R wrapper calling a C routine, which in turn calls a local Fortran 77
+driver for Linpack (@Dongarra79) routines
+"dqrdc" and "dqrsl". The R wrapper is part of the R source distribution
+(here we refer to R-4.0.0, but I believe that the location of the code has not changed over a
+fairly long sequence of releases). It is found in src/library/stats/R/lm.R. This calls
+the C routine "Cdqrls" in src/library/stats/src/lm.c. The Fortran (strictly Fortran 77)
+code "dqrls.f" is found in src/appl/. 
 
 I believe that the structure of lm() predates the availability of the family
-of `qr.xxx()` functions for R. These allow us to access the QR approach 
+of `qr.xxx()` functions for R, which allow us to access the QR approach 
 directly.
 
 ```{r ls2, echo=TRUE}
@@ -961,6 +969,11 @@ print(xx)
 xxe<-try(qr.solve(Ax, ye))
 print(xxe)
 ```
+
+This rather long-winded pursuit of the convoluted code structure underlines how 
+much effort must be expended, and how much expertise over several programming
+languages is needed to properly alter or maintain the code for `nls()` and other
+functions within R that do so much computation.
 
 ## Traditional Normal equations approach
 
