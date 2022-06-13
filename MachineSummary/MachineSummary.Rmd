@@ -18,39 +18,65 @@ linkcolor: blue
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Providing a characterization of a particular computing environment for R calculations
+# Abstract
 
-If we want to compare results computed on different machines, we need a way to provide 
-measures and identifiers of the particular computing environment at hand. This write-up
-attempts to summarize some possibilities available in the R statistical software and language.
-Note that one of our interests is to have tools that work in R **across different platforms**.
-That is, we want to be able to call an R function to get machine and computing environment
-characterizations regardless of the particular platform which we are currently using.
-Moreover, we want to have a succinct output of such information.
+Many statistical calculations draw on system resources of memory, storage, arithmetic,
+instructional processing and communications. A given computational environment will
+have a particular collection of such resources. With workers now commonly working 
+separately and sharing their work virtually, we should consider how to characterize
+the systems under which calculations are carried out in order that we can diagnose
+differences in results or performance of the computing methods. Our objective here
+is to consider how a succinct labeling may provide a **machine profile summary**
+to assist such analysis and comparisons. To focus our work, we limit our attention
+to R as the software environment, but the ideas are more generally applicable.
 
-# Some possible information desired
+# Characterizing a particular computing environment for R
 
-There are multiple ways to get information of the type useful for characterizing the
-computing infrastructure used for a particular test or timing. However, we need to
-ensure that identifiers of particular pieces of information are unique, and that 
-common identifiers really do specify identical, or at least equivalent, information. 
-Otherwise, new names for some pieces of our set of capability information are needed.
+In 2021, we undertook an investigation of tools in R for nonlinear least squares
+calculations under the Google Summer of Code initiative. In the process, we recognized 
+that we would be comparing calculations
+performed on **different computing environments** at our disposal. Some of these were
+based on different hardware, while others were different combinations of given hardware
+with alternative operating software. In one case a machine failed and had to be replaced,
+underlining the need to be able to compare results from the defunct system with its
+replacements.
+
+A useful context for our ideas is provided by the Wikipedia article on Computer Performance
+(https://en.wikipedia.org/wiki/Computer_performance). We seek a way to provide succinct
+measures and identifiers of the particular computing environment at hand, leading to a
+**profile** for a given computing environment for which we will provide a 
+short but meaningful label unique within our project context. This article
+considers some possibilities available in the R statistical software and language
+that assist this effort, but the ideas are extensible to other programming systems.
+
+# Desired information
+
+There may be multiple terms used to describe some of the information we want, as
+well as different interpretations of some of the units of measure. For example
+"Gigabytes", or GB, may be $1000^3$ or $1024^3$ bytes. ?? AB? Is that correct?
 
 ## Temporal information
 
-When we wish to analyze performance results, it is extremely helpful to have 
+For tracking work, it is important to have 
 information on when the calculations were performed. 
 Most computations should have a time/date stamp that is unlikely to be confused with any
 other, at least in combination with a machine name and/or other tags. Here is one
-suggestion based on the R `Sys.time()` function.
+suggestion based on the R `Sys.time()` function. Moreover, as we were working on opposite
+sides of the globe, it could be important to either specify time zone or to work with a
+single "clock" such as UTC (ref?? or expansion?)
 
 ```{r tdstamp}
 #get a timestamp
 tsstr <- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYYmmddHHMM
 cat("Date and Time stamp:", tsstr, "\n")
+# and here is a way to get the UTC time
+tutc<-as.POSIXlt(Sys.time(), tz = "UTC")
+print(tutc)
+utctstmp<-format(tutc, "%Y/%m/%d|%H:%M")
+print(utctstmp)
 ```
 
-## Identifier for the computing software environment
+## Computing software environment
 
 Some of the important information elements concerning the computing environment that 
 we need for reporting tests are
@@ -59,9 +85,12 @@ we need for reporting tests are
   provide a machine name, there are generally defaults that many people accept, and
   these are often uninformative and may be non-unique. We note that VirtualBox with
   a Windows 10 guest machine gave the name DESKTOP-HF4CKVA. Where this name was 
-  generated we are not sure. Settings / System allows "rename this PC".
+  generated we are not sure. Settings / System allows "rename this PC". Clearly 
+  we may want to extend the name if particular software is involved, as follows.
   
-- operating system and version. For Linux systems, we note that besides the distribution variant, e.g., Linux Mint 20.3 MATE 64 bit, it is necessary to add the Linux kernel identifier, e.g.,  5.13.0-25-generic, from the `uname` command. 
+- operating system and version. For Linux systems, we note that besides the 
+  distribution variant, e.g., Linux Mint 20.3 MATE 64 bit, it is necessary to add 
+  the Linux kernel identifier, e.g.,  5.13.0-25-generic, from the `uname` command. 
 
 - compiler or interpreter version. For our needs, it is obvious that the R version
   will be important. However, if any code is compiled or linked to libraries, we
@@ -69,9 +98,10 @@ we need for reporting tests are
   gcc) or BLAS or LAPACK libraries used will affect performance. Linux generally
   displays the BLAS and LAPACK **filenames** in `sessionInfo()`, but to get the
   version information, one needs to dig deeper, for example, using operating
-  system commands. For the present, we will omit such extra information unless
-  we can extract it easily within R.
-  
+  system commands. 
+  <!-- ??For the present, we will omit such extra information unless -->
+  <!-- we can extract it easily within R. -->
+
 - specific variations, if any, that should be noted. Here we may want to note if
   a machine is running background tasks, or if some special steps have been 
   taken to speed up or slow down the operation e.g., overclocking.
@@ -93,7 +123,7 @@ Some of the factors relating to hardware that could be important are:
 Clearly it is important to identify which software packages are active, and the
 R `sessionInfo()` command is useful for this. However, there may be additional 
 features that should be mentioned if the user has modified the software in any
-way.
+way, or is using customized packages.
 
 The use of tools to carry out computations in parallel, using multiple cores or
 GPUs, is clearly an issue. In our opinion, such possibilities are not well supported
@@ -110,50 +140,26 @@ si <- as.vector(si)
 si
 ```
 
-## benchmarkme
+## Machine precision and .Machine
 
-An important tool for acquiring machine information is the CRAN package
-`benchmarkme` (@benchmarkme). We found a minor bug in the `get_ram()`
-function of this package for some Windows 10 versions. It has been 
-corrected in the latest version 1.0.8, with contributions from one of the authors (AB).
-
-<!-- on https://github.com/csgillespie/benchmarkme, but at the -->
-<!-- time of writing is not yet on the CRAN repository. ??Do we wish to comment on the -->
-<!-- "GB" issue? -->
-
-?? Need to comment on 
-
-- uses `proc.time()` for timings
-- has single core and parallel timings
-- ?? does it do GPUs
-- provides far too much for most needs i.e., a succinct summary of
-  how capable a computing system should be
-
-```{r benchmarkmex}
-library(benchmarkmeData)
-library(benchmarkme)
-ls(package:benchmarkmeData)
-ls(package:benchmarkme)
-lsf.str("package:benchmarkme")
-lsf.str("package:benchmarkmeData")
-## This next line takes a lot of time to run, so is commented out here
-# benchmark_std()
-get_byte_compiler()
-gla <- get_linear_algebra()
-gsd <- get_sys_details()
-```
-
-
-## Calculating the machine precision
-
-Until the IEEE 754 standard (?? @institute1985ieee) became available in the 1980s, 
+Until the IEEE 754 standard (@institute1985ieee) became available in the 1980s, 
 computers used multiple forms of floating point arithmetic. With
 some ingenuity, it is possible to detect many aspects of the 
-floating point properties.
-This is a port(??part) of Mike Malcolm's ENVRON to R. ??ref. It computes the 
-machine precision, radix and number of radix digits. 
+floating point properties. In particular, we may be interested in the
+**machine precision**, that is, the smallest number `eps` such that 
+`1 + eps` is greater than `1`. R performs computations in IEEE "double"
+precision, and provides the R variable `.Machine` that has " information on 
+the numerical characteristics of the machine R is running on", including
+the machine precision as `.Machine$double.eps`.
 
-?? mention Kahan's Paranoia
+The information in `.Machine` is documented as based on @Cody1988Alg665, which is 
+an extension of Mike Malcolm's ENVRON (@Malcolm72). A port of this to R is
+presented below. It computes the 
+machine precision, radix and number of radix digits. A more detailed 
+tool was W. Kahan's PARANOIA (@Karpinski85). The rise of IEEE arithmetic has
+set aside the routine use of such tools, but recent innovations in so-called
+"half-precision", of which there is more than one variety, may result in 
+renewed interest. See https://en.wikipedia.org/wiki/Half-precision_floating-point_format.
 
 ```{r envrontest}
 envron <- function(){
@@ -202,14 +208,65 @@ cat("double.eps =", .Machine$double.eps, "\n",
     "double.digits =", .Machine$double.digits, "\n" )
 ```
 
-## Simple performance examples
+## Sys.info()
+
+This R function returns information on the operating system and the generic type of the 
+processor. 
+
+```{r sysinfox}
+Sys.info()
+```
+
+## benchmarkme
+
+The CRAN package `benchmarkme` (@benchmarkme) provides a wide range of
+information on system in which it is running, indeed a superset of 
+previous tools mentioned. It is primarily designed to 
+benchmark the capabilities of a particular computing system, so highly appropriate
+to our current effort, though its output is not succinct. Note that we found a 
+minor bug in the `get_ram()`
+function of this package for some Windows 10 versions. Our thanks for 
+Colin Gillespie, the author, for making  
+corrections in version 1.0.8, based on communications with one of us (AB). 
+
+?? Need to comment on 
+
+?? AB: I found the plots of the benchmarks difficult to read. Which end of the
+plots are "better"?
+
+<!-- - uses `proc.time()` for timings -->
+<!-- - has single core and parallel timings -->
+<!-- - ?? does it do GPUs -->
+<!-- - provides far too much for most needs i.e., a succinct summary of -->
+<!--   how capable a computing system should be -->
+
+<!--  ```{r benchmarkmex}  -->
+<!-- # library(benchmarkmeData) -->
+<!-- # library(benchmarkme) -->
+<!-- # ls(package:benchmarkmeData) -->
+<!-- # ls(package:benchmarkme) -->
+<!-- # lsf.str("package:benchmarkme") # list functions in -->
+<!-- # lsf.str("package:benchmarkmeData") -->
+<!-- ## This next line takes a lot of time to run, so is commented out here -->
+<!-- # benchmark_std() -->
+<!-- # get_byte_compiler() -->
+<!-- # gla <- get_linear_algebra() -->
+<!-- # gsd <- get_sys_details() -->
+<!--  ``` -->
+
+## Some other performance examples
 
 There are many performance examples used for testing the speed of computers. A 
 well-known example is the @linbench03 LINPACK test used for ranking supercomputers.
 These generally employ linear algebra calculations. The example below, by
 contrast, focuses on the special function computations. Variations on this
 simple performance test have been used by one of the authors for nearly half
-a century. Note the use of the `microbenchmark` timing package (@microbench13).
+a century. We used the `microbenchmark` timing package (@microbench13),
+which allows us to see the variation in timings, which can be the result of
+other activities and processes in our computing systems.
+
+Note that it appears that the first cycle of the loop is very slow. ?? is this
+byte-compiling?
 
 ```{r loopesc}
 loopesc <- function(nn){
@@ -220,63 +277,90 @@ loopesc <- function(nn){
   }
   xx
 }
+
 require("microbenchmark")
-nvals<-c(1000, 10000, 100000, 1000000)
-tvals<-rep(NA, length(nvals))
-i<-0
-for (nn in nvals) {
-  i <- i + 1
-  cat(nn, "\n")
+# nvals<-c(1000, 10000, 100000, 1000000)
+# tvals<-rep(NA, length(nvals))
+# i<-0
+# for (nn in nvals) {
+#   i <- i + 1
+#   cat(nn, "\n")
+  nn <- 10000
+  library(compiler)
+  le <- cmpfun(loopesc)
+  te <- microbenchmark(le(nn), unit='us')
+  print(te)
+  boxplot(te)
   tt <- microbenchmark(loopesc(nn), unit = 'us')
   print(tt)
-  tvals[i] <- mean(tt$time)
-}
-plot(log10(nvals), log(tvals))
+  boxplot(tt)
+#  ht<-hist(tt$time)
+#  plot(ht, main="Histogram of loopesc times")
+  tt2 <- microbenchmark(loopesc(nn), unit = 'us', control=list(warmup=2))
+  print(tt2)
+  boxplot(tt2)
 
+#  ht2<-hist(tt2$time)
+#  plot(ht2, main="Histogram of loopesc times after 2 warmup cycles")
+# }
+# plot(log10(nvals), log(tvals))
 ```
 
+## Missing tools
 
-## Sys.info()
+While we cannot be certain that they do not exist, there do not appear to be tools
+readily available to allow us to characterize the following features of R computations
+that might be relevant to understanding machine performance.
 
-```{r sysinfox}
-Sys.info()
-```
+- Some users will want to know key information about (pseudo-)random number generation
+  used in their calculations.
+  We suspect that users will need to custom-code ways to get such information
+  about their computations. For example, it is useful to have the specification
+  of the generator and the seed(s) used. For parallel computations, it is important
+  in some applications to use the same set of numbers for each thread, while in
+  others we want to use separate segments of the stream of pseudo-random numbers. 
+  From the specification of the generator, it should be possible to know the 
+  period (how many numbers are generated before the sequence repeats) and 
+  properties concerning correlations between generated numbers. However, in our
+  experience, such information requires a lot of research to uncover.
 
-## Issues relating to random number generation
+- R allows for byte compilation of code, and there are several ways in which this
+  can be done. `benchmarkme` returns some information about the general setting used,
+  but details would need user intervention if locally written code is used.
+  
+- Compilation of code written in other programming languages and how the resultant
+  routines are called will similarly require user attention. Fortunately, some 
+  information is available for heavily used software such as the BLAS and LAPACK,
+  for which `sessionInfo()` reports the libraries used. There are, however, several
+  alternatives, some of which claim high-performance.
 
-## Issues relating to compilation of R 
+<!-- # Tools for accessing and clearing environments and dataframes -->
 
-- LAPACK
-- BLAS
-- others?
+<!-- ?? should this be here -- probably to list things in the workspace? -->
+
+<!-- ``` -->
+<!-- sys.frame() -->
+<!-- sys.frames() -->
+<!-- sys.status() -->
+<!-- sys.on.exit() -->
+<!-- sys.parents() -->
+<!-- sys.calls() -->
+<!-- ``` -->
 
 
-# Tools for accessing and clearing environments and dataframes
+# A modest profile
 
-?? should this be here -- probably to list things in the workspace
-
-```
-sys.frame()
-sys.frames()
-sys.status()
-sys.on.exit()
-sys.parents()
-sys.calls()
-```
-# Choices
-
-For use in recording tests of R functions and packages for optimization and nonlinear 
-least squares, it seems that the `benchmarkme` function `get_sys_details()`
-provides more than sufficient information for our needs. 
-
-From the above discussion, the following offers a possible compact solution. Users may
+For most uses in recording tests of R functions and packages for optimization and nonlinear 
+least squares, which has been our focus, it seems that the `benchmarkme` function 
+`get_sys_details()` provides more than sufficient information for our needs. 
+The following script offers a possible compact solution. Users may
 wish to modify this to their own particular needs.
 
 ```{r code=xfun::read_utf8('MachID.R')}
 ```
 
-Note that we are reading from the file `MachID.R` so that this file is usable elsewhere
-and the current document does not become out of sync with the working MachID.
+<!-- Note that we are reading from the file `MachID.R` so that this file is usable elsewhere -->
+<!-- and the current document does not become out of sync with the working MachID. -->
 
 
 ## References
