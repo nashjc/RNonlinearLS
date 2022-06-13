@@ -8,6 +8,8 @@ bibliography: ../BibSupport/ImproveNLS.bib
 output: 
   pdf_document:
     keep_tex: false
+link-citations: yes
+linkcolor: blue
 ---
 
 <!-- date: "`r format(Sys.time(), '%d %B, %Y')`" -->
@@ -44,8 +46,8 @@ suggestion based on the R `Sys.time()` function.
 
 ```{r tdstamp}
 #get a timestamp
-tsstr<- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYYmmddHHMM
-cat("Date and Time stamp:",tsstr,"\n")
+tsstr <- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYYmmddHHMM
+cat("Date and Time stamp:", tsstr, "\n")
 ```
 
 ## Identifier for the computing software environment
@@ -59,9 +61,7 @@ we need for reporting tests are
   a Windows 10 guest machine gave the name DESKTOP-HF4CKVA. Where this name was 
   generated we are not sure. Settings / System allows "rename this PC".
   
-- operating system and version. For Linux systems, we note that besides the distribution
-  variant, e.g., Linux Mint 20.3 MATE 64 bit, it is necessary to add the Linux kernel
-  identifier, e.g.,  5.13.0-25-generic, from the `uname` command. 
+- operating system and version. For Linux systems, we note that besides the distribution variant, e.g., Linux Mint 20.3 MATE 64 bit, it is necessary to add the Linux kernel identifier, e.g.,  5.13.0-25-generic, from the `uname` command. 
 
 - compiler or interpreter version. For our needs, it is obvious that the R version
   will be important. However, if any code is compiled or linked to libraries, we
@@ -114,10 +114,12 @@ si
 
 An important tool for acquiring machine information is the CRAN package
 `benchmarkme` (@benchmarkme). We found a minor bug in the `get_ram()`
-function of this package for some Windows 10 versions which is now 
-corrected on https://github.com/csgillespie/benchmarkme, but at the 
-time of writing is not yet on the CRAN repository. ??Do we wish to comment on the
-"GB" issue?
+function of this package for some Windows 10 versions. It has been 
+corrected in the latest version 1.0.8, with contributions from one of the authors (AB).
+
+<!-- on https://github.com/csgillespie/benchmarkme, but at the -->
+<!-- time of writing is not yet on the CRAN repository. ??Do we wish to comment on the -->
+<!-- "GB" issue? -->
 
 ?? Need to comment on 
 
@@ -137,67 +139,67 @@ lsf.str("package:benchmarkmeData")
 ## This next line takes a lot of time to run, so is commented out here
 # benchmark_std()
 get_byte_compiler()
-gla<-get_linear_algebra()
-gsd<-get_sys_details()
+gla <- get_linear_algebra()
+gsd <- get_sys_details()
 ```
 
 
 ## Calculating the machine precision
 
-Until the IEEE 754 standard (??ref) became availaible in the 1980s, 
+Until the IEEE 754 standard (?? @institute1985ieee) became available in the 1980s, 
 computers used multiple forms of floating point arithmetic. With
 some ingenuity, it is possible to detect many aspects of the 
 floating point properties.
-This is a port of Mike Malcolm's ENVRON to R. ??ref. It computes the 
+This is a port(??part) of Mike Malcolm's ENVRON to R. ??ref. It computes the 
 machine precision, radix and number of radix digits. 
 
 ?? mention Kahan's Paranoia
 
 ```{r envrontest}
-envron<-function(){
-D1<-as.numeric(1) # use variable to avoid constants when double precision invoked
-E5 <- 10 #arbitrary scaling for additive equality tests
+envron <- function(){
+D1 <- as.numeric(1) # use variable to avoid constants when double precision invoked
+E5 <- 10 # arbitrary scaling for additive equality tests
 B9 <- 1E+35 # big number, not necessarily biggest possible
 E6 <- 1 # initial value for radix 
 E9 <- 1 # initial value for machine precision
 D0 <- E6 
 repeat{
-  E9 <- E9/2 #start of loop to decrease estimated machine precision
-  D0 <- E6+E9 #force storage of sum into a floating-point scalar
+  E9 <- E9 / 2 # start of loop to decrease estimated machine precision
+  D0 <- E6 + E9 # force storage of sum into a floating-point scalar
   if (D0 <= E6) break
 } # repeat reduction while (1+E9) > 1
-E9 <- E9*2 # restore smallest E9 which gives (1+E9) > 1
+E9 <- E9 * 2 # restore smallest E9 which gives (1 + E9) > 1
 repeat {
-   E6 <- E6+1 # try different radix values
-   D0 <- E6+E9
+   E6 <- E6 + 1 # try different radix values
+   D0 <- E6 + E9
    if (D0 <= E6) break
 } # until a shift is observed
 J1 <- 1 # initial count of radix digits in mantissa
 E9 <- 1 # use radix for exact machine precision
 repeat {  
-  E9 <- E9/E6 #loop while dividing by radix
-  J1 <- J1+1 #increment counter
-  D0 <- D1+E9 #add tp 1
-  if (D0<=D1) break #test and repeat until equality
+  E9 <- E9 / E6 # loop while dividing by radix
+  J1 <- J1 + 1 # increment counter
+  D0 <- D1 + E9 # add tp 1
+  if (D0 <= D1) break # test and repeat until equality
 }
-E9 <- E9*E6 #recover last value of machine precision
-J1 <- J1-1 #and adjust the number of digits
-mpvals<-list(eps=E9, radix=E6, ndigits=J1)
+E9 <- E9 * E6 # recover last value of machine precision
+J1 <- J1 - 1 # and adjust the number of digits
+mpvals<-list(eps = E9, radix = E6, ndigits = J1)
 }
-mp<-envron()
-E9<-mp$eps
-E6<-mp$radix
-J1<-mp$ndigits
+mp <- envron()
+E9 <- mp$eps
+E6 <- mp$radix
+J1 <- mp$ndigits
 cat("E9 = ",E9,"  -- the machine precision,  E9=MIN (X  1+X>1)\n")
-cat( "E9*1E+16=",E9*1E+16,"\n")
-cat( "E6 = ",E6,"  -- the radix of arithmetic","\n")
-cat( "J1 = ",J1,"  -- the number of radix digits in mantissa of FP numbers","\n")
-cat( "E6^(-J1+1) * 1E+16=",1E+16*(E6^(-J1+1)),"\n")
-cat(".Machine$double.eps=",.Machine$double.eps,"\n")
+cat( "E9*1E+16=", E9 * 1E+16, "\n")
+cat( "E6 = ",E6,"  -- the radix of arithmetic", "\n")
+cat( "J1 = ",J1,"  -- the number of radix digits in mantissa of FP numbers", "\n")
+cat( "E6^(-J1+1) * 1E+16=", 1E+16*(E6^(-J1+1)), "\n")
+cat(".Machine$double.eps=", .Machine$double.eps, "\n")
 cat("From R  .Machine:\n")
-cat("double.eps=", .Machine$double.eps,"\n", 
-    "double.base=", .Machine$double.base,"\n", 
-    "double.digits=", .Machine$double.digits,"\n" )
+cat("double.eps =", .Machine$double.eps, "\n", 
+    "double.base =", .Machine$double.base, "\n", 
+    "double.digits =", .Machine$double.digits, "\n" )
 ```
 
 ## Simple performance examples
@@ -211,25 +213,25 @@ a century. Note the use of the `microbenchmark` timing package (@microbench13).
 
 ```{r loopesc}
 loopesc <- function(nn){
-  ss<-0
+  ss <- 0
   for (i in 1:nn) {
-    xx<-exp(sin(cos(1.0*i)))
-    ss<-ss+xx
+    xx <- exp(sin(cos(1.0*i)))
+    ss <- ss + xx
   }
   xx
 }
 require("microbenchmark")
 nvals<-c(1000, 10000, 100000, 1000000)
-tvals<-rep(NA,length(nvals))
+tvals<-rep(NA, length(nvals))
 i<-0
 for (nn in nvals) {
-  i<-i+1
-  cat(nn,"\n")
-  tt<-microbenchmark(loopesc(nn), unit='us')
+  i <- i + 1
+  cat(nn, "\n")
+  tt <- microbenchmark(loopesc(nn), unit = 'us')
   print(tt)
-  tvals[i]<-mean(tt$time)
+  tvals[i] <- mean(tt$time)
 }
-plot(log10(nvals),log(tvals))
+plot(log10(nvals), log(tvals))
 
 ```
 
