@@ -44,7 +44,7 @@ suggestion based on the R `Sys.time()` function.
 
 ```{r tdstamp}
 #get a timestamp
-tsstr<- format(Sys.time(), "%Y%m%d%H%M") # tsstr == time stamp string in form YYYYmmddHHMM
+tsstr<- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYYmmddHHMM
 cat("Date and Time stamp:",tsstr,"\n")
 ```
 
