@@ -1248,82 +1248,39 @@ While I embraced them in the age when 16K of storage was the norm for personal
 computers, they are simply too finicky to follow easily, and highly prone to
 coding and maintenance errors.
 
-
 <!-- # Implementation choices for an R package -->
 
 <!-- ??2021 update to nlsr and ideas for the "Improvements to nls()" project. -->
 
+# Summary discussion
 
-# Test problems
+This article has attempted to provide an overview of how software for nonlinear least
+squares computations may be structured and implemented, taking note that users may wish
+to solve modeling problems rather than minimize a sum of squared functions. We have seen
+that different implementation goals and structural decisions greatly influence the
+nature, capability, performance and features of different codes. Moreover, while the
+treatment here has taken a panoramic view, we have been interested primarily in what
+is availabel to R users.
 
-It is worth including some sample test problems in this article to illustrate
-the discussion. 
+Having reviewed the tools available, we note that there are some serious concerns. Of these,
+we will list those we consider to be the most important:
 
-?? here or later
+- tools such as the `nls()` function in R has so many legacy uses that it is likely
+  impossible to deprecate it. However, it has also (as we detail in ??RefactoringNLS??)
+  non-maintainable, but it seems unlikely that any
+  further development, nor even repair of current deficiencies, will be forthcoming.
+  This underlines the importance of designing software for its long-term maintenance,
+  and this is often inimical to using currently novel programming tools.
 
-```{r settest15, fig.width=5}
-# set parameters
-set.seed(123456)
-a <- 1
-b <- 2
-c <- 3
-np <- 15
-tt <-1:np
-yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-# plot.new()
-plot(tt, yy)
-#plot(tt, yy, type='l')
-set.seed(123456)
-ev <- runif(np)
-ev <- ev - mean(ev)
-y1 <- yy + ev
-points(tt,y1,type='p', col="green")
-y2 <- yy + 5*ev
-points(tt,y2,type='p', col="blue")
-y3 <- yy + 10*ev
-lg3d15 <- data.frame(tt, yy, y1, y2, y3)
- points(tt,y3,type='p', col="red")
-library(nlsr)
-sol0 <- nlxb(yy ~ a0/(1+b0*exp(-c0*tt)), data=lg3d15, start=list(a0=1, b0=1, c0=1))
-print(sol0)
-sol1 <- nlxb(y1 ~ a1/(1+b1*exp(-c1*tt)), data=lg3d15, start=list(a1=1, b1=1, c1=1))
-print(sol1)
-sol2 <- nlxb(y2 ~ a2/(2+b2*exp(-c2*tt)), data=lg3d15, start=list(a2=1, b2=1, c2=1))
-print(sol2)
-sol3 <- nlxb(y3 ~ a3/(3+b3*exp(-c3*tt)), data=lg3d15, start=list(a3=1, b3=1, c3=1))
-print(sol3)
-```
-
-
-The following is a larger dataset version of this test.
-
-```{r settest150, eval=FALSE}
-np <- 150
-tt <- (1:np)/10
-yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-set.seed(123456)
-ev <- runif(np)
-ev <- ev - mean(ev)
-y1 <- yy + ev
-y2 <- yy + 5*ev
-y3 <- yy + 10*ev
-lg3d150 <- data.frame(tt, yy, y1, y2, y3)
-np <- 1500
-tt <- (1:np)/100
-yy <- 100*a/(1+10*b*exp(-0.1*c*tt))
-set.seed(123456)
-ev <- runif(np)
-ev <- ev - mean(ev)
-y1 <- yy + ev
-y2 <- yy + 5*ev
-y3 <- yy + 10*ev
-lg3d1500 <- data.frame(tt, yy, y1, y2, y3)
-f0 <- yy ~ a0/(1+b0*exp(-c0*tt))
-f1 <- y1 ~ a1/(1+b1*exp(-c1*tt))
-f2 <- y2 ~ a2/(2+b2*exp(-c2*tt))
-f3 <- y3 ~ a3/(3+b3*exp(-c3*tt))
-```
-
-
-
+- The rich variety of ways of structuring and solving the Gauss-Newton equations, stabilized
+  or not, allows for codes to be implemented to take advantage of special situations. 
+  However, for most use-cases, an approach using reliable matrix decompositions such
+  as modern QR techniques should suffice. These allow Marquardt stabilizations to be
+  applied relatively easily in most, but not all, situations.
+  
+- The needs of different user leads to difficult choices and implementation methods for
+  handling how problems are interfaced to the computational infrastructure and results
+  are returned and reported. These need to be well-documented, paying attention to 
+  the different ways in which users understand their problems.
+  
 # References

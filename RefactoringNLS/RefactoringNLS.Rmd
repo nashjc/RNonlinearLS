@@ -1256,6 +1256,24 @@ The aspects of `nls()` that have given us the most trouble are as follows:
   are untoward conditions reached, such as a singular Jacobian. This modification could be
   made to `nls()` even in the short term. 
 
+??fix next bits
+<!-- - The different dialects of modeling expressions as detailed above should be rationalized. This -->
+<!--   would, however, be a painful and mainly political activity. -->
+
+<!-- - The tools for analytic derivatives that exist in parts of `nls()` for self-starting models and -->
+<!--   in `nlsr` for problems specified as models that use expressions for which derivatives exist  -->
+<!--   should be more generally available, but the task is one of tedium and limited reward to the -->
+<!--   persons who do it, while benefiting the R community substantially. -->
+
+<!-- - Similarly, default methods need stabilized solvers e.g., Marquardt methods, though to date -->
+<!--   a mechanism to incorporate such modifications in `nls()` has eluded us. -->
+
+<!-- - Bounds constraints are sufficiently important that they should be part of the default -->
+<!--   methods -->
+<!--   (rather than algorithm = "port" for `nls()`). `minpack.lm` should handle them correctly. -->
+
+
+
 # Acknowledgement
 
 Hans Werner Borchers has been helpful in developing the proposal for this project
