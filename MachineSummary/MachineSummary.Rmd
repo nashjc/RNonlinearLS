@@ -283,10 +283,14 @@ a century. We used the `microbenchmark` timing package (@microbench13),
 which allows us to see the variation in timings, which can be the result of
 other activities and processes in our computing systems.
 
-Note that it appears that the first cycle of the loop is very slow. ?? is this
-byte-compiling?
+Note that it appears that the first cycle of the loop is very slow. Fortunately 
+`microbenchmark` seems aware of this, and we can specify a number of "warmup"
+cycles. In the present case, we tried 2 cycles. We also tried byte compiling
+the loopesc function with the `compiler` package. Note that rerunning the 
+code several times gave slightly different boxplots, but the general characteristics
+were preserved.
 
-```{r loopesc}
+```{r loopesc, echo=TRUE}
 loopesc <- function(nn){
   ss <- 0
   for (i in 1:nn) {
@@ -295,33 +299,9 @@ loopesc <- function(nn){
   }
   xx
 }
+```
 
-require("microbenchmark")
-# nvals<-c(1000, 10000, 100000, 1000000)
-# tvals<-rep(NA, length(nvals))
-# i<-0
-# for (nn in nvals) {
-#   i <- i + 1
-#   cat(nn, "\n")
-  nn <- 10000
-  library(compiler)
-  le <- cmpfun(loopesc)
-  te <- microbenchmark(le(nn), unit='us')
-  print(te)
-  boxplot(te)
-  tt <- microbenchmark(loopesc(nn), unit = 'us')
-  print(tt)
-  boxplot(tt)
-#  ht<-hist(tt$time)
-#  plot(ht, main="Histogram of loopesc times")
-  tt2 <- microbenchmark(loopesc(nn), unit = 'us', control=list(warmup=2))
-  print(tt2)
-  boxplot(tt2)
-
-#  ht2<-hist(tt2$time)
-#  plot(ht2, main="Histogram of loopesc times after 2 warmup cycles")
-# }
-# plot(log10(nvals), log(tvals))
+```{r looptime, code=readLines("loopbox.R"), echo=FALSE}
 ```
 
 ## Missing tools
