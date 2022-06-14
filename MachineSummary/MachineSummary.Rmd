@@ -53,7 +53,10 @@ that assist this effort, but the ideas are extensible to other programming syste
 
 There may be multiple terms used to describe some of the information we want, as
 well as different interpretations of some of the units of measure. For example
-"Gigabytes", or GB, may be $1000^3$ or $1024^3$ bytes. ?? AB? Is that correct?
+"Gigabytes" may be $1000^3$ or $1024^3$ bytes. To settle the ambiguity, the
+international standard *IEC 80000-13:2008 Quantities and units - Part 13: Information science and technology*(??ref https://en.wikipedia.org/wiki/Gigabyte, https://en.wikipedia.org/wiki/ISO/IEC_80000#Part_13:_Information_science_and_technology) defines 1 Gigabyte (1 GB) as 1000^3 bytes, whereas 1 Gibibyte (1 GiB) as 1024^3 bytes.
+
+<!-- ?? AB? Is that correct? -->
 
 ## Temporal information
 
