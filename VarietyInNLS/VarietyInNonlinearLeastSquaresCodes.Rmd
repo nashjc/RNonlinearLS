@@ -1266,8 +1266,10 @@ Having reviewed the tools available, we note that there are some serious concern
 we will list those we consider to be the most important:
 
 - tools such as the `nls()` function in R has so many legacy uses that it is likely
-  impossible to deprecate it. However, it has also (as we detail in ??RefactoringNLS??)
-  non-maintainable, but it seems unlikely that any
+  impossible to deprecate it. However, as we detail in a related article, "Refactoring 
+  the `nls()` function in R" 
+  <!-- ??RefactoringNLS??,  -->
+  it is practically non-maintainable. It seems unlikely that any
   further development, nor even repair of current deficiencies, will be forthcoming.
   This underlines the importance of designing software for its long-term maintenance,
   and this is often inimical to using currently novel programming tools.

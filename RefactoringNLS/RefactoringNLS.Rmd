@@ -1277,8 +1277,7 @@ The aspects of `nls()` that have given us the most trouble are as follows:
 # Acknowledgement
 
 Hans Werner Borchers has been helpful in developing the proposal for this project
-and in comments on this and related work.
-
-??Heather Turner ... (co-mentor ?? how to word?)
+and in comments on this and related work. Heather Turner co-mentored the project 
+and helped guide the progress of the work.??
 
 # References
