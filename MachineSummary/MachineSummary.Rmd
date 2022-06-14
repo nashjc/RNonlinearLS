@@ -53,7 +53,10 @@ that assist this effort, but the ideas are extensible to other programming syste
 
 There may be multiple terms used to describe some of the information we want, as
 well as different interpretations of some of the units of measure. For example
-"Gigabytes", or GB, may be $1000^3$ or $1024^3$ bytes. ?? AB? Is that correct?
+"Gigabytes" may be $1000^3$ or $1024^3$ bytes. To settle the ambiguity, the
+international standard *IEC 80000-13:2008 Quantities and units - Part 13: Information science and technology*(??ref https://en.wikipedia.org/wiki/Gigabyte, https://en.wikipedia.org/wiki/ISO/IEC_80000#Part_13:_Information_science_and_technology) defines 1 Gigabyte (1 GB) as 1000^3 bytes, whereas 1 Gibibyte (1 GiB) as 1024^3 bytes.
+
+<!-- ?? AB? Is that correct? -->
 
 ## Temporal information
 
@@ -70,9 +73,9 @@ single "clock" such as UTC (ref?? or expansion?)
 tsstr <- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYYmmddHHMM
 cat("Date and Time stamp:", tsstr, "\n")
 # and here is a way to get the UTC time
-tutc<-as.POSIXlt(Sys.time(), tz = "UTC")
+tutc <- as.POSIXlt(Sys.time(), tz = "UTC")
 print(tutc)
-utctstmp<-format(tutc, "%Y/%m/%d|%H:%M")
+utctstmp <- format(tutc, "%Y/%m/%d|%H:%M")
 print(utctstmp)
 ```
 
@@ -148,7 +151,7 @@ some ingenuity, it is possible to detect many aspects of the
 floating point properties. In particular, we may be interested in the
 **machine precision**, that is, the smallest number `eps` such that 
 `1 + eps` is greater than `1`. R performs computations in IEEE "double"
-precision, and provides the R variable `.Machine` that has " information on 
+precision, and provides the R variable `.Machine` that has "information on 
 the numerical characteristics of the machine R is running on", including
 the machine precision as `.Machine$double.eps`.
 
@@ -198,14 +201,14 @@ E6 <- mp$radix
 J1 <- mp$ndigits
 cat("E9 = ",E9,"  -- the machine precision,  E9=MIN (X  1+X>1)\n")
 cat( "E9*1E+16=", E9 * 1E+16, "\n")
-cat( "E6 = ",E6,"  -- the radix of arithmetic", "\n")
-cat( "J1 = ",J1,"  -- the number of radix digits in mantissa of FP numbers", "\n")
+cat( "E6 = ", E6,"  -- the radix of arithmetic", "\n")
+cat( "J1 = ", J1,"  -- the number of radix digits in mantissa of FP numbers", "\n")
 cat( "E6^(-J1+1) * 1E+16=", 1E+16*(E6^(-J1+1)), "\n")
 cat(".Machine$double.eps=", .Machine$double.eps, "\n")
 cat("From R  .Machine:\n")
 cat("double.eps =", .Machine$double.eps, "\n", 
     "double.base =", .Machine$double.base, "\n", 
-    "double.digits =", .Machine$double.digits, "\n" )
+    "double.digits =", .Machine$double.digits, "\n")
 ```
 
 ## Sys.info()
@@ -226,8 +229,7 @@ benchmark the capabilities of a particular computing system, so highly appropria
 to our current effort, though its output is not succinct. Note that we found a 
 minor bug in the `get_ram()`
 function of this package for some Windows 10 versions. Our thanks for 
-Colin Gillespie, the author, for making  
-corrections in version 1.0.8, based on communications with one of us (AB). 
+Colin Gillespie, the author, for making  corrections in version 1.0.8, based on communications with one of us (AB). 
 
 ?? Need to comment on 
 
