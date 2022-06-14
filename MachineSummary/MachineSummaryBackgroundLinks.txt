@@ -1,0 +1,25 @@
+MachineSummaryBackgroundLinks.txt
+
+
+Timing:
+
+https://www.r-bloggers.com/2017/05/5-ways-to-measure-running-time-of-r-code/
+https://stats.oarc.ucla.edu/r/faq/how-can-i-time-my-code/
+
+
+Random Number Generation, esp. parallel:
+
+https://www.r-bloggers.com/2013/06/intro-to-parallel-random-number-generation-with-revoscaler/
+https://stackover  ow.com/questions/27759367/parallel-random-number-generators-in-r
+https://gangpeng.org/post/random-number-generator-for-parallel-computing-in-r/
+https://www.numbercrunch.de/trng/
+
+GPUs in R:
+
+http://www.r-tutor.com/gpu-computing
+https://cran.r-project.org/web/views/HighPerformanceComputing.html (GPU + parallel computing)
+https://h2o.ai/blog/h2o4gpu-now-available-in-r/
+https://github.com/gpuRcore
+https://www.r-bloggers.com/2016/05/r-gpu-programming-for-all-with-gpur/
+
+
