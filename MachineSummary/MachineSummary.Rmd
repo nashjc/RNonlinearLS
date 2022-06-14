@@ -52,11 +52,9 @@ that assist this effort, but the ideas are extensible to other programming syste
 # Desired information
 
 There may be multiple terms used to describe some of the information we want, as
-well as different interpretations of some of the units of measure. For example
-"Gigabytes" may be $1000^3$ or $1024^3$ bytes. To settle the ambiguity, the
-international standard *IEC 80000-13:2008 Quantities and units - Part 13: Information science and technology*(??ref https://en.wikipedia.org/wiki/Gigabyte, https://en.wikipedia.org/wiki/ISO/IEC_80000#Part_13:_Information_science_and_technology) defines 1 Gigabyte (1 GB) as 1000^3 bytes, whereas 1 Gibibyte (1 GiB) as 1024^3 bytes.
-
-<!-- ?? AB? Is that correct? -->
+well as different interpretations of some of the units of measure. For example,
+storage for disks or memory has decimal and binary schemes of units. Thus 
+(see https://en.wikipedia.org/wiki/Gigabyte) there is a movement to use, for example, Gigabyte or GB to mean usits of 1000^3 bytes, while the Gigibyte or Gib is 1024^3.
 
 ## Temporal information
 
@@ -66,7 +64,7 @@ Most computations should have a time/date stamp that is unlikely to be confused 
 other, at least in combination with a machine name and/or other tags. Here is one
 suggestion based on the R `Sys.time()` function. Moreover, as we were working on opposite
 sides of the globe, it could be important to either specify time zone or to work with a
-single "clock" such as UTC (ref?? or expansion?)
+single "clock" such as UTC. R provides tools to allow this, as in the following example.
 
 ```{r tdstamp}
 #get a timestamp
@@ -116,15 +114,33 @@ Some of the factors relating to hardware that could be important are:
 - cpu (i.e., processor)
 - number of cores
 - operating cycle speed (this is sometimes specific to the cpu specified )
+
+?? how do we reconcile?
+
+<!-- From get_sys_details() -->
+<!-- $cpu$model_name -->
+<!-- [1] "Intel(R) Core(TM) i5-10400 CPU @ 2.90GHz" -->
+
+<!-- From inxi -C -->
+<!-- john@M21:~$ inxi -C -->
+<!-- CPU:       Topology: 6-Core model: Intel Core i5-10400 bits: 64 type: MT MCP L2 cache: 12.0 MiB  -->
+<!--            Speed: 800 MHz min/max: 800/4300 MHz Core speeds (MHz): 1: 800 2: 800 3: 800 4: 800 5: 800 6: 800 7: 800 8: 800  -->
+<!--            9: 800 10: 800 11: 800 12: 800  -->
+
+?? also noted that get_sys_details shows 16 cores on my laptop, but inxi shows 8??
+
 - RAM size total
 - RAM size available, possibly indicating swap space and usage
-- RAM speed (which could be variable)
+- RAM speed (which could be variable) 
+  ?? this is, as I understand the output, in inxi (for Linux). Not as far as I know in benchmarkme.
+
 - GPU (i.e, additional processors) information. 
+  ?? is there a way to get this? I don't have a GPU on my desktop machine. 
 
 ## Software information
 
 Clearly it is important to identify which software packages are active, and the
-R `sessionInfo()` command is useful for this. However, there may be additional 
+R `sessionInfo()` command provides this. However, there may be additional 
 features that should be mentioned if the user has modified the software in any
 way, or is using customized packages.
 
@@ -354,15 +370,41 @@ that might be relevant to understanding machine performance.
 
 For most uses in recording tests of R functions and packages for optimization and nonlinear 
 least squares, which has been our focus, it seems that the `benchmarkme` function 
-`get_sys_details()` provides more than sufficient information for our needs. 
-The following script offers a possible compact solution. Users may
-wish to modify this to their own particular needs.
+`get_sys_details()` provides more than sufficient information for most of our needs. 
+A workable profile for our project is captured in the following script,
+which allows a 1-line compact sketch of the system in use. 
 
 ```{r code=xfun::read_utf8('MachID.R')}
 ```
 
 <!-- Note that we are reading from the file `MachID.R` so that this file is usable elsewhere -->
 <!-- and the current document does not become out of sync with the working MachID. -->
+
+For other applications, it is clear that users will make other choices to meet their particular needs.
+
+Our efforts noted in this article underline the following principles.
+
+- Relatively comprehensive tools such as package `benchmarkme` are needed to 
+  make possible machine profiles to allow sensible comparison of computational 
+  performance across different platforms.
+  
+- If a project uses a common software environment such as R, then the tools for
+  capturing profile data should be available from that environment, and run 
+  under different operating systems and hardware. In that respect, `benchmarkme`
+  has been very helpful to us.
+  
+- No tool covers all the possibilities, and users may have to do extra work to 
+  capture information they need. Moreover, the challenges of cross-platform 
+  computing ensure that some of the results of different tools will be inaccurate.
+  
+- Summarizing capability information for computing environments to provide a 
+  short-form profile is a challenge that requires care and attention. Indeed,
+  it is much easier to gather a large body of information than to devise a 
+  compact but useful precis of it.
+  
+We welcome conversation on how machine capability may be summarized and reported
+to allow sensible comparison of computational performance of algorithms and 
+systems.
 
 
 ## References
