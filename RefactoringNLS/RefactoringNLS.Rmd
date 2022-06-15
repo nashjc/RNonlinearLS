@@ -22,45 +22,38 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Abstract
 
-This article considers the features and limitations of the R function `nls()`. It
-arose from a Google Summer of Code project "Improvements to `nls()`", a tool 
-intended for the estimation of models written as a formula that has at least
-one parameter that is "nonlinear". That is, the model is not estimable via solving a 
-finite set of 
-linear equations. A companion document **Variety in Nonlinear Least Squares Codes** 
-presents an overview of methods for the problem which takes a much wider view of the
-problem of minimizing a function that can be written as a sum of squared
-terms, and of the even more general case of nonlinear regression.
+Based on work for a Google Summer of Code project "Improvements to `nls()`",
+we consider the features and limitations of the R function `nls()`
+in the context of improving and rationalizing R tools for nonlinear regression. 
 
-An important overall consideration in our work has been the maintainability of
-the code base that supports the `nls()` functionality, as we believe that the
-existing code makes maintenance and improvement very difficult. Moreover, legacy
-applications and examples mean some improvements are blocked. Thus we have not
-addressed all the issues raised, but we believe that the discussion and trials
-so far are relevant to improving both `nls()` and R generally.
-
+An important consideration is the  maintainability of
+the code base that provides the functionality `nls()` claims to offer.
+Our work suggests that the
+existing code makes maintenance and improvement very difficult,
+with legacy applications and examples blocking some important updates.
+Discussion of these matters is relevant to improving R generally, as
+well as its nonlinear estimation tools.
 
 # The `nls()` function: strengths and shortcomings
 
 `nls()` is the tool in base R (the distributed software package from [CRAN](https://cran.r-project.org)
-for estimating nonlinear statistical models. The function was developed mainly in the 1980s and
-1990s by Doug Bates et al., initially for S (see https://en.wikipedia.org/wiki/S_%28programming_language%29) . 
-The ideas spring primarily from the book by @bateswatts.
+for estimating nonlinear statistical models. The function dates to the 1980s and the work related
+to @bateswatts in S (see https://en.wikipedia.org/wiki/S_%28programming_language%29). 
 
-The `nls()` function has a remarkable and quite comprehensive set of capabilities for estimating
-nonlinear models that are expressed as formulas. In particular, we note that it
+The `nls()` function has a remarkable and comprehensive set of capabilities for estimating
+nonlinear models that are expressed as **formulas**. In particular, we note that it
 
 - handles formulas that include R functions
 - allows data to be subset
 - permits parameters to be indexed over a set of related data
 - produces measures of variability (i.e., standard error estimates) for the estimated parameters
 - has related profiling capabilities for exploring the likelihood surface as parameters are changed
+- links to a number of pre-coded ("selfStart") models 
 
-With such a range of features and a long history, it is not surprising that the code has become untidy 
+With such a range of features and long history, the code has become untidy 
 and overly patched. It is, to
-our mind, essentially unmaintainable. Moreover, its underlying methods can and should be improved. Let
-us review some of the issues. We will then propose corrective actions, some of which we have carried out
-either in demonstrations or in the distributed code.
+our mind, essentially unmaintainable. Moreover, its underlying methods can and should be improved, 
+as we suggest below. 
 
 ## Feature: Convergence and termination tests (FIXED)
 
@@ -84,22 +77,20 @@ In the manual page for `nls()` in R 4.0.0 there is the warning
   
 >  because the criterion amounts to comparing two components of the round-off 
   error.
-  
-  
+
 >  If you wish to test `nls` on artificial data please add a noise component, 
   as shown in the example below.
 
-This amounts to admitting R cannot solve perfectly well-posed problems. The 
-suggestion that one needs to pollute data with errors is one that should be offensive
-to good science.
+This amounts to admitting R cannot solve well-posed problems unless data is polluted
+with errors. 
 
-It turns out that this issue can be easily resolved. The key "convergence test" -- more properly
-a "termination test" for the **program** rather than for convergence of the underlying **algorithm** --
-is the Relative Offset Convergence Criterion (see @BatesWatts81). This works by projecting the proposed
-step in the parameter vector on the gradient and estimating how much the sum of squares loss function 
-will decrease. This is divide by the current size of the loss function to avoid scale issues.
+This issue can be easily resolved. The "termination test" for the **program** rather than for 
+"convergence" of the underlying **algorithm** is the Relative Offset Convergence Criterion 
+(see @BatesWatts81). This projects the proposed step in the parameter vector on the gradient 
+and estimates how much the sum of squares loss function should decrease. This estimate is divided 
+by the current size of the loss function to avoid scale issues.
 When we have "converged", the estimated
-decrease is very small, as usually is its ratio to the sum of squares. However, with small residuals,
+decrease is very small. However, with small residuals,
 the sum of squares loss function is (almost) zero and we get the possibility of a 
 zero-divide failure. 
 
@@ -111,79 +102,77 @@ allows small-residual problems (i.e., near-exact fits) to be dealt with easily. 
 **safeguarded relative offset convergence criterion**. The default value gives the legacy behaviour.
 We are pleased to note that this improvement is now in the R distributed code as of version 4.1.0.
 
-### Example of a small-residual problem
+<!-- ### Example of a small-residual problem -->
 
-```
-t <- -10:10
-y <- 100/(1 + .1 * exp(-0.51 * t))
-lform <- y ~ a/(1 + b * exp(-c * t))
-ldata <- data.frame(t = t, y = y)
-plot(t, y)
-lstartbad <- c(a = 1, b = 1, c = 1)
-lstart2 <- c(a = 100, b = 10, c = 1)
-nlsr::nlxb(lform, data = ldata, start = lstart2)
-nls(lform, data = ldata, start = lstart2, trace = TRUE)
-# Fix with scaleOffset
-nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0))
-sessionInfo()
-```
+<!-- ``` -->
+<!-- t <- -10:10 -->
+<!-- y <- 100/(1 + .1 * exp(-0.51 * t)) -->
+<!-- lform <- y ~ a/(1 + b * exp(-c * t)) -->
+<!-- ldata <- data.frame(t = t, y = y) -->
+<!-- plot(t, y) -->
+<!-- lstartbad <- c(a = 1, b = 1, c = 1) -->
+<!-- lstart2 <- c(a = 100, b = 10, c = 1) -->
+<!-- nlsr::nlxb(lform, data = ldata, start = lstart2) -->
+<!-- nls(lform, data = ldata, start = lstart2, trace = TRUE) -->
+<!-- # Fix with scaleOffset -->
+<!-- nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0)) -->
+<!-- sessionInfo() -->
+<!-- ``` -->
 
-Edited output of running this function follows:
+<!-- Edited output of as small example follows: -->
 
-```
-> t <- -10:10
-> y <- 100/(1 + .1 * exp(-0.51 * t))
-> lform <- y ~ a/(1 + b * exp(-c * t))
-> ldata <- data.frame(t=t, y=y)
-> plot(t,y)
-> lstartbad <- c(a = 1, b = 1, c = 1)
-> lstart2 <- c(a = 100, b = 10, c = 1)
-> nlsr::nlxb(lform, data = ldata, start = lstart2)
-nlsr object: x 
-residual sumsquares =  1.007e-19  on  21 observations
-    after  13    Jacobian and  19 function evaluations
-  name            coeff          SE       tstat      pval      gradient    JSingval   
-a                    100     2.679e-11  3.732e+12  1.863e-216  -6.425e-11       626.6  
-b                    0.1      3.78e-13  2.646e+11  9.125e-196  -3.393e-08       112.3  
-c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       2.791  
-> nls(lform, data = ldata, start = lstart2, trace = TRUE)
-40346.    (1.08e+00): par = (100 10 1)
-11622.    (2.93e+00): par = (101.47 0.49449 0.71685)
-5638.0    (1.08e+01): par = (102.23 0.38062 0.52792)
-642.08    (1.04e+01): par = (102.16 0.22422 0.41935)
-97.712    (1.79e+01): par = (100.7 0.14774 0.45239)
-22.250    (1.78e+02): par = (99.803 0.093868 0.50492)
-0.025789  (1.33e+03): par = (100.01 0.10017 0.50916)
-6.0571e-08 (7.96e+05): par = (100 0.1 0.51)
-4.7017e-19 (1.86e+04): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-... (approx 40 lines omitted)
-1.2440e-27 (5.71e-01): par = (100 0.1 0.51)
-Error in nls(lform, data = ldata, start = lstart2, trace = TRUE) : 
-  number of iterations exceeded maximum of 50
-> # Fix with scaleOffset
-> nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0))
-40346.      (1.08e+00): par = (100 10 1)
-11622.      (2.91e+00): par = (101.47 0.49449 0.71685)
-5638.0      (9.23e+00): par = (102.23 0.38062 0.52792)
-642.08      (5.17e+00): par = (102.16 0.22422 0.41935)
-97.712      (2.31e+00): par = (100.7 0.14774 0.45239)
-22.250      (1.11e+00): par = (99.803 0.093868 0.50492)
-0.025789    (3.79e-02): par = (100.01 0.10017 0.50916)
-6.0571e-08  (5.80e-05): par = (100 0.1 0.51)
-4.7017e-19  (1.62e-10): par = (100 0.1 0.51)
-Nonlinear regression model
-  model: y ~ a/(1 + b * exp(-c * t))
-   data: ldata
-     a      b      c 
-100.00   0.10   0.51 
- residual sum-of-squares: 4.7e-19
-Number of iterations to convergence: 8 
-Achieved convergence tolerance: 1.62e-10
-
-Running under: Linux Mint 20.3
-```
+<!-- ``` -->
+<!-- > t <- -10:10 -->
+<!-- > y <- 100/(1 + .1 * exp(-0.51 * t)) -->
+<!-- > lform <- y ~ a/(1 + b * exp(-c * t)) -->
+<!-- > ldata <- data.frame(t=t, y=y) -->
+<!-- > plot(t,y) -->
+<!-- > lstartbad <- c(a = 1, b = 1, c = 1) -->
+<!-- > lstart2 <- c(a = 100, b = 10, c = 1) -->
+<!-- > nlsr::nlxb(lform, data = ldata, start = lstart2) -->
+<!-- nlsr object: x  -->
+<!-- residual sumsquares =  1.007e-19  on  21 observations -->
+<!--     after  13    Jacobian and  19 function evaluations -->
+<!--   name            coeff          SE       tstat      pval      gradient    JSingval    -->
+<!-- a                    100     2.679e-11  3.732e+12  1.863e-216  -6.425e-11       626.6   -->
+<!-- b                    0.1      3.78e-13  2.646e+11  9.125e-196  -3.393e-08       112.3   -->
+<!-- c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       2.791   -->
+<!-- > nls(lform, data = ldata, start = lstart2, trace = TRUE) -->
+<!-- 40346.    (1.08e+00): par = (100 10 1) -->
+<!-- 11622.    (2.93e+00): par = (101.47 0.49449 0.71685) -->
+<!-- 5638.0    (1.08e+01): par = (102.23 0.38062 0.52792) -->
+<!-- 642.08    (1.04e+01): par = (102.16 0.22422 0.41935) -->
+<!-- 97.712    (1.79e+01): par = (100.7 0.14774 0.45239) -->
+<!-- 22.250    (1.78e+02): par = (99.803 0.093868 0.50492) -->
+<!-- 0.025789  (1.33e+03): par = (100.01 0.10017 0.50916) -->
+<!-- 6.0571e-08 (7.96e+05): par = (100 0.1 0.51) -->
+<!-- 4.7017e-19 (1.86e+04): par = (100 0.1 0.51) -->
+<!-- 1.2440e-27 (5.71e-01): par = (100 0.1 0.51) -->
+<!-- 1.2440e-27 (5.71e-01): par = (100 0.1 0.51) -->
+<!-- ... (approx 40 lines omitted) -->
+<!-- 1.2440e-27 (5.71e-01): par = (100 0.1 0.51) -->
+<!-- Error in nls(lform, data = ldata, start = lstart2, trace = TRUE) :  -->
+<!--   number of iterations exceeded maximum of 50 -->
+<!-- > # Fix with scaleOffset -->
+<!-- > nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0)) -->
+<!-- 40346.      (1.08e+00): par = (100 10 1) -->
+<!-- 11622.      (2.91e+00): par = (101.47 0.49449 0.71685) -->
+<!-- 5638.0      (9.23e+00): par = (102.23 0.38062 0.52792) -->
+<!-- 642.08      (5.17e+00): par = (102.16 0.22422 0.41935) -->
+<!-- 97.712      (2.31e+00): par = (100.7 0.14774 0.45239) -->
+<!-- 22.250      (1.11e+00): par = (99.803 0.093868 0.50492) -->
+<!-- 0.025789    (3.79e-02): par = (100.01 0.10017 0.50916) -->
+<!-- 6.0571e-08  (5.80e-05): par = (100 0.1 0.51) -->
+<!-- 4.7017e-19  (1.62e-10): par = (100 0.1 0.51) -->
+<!-- Nonlinear regression model -->
+<!--   model: y ~ a/(1 + b * exp(-c * t)) -->
+<!--    data: ldata -->
+<!--      a      b      c  -->
+<!-- 100.00   0.10   0.51  -->
+<!--  residual sum-of-squares: 4.7e-19 -->
+<!-- Number of iterations to convergence: 8  -->
+<!-- Achieved convergence tolerance: 1.62e-10 -->
+<!-- ``` -->
 
 ### More general termination tests
 
@@ -191,88 +180,72 @@ The single convergence criterion of `nls()` leaves out some possibilities that c
 be useful for some problems. The package `nlsr` (@nlsr-manual) already offers both 
 the safeguarded relative offset test (**roffset**) as well as a **small sum of 
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
-(weighted) residuals to `e4` times the initial sum of squares. The value of 
-`e4` is computed as
-
-```{r meps4, echo=TRUE}
-epstol<-100*.Machine$double.eps
-e4 <- epstol^4
-e4
-```
+(weighted) residuals to `e4` times the initial sum of squares, where
+`e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
 
 We note that `nls()` uses a termination test to stop after `maxiter` "iterations". 
-Unfortunately, for almost all
-iterative algorithms, the meaning of "iteration" requires careful examination of the
-code. we prefer to express such tests using the number of times the residuals or the jacobian have
+Unfortunately, the meaning of "iteration" varies among programs and requires 
+careful examination of the
+code. We prefer to use the number of times the residuals or the jacobian have
 been computed and put upper limits on these. Our codes exit (terminate) when these limits
 are reached. Generally we prefer larger limits than the default `maxiter=50` of `nls()`,
-but that may simply reflect our history of dealing with more difficult problems as we are
-the tool-makers; users consult us when things go wrong. 
-
+but that may reflect the more difficult problems we have encountered because 
+users consult us when standard tools have given unsatisfactory results. 
 
 ## Feature: Failure when Jacobian is computationally singular
 
-This is the infamous "singular gradient" termination message of `nls()`. A Google search of 
+This refers to the infamous "singular gradient" termination message of `nls()`. 
+A Google search of 
 
 ```
 R nls "singular gradient"
 ```
 
-gets over 4000 hits that are spread over the years. 
-In some cases this is due
-to the failure of the simple finite difference approximation of the Jacobian in the
-`numericDeriv()` function that is a part of `nls()`. `nlsr` can use analytic
-derivatives, and we could import this functionality to the `nls()` code as an
-improvement. See below in the section **Jacobian computation**.
-
-A common source of the issue is that the Jacobian is very close
+gets over 4000 hits that are spread over some years. This could be because the 
+Jacobian is poorly approximated (see **Jacobian computation** below). However,
+it is common in nonlinear least squares computations that the Jacobian is very close
 to singular for some values of the model parameters. In such cases we need to find
 an alternative algorithm to the Gauss-Newton iteration of `nls()`. The most common
 work-around is the Levenberg-Marquardt stabilization (see @Marquardt1963, @Levenberg1944, 
-@jn77ima). Versions of this have been implemented in packages `minpack.lm` and `nlsr`.
-and we have prepared experimental versions of `nls` replacements that can incorporate
-stabilizations. Integration of such ideas with other code structures so that all the
-features of `nls()` work properly has unfortunately proved difficult.
+@jn77ima), and versions of it have been implemented in packages `minpack.lm` and `nlsr`.
+In our work we prepared experimental prototypes of `nls` that incorporate
+stabilizations, but integration with all the features of `nls()` has proved difficult.
 
-Let us consider an example which presents the infamous 'singular gradient' error message.
-This was posted on StackExchange. 
-*https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*
-
+Let us consider an 'singular gradient' example 
+*https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*.
+`nlsr::nlxb()` displays the singular values of the Jacobian, so the `nls()` error message is correct,
+but unhelpful in obtaining a solution.
 
 ```{r SESingGrad}
-reala = -3
-realb = 5
-realc = 0.5
-realr = 0.7
-realm = 1
-x = 1:11 #x values; 11 timepoint data
-#linear+exponential function
-y=reala + realb * realr^(x - realm) + realc * x
-testdat = data.frame(x, y)
-strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1)
+reala = -3; realb = 5; realc = 0.5; realr = 0.7; realm = 1 # underlying parameters
+x = 1:11 # x values; 11 data points
+y=reala + realb * realr^(x - realm) + realc * x # linear+exponential function
+testdat = data.frame(x, y) # save in a data frame
+strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1) # give programs a good start
 jform <- y ~ a + b * r^(x - m) + c * x # Formula
-linexp=try(nls(jform, data = testdat, start = strt, trace = F))
 library(nlsr)
-# Note singular values of Jacobian in rightmost column
 linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = F))
-linexp2
+linexp2 # Note singular values of Jacobian in rightmost column
+# We get an error with nls()
+linexp=try(nls(jform, data = testdat, start = strt, trace = F))
 ```
 
-In the above, we see that the Jacobian is essentially singular as shown by its singular
-values. Note that we DISPLAY the singular values in a single column for convenience in
-the output. The values do NOT correspond to individual parameters, but are a property
-of the whole problem.
+The Jacobian is essentially singular as shown by its singular
+values. Note that these are **displayed** in a single column in
+the output to provide a compact layout, but the values do **NOT** correspond to 
+the individual parameters in 
+whose row they appear; they are a property of the whole problem.
 
 ## Feature: Jacobian computation
 
 `nls()`, with the `numericDeriv()` function, computes the Jacobian as the "gradient"
 attribute of the residual vector. This is implemented as a mix of R and C code, but
 we have created a rather more compact version entirely in R.
-Code project. See the companion document **Jacobian Calculations for nls()**
-(?? need citation -- currently **DerivsNLS.pdf**).
+<!-- Code project. See the companion document **Jacobian Calculations for nls()** -->
+<!-- (?? need citation -- currently **DerivsNLS.pdf**). -->
 
 The Jacobian used by `nlsr::nlxb()` is computed from analytic expressions, while that
-of `nls()` (and, by extension, `minpack.lm::nlsLM`) will use a numerical approximation. 
+of `nls()` (and, by extension, `minpack.lm::nlsLM`) mostly use a numerical approximation. 
 This can lead to different behaviour:
 
 - A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a poorly
@@ -289,17 +262,17 @@ This can lead to different behaviour:
   found a solution, though it can be debated whether such lucky accidents can be
   taken as an advantage.
 
-Note that the selfStart models in the `./src/library/stats/R/zzModels.R` file
+Note that the selfStart models in the base R `./src/library/stats/R/zzModels.R` file
 provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines each
 model, and these Jacobians may be the analytic forms. The `nls()` function, after computing the
 "right hand side" or `rhs` of the residual, then checks to see if the "gradient" attribute is
 defined, and, if not, uses `numericDeriv` to compute a Jacobian into that attribute. This code
 is within the `nlsModel()` or `nlsModel.pliner()` functions. The use of analytic Jacobians
-almost certainly contributes to the performance of `nls()` on selfStart models.
+almost certainly contributes to the good performance of `nls()` on selfStart models.
 
 ## Feature: Subsetting
 
-`nls()` accepts an argument `subset`. Unfortunately, this acts through the mediation of
+`nls()` accepts an argument `subset`. This acts through the mediation of
 `model.frame` and is not clearly obvious in the source code files `/src/library/stats/R/nls.R` and 
 `/src/library/stats/src/nls.C`. 
 
@@ -318,8 +291,8 @@ A useful, but possibly dated, description is given in:
 https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/. 
 
 The typical default action, which can be seen by using the command `getOption("na.action")`
-is `na.omit`. This option essentially presents computations with data with all observations
-containing any missing values (i.e. any row of a data frame with an NA) omitted. 
+is `na.omit`. This option essentially omits from computations any observations
+containing missing values (i.e. any row of a data frame containing an NA). 
 `na.exclude` does much the same for computations, but keeps the rows with NA elements so 
 that predictions are in the correct row position. We recommend that workers actually test 
 output to verify behaviour is as wanted.
@@ -335,16 +308,19 @@ rows so you won't as easily be able to compare.
 `na.pass` simply passes on data "as is", while `na.fail` will essentially stop if any missing
 values are present.
 
+Our concern with `na.action` is that users may be unaware of the effects of an option
+setting they may not even be aware has been set. Is `na.fail` a safer default?
+
 ## Feature: model frame
 
-`model` is an argument to the `nls()` function, which is documented
+`model` is an argument to the `nls()` function, which is documented as
 
 > **model** logical. If true, the model frame is returned as part of the object. Default is FALSE.
 
 Indeed, the argument only gets used when `nls()` is about to return its result object, and the
 element `model` is NULL unless the calling argument `model` is TRUE. (Using the same name could
 be confusing.) However, the model frame is used within the function code in the form of the object
-`mf`. 
+`mf`. We feel that users could benefit from more extensive documentation and examples of its use.
 
 ## Feature: sources of data
 
@@ -359,71 +335,70 @@ functions which may cause unwanted results.
 
 Nevertheless, to provide compatible behaviour with `nls()`, competing programs 
 need to ensure equivalent behaviour, but users should test that the 
-operation is correct. 
+operation is as they intend. 
 
 ## Feature: missing start vector and self-starting models
 
 Nonlinear estimation algorithms are almost all iterative and need a set of starting
 parameters. `nls()` offers a special class of modeling functions called **selfStart** 
-models. There are a number of these in base R (see list below) and others in R packages
-such as CRAN package `nlraa` (@MiguezNLRAA2021), as well as the now-archived package
-`NRAIA`. Unfortunately, the structure of **selfStart** codes
-is such that the methods by which initial parameters are computed is entangled
+models. There are a number of these in base R (`./src/library/stats/R/zzModels.R`)
+and others in R packages such as CRAN package `nlraa` (@MiguezNLRAA2021), as well as 
+the now-archived package `NRAIA`. Unfortunately, some **selfStart** codes
+entangle the calculation of starting values for parameters
 with the particulars of the `nls()` code. Though there is a `getInitial()` function,
 this is not easy to use to simply compute the initial parameter estimates, in part 
 because it may call `nls()`. Such circular references are, in our view, dangerous.
 
-In the example below, we show how the `SSlogis` selfStart function can generate a set
+Other concerns are revealed by the example below. Here the `SSlogis` selfStart function 
+is used to generate a set
 of initial parameters for a 3-parameter logistic curve. The form used by `SSlogis`
-is $$ y \sim Asym/(1+exp((xmid-tt)/scal)) $$, but we show how the starting parameters
+is $y \sim Asym/(1+exp((xmid-tt)/scal))$, but we show how the starting parameters
 for this model can be transformed to those of 
-another form of the model, namely, $$ y \sim b1/(1 + b2*exp(-b3*t)) $$.
+another form of the model, namely, $y \sim b1/(1 + b2*exp(-b3*t))$.
 
-Let us look at the actual code for `SSlogis()` in `R-devel/src/library/stats/R/zzModels.R`:
-
-```
-SSlogis <- selfStart(~ Asym/(1 + exp((xmid - input)/scal)),
-    selfStart(
-        function(input, Asym, xmid, scal)
-        {
-              .expr1 <- xmid - input
-              .expr3 <- exp(.e2 <- .expr1/scal)
-              .expr4 <- 1 + .expr3
-              .value <- Asym/.expr4
-              .actualArgs <- as.list(match.call()[c("Asym", "xmid", "scal")])
-              if(all(vapply(.actualArgs, is.name, NA)))
-              {
-            		  .expr10 <- .expr4^2
-                  .grad <- array(0, c(length(.value), 3L), list(NULL, c("Asym", "xmid", "scal")))
-                  .grad[, "Asym"] <- 1/.expr4
-		              .grad[, "xmid"] <- - (xm <- Asym * .expr3/scal/.expr10)
-		              .grad[, "scal"] <- xm * .e2
-                  dimnames(.grad) <- list(NULL, .actualArgs)
-                  attr(.value, "gradient") <- .grad
-              }
-              .value
-        },
-        initial = function(mCall, data, LHS, ...) {
-              xy <- sortedXyData(mCall[["input"]], LHS, data)
-              if(nrow(xy) < 4) {
-                  stop("too few distinct input values to fit a logistic model")
-              }
-              z <- xy[["y"]]
-              ## transform to proportion, i.e. in (0,1) :
-              rng <- range(z); dz <- diff(rng)
-              z <- (z - rng[1L] + 0.05 * dz)/(1.1 * dz)
-              xy[["z"]] <- log(z/(1 - z))		# logit transformation
-              aux <- coef(lm(x ~ z, xy))
-              pars <- coef(nls(y ~ 1/(1 + exp((xmid - x)/scal)),
-                               data = xy,
-                               start = list(xmid = aux[[1L]], scal = aux[[2L]]),
-                               algorithm = "plinear", ...))
-              setNames(pars [c(".lin", "xmid", "scal")],
-                       mCall[c("Asym", "xmid", "scal")])
-        },
-        parameters = c("Asym", "xmid", "scal"))
-```
-
+The code for `SSlogis()` is in `./src/library/stats/R/zzModels.R`.
+<!-- ``` -->
+<!-- SSlogis <- selfStart(~ Asym/(1 + exp((xmid - input)/scal)), -->
+<!--     selfStart( -->
+<!--         function(input, Asym, xmid, scal) -->
+<!--         { -->
+<!--               .expr1 <- xmid - input -->
+<!--               .expr3 <- exp(.e2 <- .expr1/scal) -->
+<!--               .expr4 <- 1 + .expr3 -->
+<!--               .value <- Asym/.expr4 -->
+<!--               .actualArgs <- as.list(match.call()[c("Asym", "xmid", "scal")]) -->
+<!--               if(all(vapply(.actualArgs, is.name, NA))) -->
+<!--               { -->
+<!--             		  .expr10 <- .expr4^2 -->
+<!--                   .grad <- array(0, c(length(.value), 3L), list(NULL, c("Asym", "xmid", "scal"))) -->
+<!--                   .grad[, "Asym"] <- 1/.expr4 -->
+<!-- 		              .grad[, "xmid"] <- - (xm <- Asym * .expr3/scal/.expr10) -->
+<!-- 		              .grad[, "scal"] <- xm * .e2 -->
+<!--                   dimnames(.grad) <- list(NULL, .actualArgs) -->
+<!--                   attr(.value, "gradient") <- .grad -->
+<!--               } -->
+<!--               .value -->
+<!--         }, -->
+<!--         initial = function(mCall, data, LHS, ...) { -->
+<!--               xy <- sortedXyData(mCall[["input"]], LHS, data) -->
+<!--               if(nrow(xy) < 4) { -->
+<!--                   stop("too few distinct input values to fit a logistic model") -->
+<!--               } -->
+<!--               z <- xy[["y"]] -->
+<!--               ## transform to proportion, i.e. in (0,1) : -->
+<!--               rng <- range(z); dz <- diff(rng) -->
+<!--               z <- (z - rng[1L] + 0.05 * dz)/(1.1 * dz) -->
+<!--               xy[["z"]] <- log(z/(1 - z))		# logit transformation -->
+<!--               aux <- coef(lm(x ~ z, xy)) -->
+<!--               pars <- coef(nls(y ~ 1/(1 + exp((xmid - x)/scal)), -->
+<!--                                data = xy, -->
+<!--                                start = list(xmid = aux[[1L]], scal = aux[[2L]]), -->
+<!--                                algorithm = "plinear", ...)) -->
+<!--               setNames(pars [c(".lin", "xmid", "scal")], -->
+<!--                        mCall[c("Asym", "xmid", "scal")]) -->
+<!--         }, -->
+<!--         parameters = c("Asym", "xmid", "scal")) -->
+<!-- ``` -->
 This R function includes analytic expressions for the Jacobian ("gradient").
 These could be be useful to R users, especially if documented. Moreover, we
 wonder why the programmers have chosen to save so many quantities in "hidden"
@@ -431,73 +406,72 @@ variables, i.e., with names preceded by ".". These are then not displayed by the
 command, making them difficult to access.
 
 In the event that a selfStart model is not available, `nls()` sets all the starting parameters 
-to 1. This is, in our view, tolerable, but could possibly be improved by using a set of values
-that are slightly different e.g., in the case of a model $$  y \sim a*exp(-b*x) + c*exp(-d*x)$$
-it would be useful to have $b$ and $d$ values different so the Jacobian is not singular. Thus,
-some sort of sequence like  1.0, 1.1, 1.2, 1.3 for the four parameters might be better and it
-can be provided quite simply instead of all 1's. 
+to 1. This is, in our view, tolerable, but could be improved by using a set of values
+that are all slightly different, which, in the case of the example model $y \sim a*exp(-b*x) + c*exp(-d*x)$
+would avoid a singular Jacobiam because $b$ and $d$ were equal in value. 
+A sequence like  1.0, 1.1, 1.2, 1.3 for the four parameters 
+could be provided quite simply instead of all 1's.
 
+<!-- ```{r hobbsSSlogis} -->
+<!-- weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443, -->
+<!--           38.558, 50.156, 62.948, 75.995, 91.972) -->
+<!-- tt <- 1:12 -->
 
-```{r hobbsSSlogis}
-weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
-          38.558, 50.156, 62.948, 75.995, 91.972)
-tt <- 1:12
+<!-- NLSformula0 <- y ~ b1/(1+b2*exp(-b3*tt)) -->
+<!-- NLSformula <- y ~ SSlogis(tt, Asym, xmid, scal) -->
+<!-- NLSformulax <- y ~ Asym/(1+exp((xmid-tt)/scal)) -->
+<!-- NLStestdata <- data.frame(y=weed, tt=tt)  -->
+<!-- s0 <- getInitial(NLSformula, NLStestdata) -->
+<!-- print(s0) -->
+<!-- # We transform the parameters for the NLSformula0 model of original specification. -->
+<!-- s1<-list(b1=s0[1], b2=exp(s0[2]/s0[3]), b3=1/s0[3]) -->
+<!-- print(as.numeric(s1)) -->
+<!-- # No actual improvement because nls() has been already used to get the starting values, -->
+<!-- # but we do get SEs -->
+<!-- hobblog<-nls(NLSformula0, data=NLStestdata, start=s1) -->
+<!-- summary(hobblog) -->
+<!-- deviance(hobblog) -->
+<!-- # nls fails without selfStart -- singular gradient, even on stabilized formula -->
+<!-- try(hobblogx<-nls(NLSformulax, data=NLStestdata)) -->
+<!-- # But Marquardt is able to get a solution easily -->
+<!-- library(nlsr) -->
+<!-- hobblogxx<-nlxb(NLSformulax, data=NLStestdata, start=c(Asym=1, xmid=1, scal=1)) -->
+<!-- hobblogxx -->
+<!-- ``` -->
 
-NLSformula0 <- y ~ b1/(1+b2*exp(-b3*tt))
-NLSformula <- y ~ SSlogis(tt, Asym, xmid, scal)
-NLSformulax <- y ~ Asym/(1+exp((xmid-tt)/scal))
-NLStestdata <- data.frame(y=weed, tt=tt) 
-s0 <- getInitial(NLSformula, NLStestdata)
-print(s0)
-# We transform the parameters for the NLSformula0 model of original specification.
-s1<-list(b1=s0[1], b2=exp(s0[2]/s0[3]), b3=1/s0[3])
-print(as.numeric(s1))
-# No actual improvement because nls() has been already used to get the starting values,
-# but we do get SEs
-hobblog<-nls(NLSformula0, data=NLStestdata, start=s1)
-summary(hobblog)
-deviance(hobblog)
-# nls fails without selfStart -- singular gradient, even on stabilized formula
-try(hobblogx<-nls(NLSformulax, data=NLStestdata))
-# But Marquardt is able to get a solution easily
-library(nlsr)
-hobblogxx<-nlxb(NLSformulax, data=NLStestdata, start=c(Asym=1, xmid=1, scal=1))
-hobblogxx
-```
+<!-- ### selfStart models in base R -->
 
-### selfStart models in base R
+<!-- The following models are provided (in file ./src/library/stats/R/zzModels.R) -->
 
-The following models are provided (in file ./src/library/stats/R/zzModels.R)
-
-```
-SSasymp         - asymptotic regression model
-SSasympOff      - alternate formulation of asymptotic regression model with offset
-SSasympOrig     - exponential curve through the origin to an asymptote
-SSbiexp         - y ~ ~ A1 * exp(-exp(lrc1)*input) + A2 * exp(-exp(lrc2) * input)
-SSfol           - y ~ Dose * (exp(lKe + lKa - lCl) * (exp(-exp(lKe) * input) -
-                          exp(-exp(lKa) * input))/(exp(lKa) - exp(lKe)))
-SSfpl           - four parameter logistic model
-SSlogis         - three parameter logistic model
-SSmicmen        - Michaelis-Menten model for enzyme kinetics
-SSgompertz2     - Gompertz model for growth curve data
-SSweibull       - Weibull model for growth curve data
-```
+<!-- ``` -->
+<!-- SSasymp         - asymptotic regression model -->
+<!-- SSasympOff      - alternate formulation of asymptotic regression model with offset -->
+<!-- SSasympOrig     - exponential curve through the origin to an asymptote -->
+<!-- SSbiexp         - y ~ ~ A1 * exp(-exp(lrc1)*input) + A2 * exp(-exp(lrc2) * input) -->
+<!-- SSfol           - y ~ Dose * (exp(lKe + lKa - lCl) * (exp(-exp(lKe) * input) - -->
+<!--                           exp(-exp(lKa) * input))/(exp(lKa) - exp(lKe))) -->
+<!-- SSfpl           - four parameter logistic model -->
+<!-- SSlogis         - three parameter logistic model -->
+<!-- SSmicmen        - Michaelis-Menten model for enzyme kinetics -->
+<!-- SSgompertz2     - Gompertz model for growth curve data -->
+<!-- SSweibull       - Weibull model for growth curve data -->
+<!-- ``` -->
 
 ### Strategic issues in selfStart models
 
-Because the Gauss-Newton algorithm is unreliable from many starting sets
-of parameters, selfStart models are more than an accessory to `nls()` but a part
-of the infrastructure. However, creating such functions is a lot of work, and their
+Because the Gauss-Newton algorithm is unreliable from many sets of starting
+of parameters, selfStart models are a part of the `nls()` infrastructure rather
+than an accessory. However, creating such functions is a lot of work, and their
 documentation (file `./src/library/stats/man/selfStart.Rd`) is quite complicated.
-We believe that the focus would better be placed on getting good initial parameters,
-possibly with some interactive tools. That is, the emphasis should be on the 
-`getInitial()` function, though avoiding the current calls back to `nls()`.
+We believe that the focus should be placed on getting good initial parameters,
+that is `getInitial()` function, though avoiding the current calls back to `nls()`.
+Interactive tools, such as "visual fitting" (@nash1996nonlinear) might be
+worth considering. 
 
-## Issue: documentation of the results of running nls()
+
+## Issue: returned output of nls() and its documentation
 
 The output of `nls()` is an object of class "nls" which has the following structure:
-
-### nls() result output according to the documentation
 
 ```
 A list of:
@@ -517,32 +491,33 @@ There are also two deprecated items if algorithm = "port" fit only. These are
 convergence (a code = 0 for convergence) and message. These are available from convInfo.
 ```
 
-### Example output
+<!-- ### Example output -->
 
-To illustrate, let us run the Croucher example.
+<!-- To illustrate, let us run the Croucher example. -->
 
-```{r nlsoutx}
-# Croucher example
-xdata <- c(-2,-1.64,-1.33,-0.7,0,0.45,1.2,1.64,2.32,2.9)
-ydata <- c(0.699369,0.700462,0.695354,1.03905,1.97389,2.41143,1.91091,0.919576,-0.730975,-1.42001)
-p1<- 1; p2<-0.2; NLSstart<-list(p1=p1,p2=p2)
-NLSformula <- ydata ~ p1*cos(p2*xdata) + p2*sin(p1*xdata)
-NLSdata<-data.frame(xdata, ydata)
-# Try full output version of nls
-library(nlspkg) # use the packaged version of nls()
-result<-nls(NLSformula, data=NLSdata, start=NLSstart, model=TRUE)
-# We can display the result with several commands
-# str(result) -- displays large amount of material - suppressed here
-#    as it is too wide for the page
-# result # displays the object
-# ls(result) # to list the elements of the output
-# ls(result$m) # and in particular the "m" object
-```
+<!-- ```{r nlsoutx} -->
+<!-- # Croucher example -->
+<!-- xdata <- c(-2,-1.64,-1.33,-0.7,0,0.45,1.2,1.64,2.32,2.9) -->
+<!-- ydata <- c(0.699369,0.700462,0.695354,1.03905,1.97389,2.41143,1.91091,0.919576,-0.730975,-1.42001) -->
+<!-- p1<- 1; p2<-0.2; NLSstart<-list(p1=p1,p2=p2) -->
+<!-- NLSformula <- ydata ~ p1*cos(p2*xdata) + p2*sin(p1*xdata) -->
+<!-- NLSdata<-data.frame(xdata, ydata) -->
+<!-- # Try full output version of nls -->
+<!-- library(nlspkg) # use the packaged version of nls() -->
+<!-- result<-nls(NLSformula, data=NLSdata, start=NLSstart, model=TRUE) -->
+<!-- # We can display the result with several commands -->
+<!-- # str(result) -- displays large amount of material - suppressed here -->
+<!-- #    as it is too wide for the page -->
+<!-- # result # displays the object -->
+<!-- # ls(result) # to list the elements of the output -->
+<!-- # ls(result$m) # and in particular the "m" object -->
+<!-- ``` -->
 
-### Concerns with content of the nls result object
+<!-- ### Concerns with content of the nls result object -->
 
-The nls object contains some elements that are awkward to produce by other algorithms,
-but some information that would be useful is not presented obviously.
+The `nls` object contains some elements that are awkward to produce by other algorithms,
+but some information that would be useful is not presented obviously. Moreover, the
+complexity of the object is a challenge to users.
 
 In the following, we use `result` as the returned object from `nls()`.
 
@@ -562,42 +537,23 @@ ls(result$model)
 
 and if there is an element called `xdata`, it can be accessed as `result$model$xdata`.
 
-### Information that is NOT in the nls result object
-
-`nlsr::nlxb()` solves ostensibly the same problem as `nls()` but only claims to return
+Let us compare the `nls()` result with that from 
+`nlsr::nlxb()`, with ostensibly solves the same problem:
 
 ```
 coefficients    A named vector giving the parameter values at the supposed solution.
-
 ssquares        The sum of squared residuals at this set of parameters.
-
 resid           The residual vector at the returned parameters.
-
 jacobian        The jacobian matrix (partial derivatives of residuals w.r.t. the 
                 parameters) at the returned parameters.
-
 feval           The number of residual evaluations (sum of squares computations) used.
-
 jeval           The number of Jacobian evaluations used.
 ```
 
 However, actually looking at the structure of a returned result gives a list of 11
-items:
+items. The extra 5 are:
+
 ```
- $ resid       : num [1:12] 0.0119 -0.0328 0.092 0.2088 0.3926 ...
-  ..- attr(*, "gradient")= num [1:12, 1:3] 0.0271 0.0367 0.0496 0.0666 0.089 ...
-  .. ..- attr(*, "dimnames")=List of 2
-  .. .. ..$ : NULL
-  .. .. ..$ : chr [1:3] "Asym" "xmid" "scal"
- $ jacobian    : num [1:12, 1:3] 0.0271 0.0367 0.0496 0.0666 0.089 ...
-  ..- attr(*, "dimnames")=List of 2
-  .. ..$ : NULL
-  .. ..$ : chr [1:3] "Asym" "xmid" "scal"
- $ feval       : num 31
- $ jeval       : num 23
- $ coefficients: Named num [1:3] 196.19 12.42 3.19
-  ..- attr(*, "names")= chr [1:3] "Asym" "xmid" "scal"
- $ ssquares    : num 2.59
  $ lower       : num [1:3] -Inf -Inf -Inf
  $ upper       : num [1:3] Inf Inf Inf
  $ maskidx     : int(0) 
@@ -606,17 +562,21 @@ items:
   .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
  - attr(*, "class")= chr "nlsr"
 ```
-This is still a smaller result object than the one `nls()` returns. Moreover, `nlxb`
-explicitly returns the sum of squares as well as the residual vector and Jacobian. The 
-counts of evaluations are also returned. Working on this project showed several potential
-updates to the `nlsr` documentation. Note that the singular values of the Jacobian are
-actually computed in the `print` and `summary` methods for the result.
+The result object from `nlsr::nlxb()` is still much smaller than the one `nls()` returns. 
+Moreover, `nlxb`
+explicitly returns the sum of squares as well as the residual vector and Jacobian. 
+The counts of evaluations are also returned.
+(Note that the singular values of the Jacobian are
+actually computed in the `print` and `summary` methods for the result.) 
+We noted several potential updates to the `nlsr` documentation as well as that
+for `nls()` as we made our comparisons.
 
 ### Weights in returned functions from nls()
 
 The functions `resid()` (an alias for `residuals()`) and `fitted()` and `lhs()` are UNWEIGHTED.
 But if we return `ans` from `nls()` or `minpack.lm::nlsLM` or our new `nlsj` (interim package), 
-then `ans$m$resid()` is WEIGHTED.
+then `ans$m$resid()` is WEIGHTED. This needs clear documentation so users can get the answers
+intended.
 
 ### Interim output from the "port" algorithm
 
@@ -624,7 +584,7 @@ As the `nls()` **man** page states, when the "port" algorithm is used with the `
 TRUE, the iterations display the objective function value which is 1/2 the sum of squares (or 
 deviance). It is likely that the trace display is embedded in the Fortran of the `nlminb`
 routine that is called to execute the "port" algorithm, but the discrepancy is nonetheless
-unfortunate for users.
+unfortunate for users. 
 
 ### Failure to return best result achieved
 
@@ -632,8 +592,9 @@ If `nls()` reaches a point where it cannot continue but has not found a point wh
 relative offset convergence criterion is met, it may simply exit, especially if a 
 "singular gradient" (singular Jacobian) is found. However, this may occur AFTER the 
 function has made considerable progress in reducing the sum of squared residuals. 
-An example is to be found in the `Tetra_1.R` example from the `nlsCompare` package.
-Here is an abbreviated version of that problem and the `nls()` output:
+<!-- An example is to be found in the `Tetra_1.R` example from the `nlsCompare` package. -->
+<!-- ?? AB: Are we far enough along to include reference? -->
+Here is an abbreviated example:
 
 ```{r tetrarun}
 time=c( 1,  2,  3,  4,  6 , 8, 10, 12, 16)
@@ -647,7 +608,7 @@ print(tryit)
 
 Note that the sum of squares has been reduced from 61216 to 1.6211, but 
 unless `trace` is invoked, the user will not get any information about this.
-This would be an almost trivial change to the `nls() function and could be 
+This almost trivial change to the `nls()` function could be 
 useful to R users.
 
 ## Feature: partially linear models and their specification
@@ -657,22 +618,12 @@ solver tools. Unfortunately, R allows multiple approaches within different
 modelling tools, and within `nls()` itself.
 
 One obvious case is that nonlinear modeling tools are a superset of linear ones.
-Yet the explicit model
-
-```
-y ~ a*x + b
-```
-
-does not work with the linear modeling function `lm()`, which requires
-this model to be specified as
-
-```
-y ~ x
-```
+Yet the explicit model `y ~ a*x + b` does not work with the linear modeling 
+function `lm()`, which requires this model to be specified as `y ~ x`.
 
 Within `nls()`, consider the 
-following FOUR different calling sequences for the same problem, though the
-fm2a -- an intuitive choice -- will not work. In this failed
+following FOUR different calling sequences for the same problem, though an intuitive choice,
+labelled fm2a, will not work. In this failed
 attempt, putting the `Asym` parameter in the model causes the `plinear` algorithm
 to try to add another term to the model. We believe this is unfortunate, and would
 like to see a consistent syntax. At the time of writing we do
@@ -680,44 +631,34 @@ not foresee a resolution for this issue. In the example we have NOT evaluated
 the commands to save space.
 
 ```{r log4ways, echo=TRUE, eval=FALSE}
-DNase1 <- subset(DNase, Run == 1)
-
+DNase1 <- subset(DNase, Run == 1) # select the data
 ## using a selfStart model - do not specify the starting parameters
-fm1DNase1 <- nls(density ~ SSlogis(log(conc), Asym, xmid, scal), DNase1)
-summary(fm1DNase1)
-## the coefficients only:
-# coef(fm1DNase1)
-## including their SE, etc:
-# coef(summary(fm1DNase1))
+fm1 <- nls(density ~ SSlogis(log(conc), Asym, xmid, scal), DNase1)
+summary(fm1)
 
 ## using conditional linearity - leave out the Asym parameter
-fm2DNase1 <- nls(density ~ 1/(1 + exp((xmid - log(conc))/scal)),
-                 data = DNase1,
-                 start = list(xmid = 0, scal = 1),
+fm2 <- nls(density ~ 1/(1 + exp((xmid - log(conc))/scal)),
+                 data = DNase1, start = list(xmid = 0, scal = 1),
                  algorithm = "plinear")
-summary(fm2DNase1)
-
-## using conditional linearity AND Asym does NOT work
-
-fm2aDNase1 <- try(nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
-                 data = DNase1,
-                 start = list(Asym=3, xmid = 0, scal = 1),
-                 algorithm = "plinear",
-                 trace = TRUE))
-summary(fm2aDNase1)
+summary(fm2)
 
 ## without conditional linearity
-fm3DNase1 <- nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
+fm3 <- nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
                  data = DNase1,
                  start = list(Asym = 3, xmid = 0, scal = 1))
-summary(fm3DNase1)
+summary(fm3)
 
 ## using Port's nl2sol algorithm
-fm4DNase1 <- try(nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
-                 data = DNase1,
-                 start = list(Asym = 3, xmid = 0, scal = 1),
+fm4 <- try(nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
+                 data = DNase1, start = list(Asym = 3, xmid = 0, scal = 1),
                  algorithm = "port"))
-summary(fm4DNase1)
+summary(fm4)
+
+## using conditional linearity AND Asym does NOT work
+fm2a <- try(nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)), 
+                 data = DNase1, start = list(Asym=3, xmid = 0, scal = 1),
+                 algorithm = "plinear", trace = TRUE))
+summary(fm2a)
 ```
 
 ## Issue: code structure and documentation for maintenance 
@@ -783,78 +724,81 @@ The reply was
     I know that I wrote the code to use a closure for the response, covariates, etc., 
     but I don't recall anything like a recursive call being necessary.
     ...
-
-    I don't think I will be of much help.  My R skills have atrophied to the point 
-    where I wouldn't even know how to start exploring what is happening in the first 
-    call as opposed to the recursive call.
 ```
+<!--     I don't think I will be of much help.  My R skills have atrophied to the point  -->
+<!--     where I wouldn't even know how to start exploring what is happening in the first  -->
+<!--     call as opposed to the recursive call. -->
+<!-- ``` -->
 
 
 ## Feature: indexed parameters
 
 The **man** file for `nls()` includes the following example of a situation in which
 parameters are indexed. It also uses the "plinear" option as an added complication.
-Here we use a truncated version of the example to save display space.
 
-```{r nlsindx1}
-## The muscle dataset in MASS is from an experiment on muscle
-## contraction on 21 animals.  The observed variables are Strip
-## (identifier of muscle), Conc (Cacl concentration) and Length
-## (resulting length of muscle section).
-if(! requireNamespace("MASS", quietly = TRUE)) stop("Need MASS pkg")
-mm<- MASS::muscle[1:12,] # take only 1st few values of Strip
-str(mm)
-mm<-droplevels(mm)
-str(mm)
-nlev <- nlevels(mm)
-withAutoprint({
-  ## The non linear model considered is
-  ##       Length = alpha + beta*exp(-Conc/theta) + error
-  ## where theta is constant but alpha and beta may vary with Strip.
-  with(mm, table(Strip)) # 2, 3 or 4 obs per strip
-  nl <- nlevels(mm$Strip)
-  ## We first use the plinear algorithm to fit an overall model,
-  ## ignoring that alpha and beta might vary with Strip.
-  musc.1 <- nls(Length ~ cbind(1, exp(-Conc/th)), mm,
-                start = list(th = 1), algorithm = "plinear")
-  summary(musc.1)
-  
-  ## Then we use nls' indexing feature for parameters in non-linear
-  ## models to use the conventional algorithm to fit a model in which
-  ## alpha and beta vary with Strip.  The starting values are provided
-  ## by the previously fitted model.
-  ## Note that with indexed parameters, the starting values must be
-  ## given in a list (with names):
-  ## ?? but why use b here AND in the new formula??
-  b <- coef(musc.1)
-  
-  musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), data=mm,
-                start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1]))
-  summary(musc.2)
-})
+<!-- Here we use a truncated version of the example to save display space. -->
 
-```
+<!-- ```{r nlsindx1} -->
+<!-- ## The muscle dataset in MASS is from an experiment on muscle -->
+<!-- ## contraction on 21 animals.  The observed variables are Strip -->
+<!-- ## (identifier of muscle), Conc (Cacl concentration) and Length -->
+<!-- ## (resulting length of muscle section). -->
+<!-- if(! requireNamespace("MASS", quietly = TRUE)) stop("Need MASS pkg") -->
+<!-- mm<- MASS::muscle[1:12,] # take only 1st few values of Strip -->
+<!-- str(mm) -->
+<!-- mm<-droplevels(mm) -->
+<!-- str(mm) -->
+<!-- nlev <- nlevels(mm) -->
+<!-- withAutoprint({ -->
+<!--   ## The non linear model considered is -->
+<!--   ##       Length = alpha + beta*exp(-Conc/theta) + error -->
+<!--   ## where theta is constant but alpha and beta may vary with Strip. -->
+<!--   with(mm, table(Strip)) # 2, 3 or 4 obs per strip -->
+<!--   nl <- nlevels(mm$Strip) -->
+<!--   ## We first use the plinear algorithm to fit an overall model, -->
+<!--   ## ignoring that alpha and beta might vary with Strip. -->
+<!--   musc.1 <- nls(Length ~ cbind(1, exp(-Conc/th)), mm, -->
+<!--                 start = list(th = 1), algorithm = "plinear") -->
+<!--   summary(musc.1) -->
 
-Note that the answers for the parameters are NOT indexed. e.g. `coef(musc.2)` is a single level
-vector of parameters. We do not see `a[1], a[2], a[3]` but `a1, a2, a3`. This is because the model
-must integrate all the parameters because `th` is a common parameter across the index `Strip`.
+<!--   ## Then we use nls' indexing feature for parameters in non-linear -->
+<!--   ## models to use the conventional algorithm to fit a model in which -->
+<!--   ## alpha and beta vary with Strip.  The starting values are provided -->
+<!--   ## by the previously fitted model. -->
+<!--   ## Note that with indexed parameters, the starting values must be -->
+<!--   ## given in a list (with names): -->
+<!--   ## ?? but why use b here AND in the new formula?? -->
+<!--   b <- coef(musc.1) -->
 
-We believe this structure is quite likely to cause confusion and error, and propose an alternative
-approach below.
+<!--   musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), data=mm, -->
+<!--                 start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1])) -->
+<!--   summary(musc.2) -->
+<!-- }) -->
 
+<!-- ``` -->
+
+Running the example reveals that the answers for the parameters are NOT indexed. 
+<!-- e.g. `coef(musc.2)` is a single level vector of parameters.  -->
+We do not see `a[1], a[2], a[3]` but `a1, a2, a3`. 
+<!-- This is because the model -->
+<!-- must integrate all the parameters because `th` is a common parameter across the index `Strip`. -->
+This is no doubt because programming for indexed parameters is extremely challenging.
+However, we believe the current structure is could cause confusion and error, and 
+propose an alternative approach below.
 
 ## Feature: bounds on parameters
 
 There are many situations where the context of a problem constrains the values of parameters.
-For example, one of us was asked many years ago to estimate a model. One paramater returned
-a negative value. The client complained "But that is supposed to be the number of grain elevators
-in Saskatchewan". That is, the number should have been a positive integer, and likely less
+For example, one of us was asked many years ago to estimate a model where one parameter estimate
+was negative. The client complained "But that is supposed to be the number of grain elevators
+in Saskatchewan". The number should have been a positive integer, and likely less
 than a few thousand.
 
 `nls()` can impose bounds on parameters, but only if the `port` algorithm is used. Unfortunately,
 the manual states 
 
-> The algorithm = "port" code appears unfinished, and does not even check that the starting value is within the bounds. Use with caution, especially where bounds are supplied.
+> The algorithm = "port" code appears unfinished, and does not even check that the starting 
+  value is within the bounds. Use with caution, especially where bounds are supplied.
 
 This is clearly unsatisfactory for general use. Inclusion of bounds on parameters in nonlinear
 least squares computations is relatively straightforward, and it is part of the default method
