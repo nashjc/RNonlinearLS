@@ -27,7 +27,8 @@ of this variety could be instructive for numerical software designers.
 # The Problem to be solved
 
 Numerical analysts will generally want to solve a **nonlinear least squares** problem,
-that is, minimize an objective function with respect to a set of $n$ parameters, $x$, where the 
+that is, minimize an objective function with respect to a set of $n$ parameters, 
+$x$, where the 
 objective  $f()$ can be written as a sum of $m$ squared elements. 
 
 $$  f(x, Y) = \sum_{i=1}^m {r_i(x,Y)^2} $$
@@ -40,10 +41,8 @@ $$ r_1(x) = 10*(x_2 - x_1 ^ 2) $$
 
 $$ r_2(x) = (1 - x_1) $$
 
-There is no exogenous data here.
-
-There may be additional conditions that add to the complexity of
-the problem such as 
+There is no exogenous data here. However, there may be additional 
+conditions that add to the complexity of the problem such as 
 
 - bounds (or box) constraints of the form  $$ l_i <= x_i <= u_i $$ alternatively
   written in vector form $$ l <= x <=u $$
@@ -64,25 +63,27 @@ the $r_i()$ are all of the same form. The (unscaled) Hobbs weed infestation prob
 
 $$ r_i(x) = x_1/(1+x_2 * exp(-x_3 * i)) - y_i$$
 
-where the exogenous data is a single vector of numbers $y$. In nonlinear regression, we are mostly
-interested in "fitting a model to data", and the "minimizing a sum of squares" is the approach.
+where the exogenous data is a single vector of numbers $y$. 
+In nonlinear regression, we are mostly interested in "fitting a model to data", 
+and the "minimizing a sum of squares" is the approach.
 
 While the term "nonlinear" devolves from functions where parameters appear to degree 1, a more
 useful classification is according to whether a fixed number of computations can estimate the
-parameters. That is, problems can be considered "nonlinear" if we cannot compute the best parameter values
+parameters. That is, problems can be considered "nonlinear" if we cannot 
+compute the best parameter values
 in a pre-defined fixed number of computations and must use an iterative approach.
 
-In what follows, we will primarily take the numerical analyst's viewpoint. That is, we will be looking
-mostly at the calculations for the minimization of the sum of squares. However, the purpose of these
-calculations can dictate much of the structure of the software in which such computations appear.
+In what follows, we will primarily take the numerical analyst's viewpoint. 
+That is, we will be looking mostly at the calculations for the minimization of 
+the sum of squares. However, the purpose of these calculations can dictate much 
+of the structure of the software in which such computations appear.
 
 # Underlying algorithms
 
 ## Gauss Newton method
 
 An overview of the method is provided by Wikipedia: *https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm*.
-
-The method was described by C.F.Gauss in 1809 in *Theoria motus corporum 
+Indeed, the method was described by C.F.Gauss in 1809 in *Theoria motus corporum 
 coelestium in sectionibus conicis solem ambientum*.
 
 In calculus we learn that a stationary point (local maximum, minimum
@@ -102,7 +103,6 @@ where $H$ and $g$ are evaluated at a guess or estimate of $x$. $x$ is then updat
 to 
 
 $$ x \leftarrow x + \delta $$
-
 and we iterate until there is no change in $x$, assuming that the method does indeed
 converge for the problem at hand. Newton (and his sometimes associated worker Raphson) 
 used the algorithm we attribute
@@ -113,8 +113,9 @@ There are some adjustments when our function $f(x)$ can be written as a sum of s
 
 $$  f(x) = \sum_{i=1}^n {r_i(x)^2} = r^t r $$
 
-The final vector product form is the one I favour because it is the least fussy to write and read.
-In particular, when we try to evaluate the Hessian of this sum of squares function, we see that it is
+The final vector product form is the one I favour because it is the 
+least fussy to write and read. In particular, when we try to evaluate the Hessian 
+of this sum of squares function, we see that it is
 
 $$ H_{j,k} = 2 \sum_{i-1}^n { { [ (\partial r_i/\partial{x_j} ) } ({\partial r_i/\partial{x_k} ) + r_i (\partial^2 r_i/{\partial{x_j} \partial{x_k} ) ]}}} $$
 
@@ -129,7 +130,6 @@ $$ g = 2 J^t r $$
 and the first part of the Hessian is 
 
 $$  J^t J $$
-
 Arguing that the residuals should be "small", Gauss proposed that the 
 Newton equations could be approximated by ignoring
 the second term (which has elements of the residual vector times second derivatives 
@@ -137,12 +137,10 @@ of the residual).  This gives the **Gauss-Newton**
 equations (cancelling a factor 2)
 
 $$ (J^t J)  \delta  =  - J^t r $$
-
 We can use this in an iteration similar to the Newton iteration. Note that these
 equations are equivalent to the linear least squares problem that can be written
 
 $$  J \delta  \approx - r $$
-
 Like most other treatments, we will skate over the thin ice that $J^t J$ is a 
 good approximation of the Hessian and that the resulting method converges.
 
@@ -154,22 +152,19 @@ to the original nonlinear least squares problem.
 @Hartley61 proposed that rather than use an iteration
 
 $$ x \leftarrow x + \delta$$
-
 one could do a search along the direction $\delta$. Ideally we would want to **minimize**
 
 $$ f(x + \alpha \delta) $$
-
 with respect to the (scalar) parameter $\alpha$. This one-dimensional minimization can
 take quite a lot of computational effort, however, and typically a value of $\alpha$ that
-permits a suitable reduction in the sum of squares $f(x)$ is accepted, and the iteration repeated
-from 
+permits a suitable reduction in the sum of squares $f(x)$ is accepted, and the 
+iteration repeated from 
 
 $$ x_{new} = x + \alpha * \delta $$
-
 Clearly there are many tactical choices that give rise to a variety of particular algorithms.
-One concern is that the direction $\delta$ may give no lower value of the sum of squares, since
-there is an approximation involved in using $J^t J$ rather than $H$. For example, $\delta$ could
-be perpendicular to any downhill direction.
+One concern is that the direction $\delta$ may give no lower value of the sum of squares, 
+since there is an approximation involved in using $J^t J$ rather than $H$. 
+For example, $\delta$ could be perpendicular to any downhill direction.
 
 @Hartley61 recommends a quadratic (parabolic) line search where two "new" points
 are evaluated, followed by a third try at the suggested minimum of the parabola fitted
@@ -180,7 +175,7 @@ A different approach is the R function `nls()`, which calls the C routine `nls.c
 the Gauss Newton direction <!-- (`incr` -- see nls-flowchart.txt) -->
 after which a step-halving "line-search" is used. 
 
-In `nls.c` we also see that once a satisfactory "new" set of parameters has been 
+In R's `nls.c` we also see that once a satisfactory "new" set of parameters has been 
 obtained, we reset the $\alpha$ value to the minimum of $2 * \alpha$ and 1.0. Oddly, there
 is no provision for the user to set the tactical choices of the maximum value, the reduction
 or the increase in $\alpha$, despite our experience that other choices can be advantageous
@@ -229,7 +224,6 @@ matrix that is the square root of $\lambda$ times the unit matrix $1_n$. Then th
 Levenberg-Marquardt equations are equivalent to solving the linear least squares problem
 
 $$  K \delta \approx - r_{augmented} $$
-
 where we have added $n$ zeros to $r$ to make $r_{augmented}$. Similar adjustments
 are used for scaled Marquardt methods mentioned below.
 
@@ -312,50 +306,64 @@ solution. More extensive testing is, we feel, warranted to show if this
 approach offers a useful gain in performance while preserving robustness
 in finding the parameter estimates.
 
+<!-- ### Variants -->
+
+<!-- The central idea of Hartley's method is a line search and that of Marquardt a -->
+<!-- parametrized stabilization that can be shown to reduce a sum of squares for a large -->
+<!-- enough stabilization parameter. There is nothing to prevent use of a line -->
+<!-- search additional to the Marquardt stabilization, and there are, of course,  -->
+<!-- several reasonable choices for line search. Also we could solve the (possibly -->
+<!-- stabilized) Gauss-Newton equations by several quite different numerical linear -->
+<!-- algebra techniques, or even approximations. In certain situations, some of these -->
+<!-- choices may be important. Unfortunately, the effort to benchmark the possibilities -->
+<!-- seems higher than any benefit in replacing quite good existing methods. -->
+
+
 ## Other approaches
 
-While the above ideas are the dominant theme in nonlinear least squares, there have been many 
-other proposed approaches. The following is a non-exhaustive sample.
+While the above ideas are the dominant themes in nonlinear least squares, 
+there have been many other approaches. 
+<!-- The following is a non-exhaustive sample. -->
 
-### Spiral 
+<!-- ### Spiral  -->
 
-@Jones70Spiral seems only to be mentioned in a single paper. There is a flowchart
-given but I have never been able to find a code (supposedly Fortran V for the Univac
-1108.) The motivations are to avoid both matrix equation solutions and one-dimensional
-line-search minimization. Jones mentions matrix inversion, but it is not clear whether
-he truly forms the inverse. The main idea in the paper (and presumably the code) is
-to use a geometric spiral that mimics the Marquadt search trajectory as $\lambda$
-is increased. It would be interesting to actually try some of the ideas, which do,
-as far as I can determine, have a reasonable basis and could possibly offer some
-efficiencies.
+<!-- @Jones70Spiral seems only to be mentioned in a single paper. There is a flowchart -->
+<!-- given but I have never been able to find a code (supposedly Fortran V for the Univac -->
+<!-- 1108.) The motivations are to avoid both matrix equation solutions and one-dimensional -->
+<!-- line-search minimization. Jones mentions matrix inversion, but it is not clear whether -->
+<!-- he truly forms the inverse. The main idea in the paper (and presumably the code) is -->
+<!-- to use a geometric spiral that mimics the Marquadt search trajectory as $\lambda$ -->
+<!-- is increased. It would be interesting to actually try some of the ideas, which do, -->
+<!-- as far as I can determine, have a reasonable basis and could possibly offer some -->
+<!-- efficiencies. -->
 
-### Approaches to Newton's method for special models
+### Using Newton's method for special models
 
 Newton (and his sometime associated worker Raphson) used the algorithm we attribute
 to them applied to a very special case and in a manner unrecognizable as that described
-above.  (See *https://en.wikipedia.org/wiki/Newton%27s_method*).
+above.  (See *https://en.wikipedia.org/wiki/Newton%27s_method*). Since Newton's
+method requires the full Hessian and its second derivatives, we do not see it applied
+except when the Hessian is easily and efficiently calculated.
+The Gauss-Newton method needs only first derivatives for the Jacobian. Generally, 
+these are much easier to compute. However, for special types of models where some short cut
+to the Hessian is available, Newton may be worthwhile. The `maxLik` package (@maxLik2011) 
+for R is an example.
+
+### Using general optimization methods
+
+There is no prohibition on applying algorithms for general function minimization, 
+even with constraints, to problems where the objective is a sum of squared functions.
+General methods also contend with issues of approximating the Hessian
+or ensuring iterates are satisfactory, but there may be additional advantages
+with a sum of squared function. 
+
+?? nlminb (from Gay etc. nlr)
+?? nl2sol (??)
+?? DUD ??
+
+# Differences in user interface
 
 
-The main attraction of the Gauss-Newton method is that the Jacobian only needs first
-derivatives, which are generally much, much easier to compute than the full second
-derivatives of the Hessian. However, there have been suggestioned
-Newton-like approaches, possibly for special types of models where some short cut
-to the Hessian is available. These may or may not make sense in the context of
-a given user or group of users. I regard these approaches as part of the
-computational infrastructure of the special cases rather than as general nonlinear
-least squares methods. The `maxLik` package (@maxLik2011) is a prime example.
-
-### Hybrid methods
-
-The central idea of Hartley's method is a line search and that of Marquardt a
-parametrized stabilization that can be shown to reduce a sum of squares for a large
-enough stabilization parameter. There is nothing to prevent use of a line
-search additional to the Marquardt stabilization, and there are, of course, 
-several reasonable choices for line search. Also we could solve the (possibly
-stabilized) Gauss-Newton equations by several quite different numerical linear
-algebra techniques, or even approximations. In certain situations, some of these
-choices may be important. Unfortunately, the effort to benchmark the possibilities
-seems higher than any benefit in replacing quite good existing methods.
 
 # Sources of implementation variety
 
@@ -668,57 +676,68 @@ with the Cholesky approach. This was continued in the Second Edition @nlacatvn10
 in @jnmws87. Even storing the full $A$ matrix uses only $n^2$ numbers.
 
 However, in the now defunct @jnnlmrt12 and successor @nlsr-manual, the choice
-has been to use a QR decomposition of an augmented Jacobian. Similarly, `nls()` uses a QR decomposition
-of the Jacobian (referred to as the "gradient") without augmentation. Clearly the $K$ matrix is
-at least $m$ by $n$, which for most nonlinear modelling problems is much larger than the $C$ matrix.
-The particular QR calculations in `nls()` and its packaged version are quite well-hidden in internal
+has been to use a QR decomposition of an augmented Jacobian. Similarly, `nls()` uses 
+a QR decomposition of the Jacobian (referred to as the "gradient") without augmentation.
+Clearly the $K$ matrix is at least $m$ by $n$, which for most nonlinear modelling problems 
+is much larger than the $C$ matrix.
+The particular QR calculations in `nls()` and its packaged version are 
+quite well-hidden in internal
 code, complicating comparisons of storage, complexity and performance. 
 
 ### Storage in Nash/Walker-Smith (1987) BASIC code
 
-In @Nash1987a, each major iteration generates a $A = J^t J$ matrix and the right hand side $-g = J^t r$
+In @Nash1987a, each major iteration generates a $A = J^t J$ matrix and the right 
+hand side $-g = J^t r$
 at parameters $x$ using functions for the residuals and Jacobian.
 The lower triangle of $A$ is stored as a vector of $n (n+1)/2$ elements.
-The diagonal elements are then multiplied by $(1 + \lambda)$ and $\lambda * \phi$ is added to each,
-then saved in matrix $C$. $\lambda$ is our Marquardt parameter and $\phi$ is the adjustment suggested in
-@jn77ima to
-overcome potential underflow to zero of the accumulation of the diagonal elements in low-precision
-arithmetic.
+The diagonal elements are then multiplied by $(1 + \lambda)$ and $\lambda * \phi$ 
+is added to each,
+then saved in matrix $C$. $\lambda$ is our Marquardt parameter and $\phi$ 
+is the adjustment suggested in @jn77ima to
+overcome potential underflow to zero of the accumulation of the 
+diagonal elements in low-precision arithmetic.
 
-Solving $C \delta = -g$, we compute the new sum of squares at $x + \delta$. If this value is greater than
-or equal to the current best (i.e., lowest) sum of squares, we increase $\lambda$ and generate a new
-$C$ matrix. We do not, however, need to build a new SSCP matrix or gradient $g$, just make the diagonal
-adjustment to $A$ to get a new $C$. 
+Solving $C \delta = -g$, we compute the new sum of squares at $x + \delta$. 
+If this value is greater than or equal to the current best (i.e., lowest) sum of 
+squares, we increase $\lambda$ and generate a new
+$C$ matrix. We do not, however, need to build a new SSCP matrix or gradient $g$, 
+just make the diagonal adjustment to $A$ to get a new $C$. 
 
 The code in @Nash1987a is much more complicated than this description, since we should address
 
 - bounds and masks on the parameters
 
-- tests for "non-computability", where we allow the user to provide an explicit flag that the function cannot
-  be computed at the trial parameters. This was included to avoid some of the weaknesses in evaluation of 
-  special functions, e.g., `log()` for small arguments or `exp()` for large ones, or for problem specific
-  situations where some parameter combinations might be considered inadmissible. (Readers may note that
-  the codes were written before @IEEE754-1985 was applied to most BASICs. The author was a member of
-  that standardization committee.)
+- tests for "non-computability", where we allow the user to provide an explicit 
+  flag that the function cannot be computed at the trial parameters. This was included 
+  to avoid some of the weaknesses in evaluation of special functions, e.g., `log()` 
+  for small arguments or `exp()` for large ones, or for problem specific
+  situations where some parameter combinations might be considered inadmissible. 
+  (Readers may note that the codes were written before @IEEE754-1985 was applied to 
+  most BASICs. The author was a member of that standardization committee.)
 
-- situations where rounding and truncation errors make the Cholesky decomposition return with an indication
-  that $C$ is "singular", at least in the particular computational arithmetic.
+- situations where rounding and truncation errors make the Cholesky decomposition 
+  return with an indication that $C$ is "singular", at least in the particular 
+  computational arithmetic.
   
 ### Approach in package `nlsr`
 
-In @nlsr-manual, the approach to the augmented Gauss-Newton equations is nominally equivalent to that in
-@Nash1987a,
-except that we perform the solution using a QR decomposition, in fact a modification of the DQRDC routine from 
+In @nlsr-manual, the approach to the augmented Gauss-Newton equations is nominally 
+equivalent to that in @Nash1987a, except that we perform the solution using a QR
+decomposition, in fact a modification of the DQRDC routine from 
 @lapack99, which uses Householder transformations.
 
-One of the issues with creating the SSCP matrix $A$ is that we lose information in finite arithmetic 
-(See @jncnm79, Chapter 5). As noted above, a QR approach to the traditional Gauss-Newton codes is to solve
+One of the issues with creating the SSCP matrix $A$ is that we lose information 
+in finite arithmetic 
+(See @jncnm79, Chapter 5). As noted above, a QR approach to the traditional 
+Gauss-Newton codes is to solve
 
 $$  J \delta = -r $$
 
-That is, we assume a generalized inverse of $J$ can be applied to both sides of the Gauss-Newton equations.
+That is, we assume a generalized inverse of $J$ can be applied to both sides 
+of the Gauss-Newton equations.
 
-To move to the Marquardt variant of the Gauss-Newton, we need to augment $J$. Also as described above,
+To move to the Marquardt variant of the Gauss-Newton, we need to augment $J$. 
+Also as described above,
 augmented matrix $K$ is a row-wise appending $Z1$ and, for the Nash modification $Z2$, to $J$.
 We will also need to augment $r$ by an appropriate number of zeros. 
 As a reminder, $Z1$ and $Z2$ are given by 
@@ -728,8 +747,10 @@ and
 
 $$ Z2_{k,k}  = \sqrt(\lambda) \sqrt(\phi)  $$
 
-We have noted that, at each major iteration, the construction of $Z1$ requires the diagonal elements of the
-SSCP matrix. Thus it could be more efficient to omit the $Z1$ augmentation and use an explicit scaling
+We have noted that, at each major iteration, the construction of $Z1$ requires 
+the diagonal elements of the
+SSCP matrix. Thus it could be more efficient to omit the $Z1$ augmentation 
+and use an explicit scaling
 in the original setup. Package `nlsralt`, as
 mentioned, does this with functions `nlxbx()` (for formula-specified models) and `nlfbx()` (for problems
 specified with `res()` and `jac()` functions). This gives the following preliminary example using the 
@@ -882,8 +903,7 @@ be useful to report program size or number of lines of code. These measures are 
 influenced by comments, program structure, and computing environment issues.
 
 
-
-# Implementation comparisons
+# Implementation considerations
 
 Here want to explore the ideas. First we will examine the sub-problem of solving
 the Gauss-Newton equations or their Marquardt variants.
@@ -1189,9 +1209,12 @@ the condition of our problem. This was also published as @LefkovitchNash1976.
 
 We can arrange to solve the normal equations approximately as under Ridge Regression
 above by adding a unit matrix scaled by e.g., 1e-5, and padding the RHS with zeros.
-The solution is "almost but not quite" the same because the formation of the sum of squares and
+The solution is "almost but not quite" the same because the formation of the 
+sum of squares and
 cross products matrix explicitly in the normal equations can introduce errors that
 are partially avoidable in the QR approach below.
+
+?? More 77 item
 
 ```{r lm7a, echo=TRUE}
 Dx <- diag(rep(1e-5,4))
