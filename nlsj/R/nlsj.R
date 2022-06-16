@@ -22,16 +22,13 @@ for (onename in ncontrol) {
 control<-ctrl
 ctrl<-NULL
 
-# Controls
+# Controls we need to have. ?? use ctrldefault() idea?
    if (is.null(control$derivmeth)) control$derivmeth="default" # for safety
    epstol <- (.Machine$double.eps * control$offset) 
    epsh <- sqrt(epstol)
    epstol4 <- epstol^4 # used for smallsstest
    ##?? may want these in nlsj.control
    if (control$derivmeth == "numericDeriv") warning("Forcing numericDeriv")
-#   cat("control:"); print(control)
-#   tmp <- readline("cont.")
-#   control$watch<-TRUE
 
 # Algorithm
    if (is.null(algorithm)) algorithm<-"default"
