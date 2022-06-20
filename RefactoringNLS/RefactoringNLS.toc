@@ -1,0 +1,33 @@
+\contentsline {section}{Abstract}{1}{section*.2}%
+\contentsline {section}{The \texttt {nls()} function: strengths and shortcomings}{2}{section*.3}%
+\contentsline {subsection}{Feature: Convergence and termination tests (FIXED)}{2}{section*.4}%
+\contentsline {subsubsection}{More general termination tests}{3}{section*.5}%
+\contentsline {subsection}{Feature: Failure when Jacobian is computationally singular}{3}{section*.6}%
+\contentsline {subsection}{Feature: Jacobian computation}{4}{section*.7}%
+\contentsline {subsection}{Feature: Subsetting}{4}{section*.8}%
+\contentsline {subsection}{Feature: na.action}{4}{section*.9}%
+\contentsline {subsection}{Feature: model frame}{5}{section*.10}%
+\contentsline {subsection}{Feature: sources of data}{5}{section*.11}%
+\contentsline {subsection}{Feature: missing start vector and self-starting models}{5}{section*.12}%
+\contentsline {subsubsection}{Strategic issues in selfStart models}{6}{section*.13}%
+\contentsline {subsection}{Issue: returned output of nls() and its documentation}{6}{section*.14}%
+\contentsline {subsubsection}{Weights in returned functions from nls()}{7}{section*.15}%
+\contentsline {subsubsection}{Interim output from the ``port'' algorithm}{7}{section*.16}%
+\contentsline {subsubsection}{Failure to return best result achieved}{7}{section*.17}%
+\contentsline {subsection}{Feature: partially linear models and their specification}{8}{section*.18}%
+\contentsline {subsection}{Issue: code structure and documentation for maintenance}{9}{section*.19}%
+\contentsline {subsection}{Feature: indexed parameters}{10}{section*.20}%
+\contentsline {subsection}{Feature: bounds on parameters}{10}{section*.21}%
+\contentsline {subsubsection}{Philosophical considerations}{11}{section*.22}%
+\contentsline {section}{Goals and progress of our effort to improve \texttt {nls()}}{11}{section*.23}%
+\contentsline {subsection}{Code rationalization and documentation}{11}{section*.24}%
+\contentsline {subsubsection}{Rationalization of formula specifications}{12}{section*.25}%
+\contentsline {subsubsection}{Rationalization of indexed models}{12}{section*.26}%
+\contentsline {subsubsection}{Streamlining code}{12}{section*.27}%
+\contentsline {subsection}{Tests and use-case examples}{12}{section*.28}%
+\contentsline {subsubsection}{A testing package: NLSCompare}{13}{section*.29}%
+\contentsline {subsection}{Documentation and resources}{13}{section*.30}%
+\contentsline {section}{Strategic choices in nonlinear model estimation}{13}{section*.31}%
+\contentsline {subsection}{Opinions}{13}{section*.32}%
+\contentsline {section}{Acknowledgement}{14}{section*.33}%
+\contentsline {section}{References}{14}{section*.34}%
