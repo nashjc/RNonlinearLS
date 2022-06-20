@@ -33,7 +33,7 @@ to R as the software environment, but the ideas are more generally applicable.
 # Characterizing a particular computing environment for R
 
 In 2021, we undertook an investigation of tools in R for nonlinear least squares
-calculations under the Google Summer of Code initiative. In the process, we recognized 
+calculations under the Google Summer of Code program. In the process, we recognized 
 that we would be comparing calculations
 performed on **different computing environments** at our disposal. Some of these were
 based on different hardware, while others were different combinations of given hardware
@@ -54,7 +54,7 @@ that assist this effort, but the ideas are extensible to other programming syste
 There may be multiple terms used to describe some of the information we want, as
 well as different interpretations of some of the units of measure. For example,
 storage for disks or memory has decimal and binary schemes of units. Thus 
-(see https://en.wikipedia.org/wiki/Gigabyte) there is a movement to use, for example, Gigabyte or GB to mean usits of 1000^3 bytes, while the Gigibyte or Gib is 1024^3.
+(see https://en.wikipedia.org/wiki/Gigabyte) there is a movement to use, for example, Gigabyte or GB to mean units of $1000^3$ bytes, while the Gibibyte or GiB is $1024^3$` bytes.
 
 ## Temporal information
 
@@ -63,12 +63,12 @@ information on when the calculations were performed.
 Most computations should have a time/date stamp that is unlikely to be confused with any
 other, at least in combination with a machine name and/or other tags. Here is one
 suggestion based on the R `Sys.time()` function. Moreover, as we were working on opposite
-sides of the globe, it could be important to either specify time zone or to work with a
+sides of the globe, it deemed important to either specify time zone or to work with a
 single "clock" such as UTC. R provides tools to allow this, as in the following example.
 
 ```{r tdstamp}
-#get a timestamp
-tsstr <- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYYmmddHHMM
+# get a time stamp
+tsstr <- format(Sys.time(), "%Y/%m/%d|%H:%M") # tsstr == time stamp string in form YYYY/mm/dd|HH:MM
 cat("Date and Time stamp:", tsstr, "\n")
 # and here is a way to get the UTC time
 tutc <- as.POSIXlt(Sys.time(), tz = "UTC")
@@ -85,8 +85,7 @@ we need for reporting tests are
 - a machine name. While most systems (and Linux in particular) offer to let the user
   provide a machine name, there are generally defaults that many people accept, and
   these are often uninformative and may be non-unique. We note that VirtualBox with
-  a Windows 10 guest machine gave the name DESKTOP-HF4CKVA. Where this name was 
-  generated we are not sure. Settings / System allows "rename this PC". Clearly 
+  a Windows 10 guest machine gave the name DESKTOP-HF4CKVA. We are not sure where this name was generated. Settings / System allows "rename this PC". Clearly 
   we may want to extend the name if particular software is involved, as follows.
   
 - operating system and version. For Linux systems, we note that besides the 
@@ -113,7 +112,7 @@ Some of the factors relating to hardware that could be important are:
 
 - cpu (i.e., processor)
 - number of cores
-- operating cycle speed (this is sometimes specific to the cpu specified )
+- operating cycle speed (this is sometimes specific to the cpu specified)
 
 ?? how do we reconcile?
 
@@ -215,10 +214,10 @@ mp <- envron()
 E9 <- mp$eps
 E6 <- mp$radix
 J1 <- mp$ndigits
-cat("E9 = ",E9,"  -- the machine precision,  E9=MIN (X  1+X>1)\n")
+cat("E9 = ", E9, "  -- the machine precision,  E9=MIN (X  1+X>1)\n")
 cat( "E9*1E+16=", E9 * 1E+16, "\n")
-cat( "E6 = ", E6,"  -- the radix of arithmetic", "\n")
-cat( "J1 = ", J1,"  -- the number of radix digits in mantissa of FP numbers", "\n")
+cat( "E6 = ", E6, "  -- the radix of arithmetic", "\n")
+cat( "J1 = ", J1, "  -- the number of radix digits in mantissa of FP numbers", "\n")
 cat( "E6^(-J1+1) * 1E+16=", 1E+16*(E6^(-J1+1)), "\n")
 cat(".Machine$double.eps=", .Machine$double.eps, "\n")
 cat("From R  .Machine:\n")
