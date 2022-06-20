@@ -60,7 +60,7 @@ as we suggest below.
 A previous issue with `nls()` that prevented it from providing parameter estimates for zero-residual
 (i.e., perfect fit) data was corrected thanks to suggestions by one of us. 
 
-In the manual page for `nls()` in R 4.0.0 there is the warning
+In the manual page for `nls()` in R 4.0.0 there is the warning:
 
 >  **Do not use `nls` on artificial "zero-residual" data.**
 
@@ -188,7 +188,7 @@ Unfortunately, the meaning of "iteration" varies among programs and requires
 careful examination of the
 code. We prefer to use the number of times the residuals or the jacobian have
 been computed and put upper limits on these. Our codes exit (terminate) when these limits
-are reached. Generally we prefer larger limits than the default `maxiter=50` of `nls()`,
+are reached. Generally we prefer larger limits than the default `maxiter = 50` of `nls()`,
 but that may reflect the more difficult problems we have encountered because 
 users consult us when standard tools have given unsatisfactory results. 
 
@@ -204,12 +204,12 @@ R nls "singular gradient"
 gets over 4000 hits that are spread over some years. This could be because the 
 Jacobian is poorly approximated (see **Jacobian computation** below). However,
 it is common in nonlinear least squares computations that the Jacobian is very close
-to singular for some values of the model parameters. In such cases we need to find
+to singular for some values of the model parameters. In such cases, we need to find
 an alternative algorithm to the Gauss-Newton iteration of `nls()`. The most common
 work-around is the Levenberg-Marquardt stabilization (see @Marquardt1963, @Levenberg1944, 
 @jn77ima), and versions of it have been implemented in packages `minpack.lm` and `nlsr`.
-In our work we prepared experimental prototypes of `nls` that incorporate
-stabilizations, but integration with all the features of `nls()` has proved difficult.
+In our work, we prepared experimental prototypes of `nls` that incorporate
+stabilization, but integration with all the features of `nls()` has proved difficult.
 
 Let us consider an 'singular gradient' example 
 *https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*.
@@ -217,17 +217,17 @@ Let us consider an 'singular gradient' example
 but unhelpful in obtaining a solution.
 
 ```{r SESingGrad}
-reala = -3; realb = 5; realc = 0.5; realr = 0.7; realm = 1 # underlying parameters
-x = 1:11 # x values; 11 data points
-y=reala + realb * realr^(x - realm) + realc * x # linear+exponential function
-testdat = data.frame(x, y) # save in a data frame
+reala <- -3; realb <- 5; realc <- 0.5; realr <- 0.7; realm <- 1 # underlying parameters
+x <- 1:11 # x values; 11 data points
+y <- reala + realb * realr^(x - realm) + realc * x # linear + exponential function
+testdat <- data.frame(x, y) # save in a data frame
 strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1) # give programs a good start
 jform <- y ~ a + b * r^(x - m) + c * x # Formula
 library(nlsr)
 linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = F))
 linexp2 # Note singular values of Jacobian in rightmost column
 # We get an error with nls()
-linexp=try(nls(jform, data = testdat, start = strt, trace = F))
+linexp <- try(nls(jform, data = testdat, start = strt, trace = F))
 ```
 
 The Jacobian is essentially singular as shown by its singular
@@ -294,9 +294,9 @@ https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/.
 The typical default action, which can be seen by using the command `getOption("na.action")`
 is `na.omit`. This option essentially omits from computations any observations
 containing missing values (i.e. any row of a data frame containing an NA). 
-`na.exclude` does much the same for computations, but keeps the rows with NA elements so 
+`na.exclude` does much of the same for computations, but keeps the rows with NA elements so 
 that predictions are in the correct row position. We recommend that workers actually test 
-output to verify behaviour is as wanted.
+output to verify the behaviour is as wanted.
 
 A succinct description of the issue is given in: *https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r*
 
@@ -314,7 +314,7 @@ setting they may not even be aware has been set. Is `na.fail` a safer default?
 
 ## Feature: model frame
 
-`model` is an argument to the `nls()` function, which is documented as
+`model` is an argument to the `nls()` function, which is documented as:
 
 > **model** logical. If true, the model frame is returned as part of the object. Default is FALSE.
 
@@ -329,8 +329,8 @@ be confusing.) However, the model frame is used within the function code in the 
 search in the available environments (i.e., workspaces) for suitable data objects. 
 We do NOT like this approach, but it is "the R way". R allows users to leave many 
 objects in the default (.GlobalEnv) workspace. Moreover, users have to actively 
-suppress saving this workspace (`.RData`) on exit, and any such file in the path 
-when R is launched will be loaded. The overwhelming proportion of R users in our
+suppress saving this workspace (`.RData`) on exit; otherwise, any such file in the path, 
+when R is launched, will be loaded. The overwhelming proportion of R users in our
 acquaintance avoid saving the workspace because of the danger of lurking data and
 functions which may cause unwanted results.
 
@@ -350,12 +350,12 @@ with the particulars of the `nls()` code. Though there is a `getInitial()` funct
 this is not easy to use to simply compute the initial parameter estimates, in part 
 because it may call `nls()`. Such circular references are, in our view, dangerous.
 
-Other concerns are revealed by the example below. Here the `SSlogis` selfStart function 
+Other concerns are revealed by the example below. Here, the `SSlogis` selfStart function 
 is used to generate a set
 of initial parameters for a 3-parameter logistic curve. The form used by `SSlogis`
-is $y \sim Asym/(1+exp((xmid-tt)/scal))$, but we show how the starting parameters
+is $y \,\sim\, Asym\,/\, (1 \,+\, exp((xmid\,-\,tt)\,/\,scal))$, but we show how the starting parameters
 for this model can be transformed to those of 
-another form of the model, namely, $y \sim b1/(1 + b2*exp(-b3*t))$.
+another form of the model, namely, $y \,\sim\, b1\,/\,(1 \,+\, b2\,*\,exp(-b3\,*\,t))$.
 
 The code for `SSlogis()` is in `./src/library/stats/R/zzModels.R`.
 <!-- ``` -->
@@ -401,15 +401,15 @@ The code for `SSlogis()` is in `./src/library/stats/R/zzModels.R`.
 <!--         parameters = c("Asym", "xmid", "scal")) -->
 <!-- ``` -->
 This R function includes analytic expressions for the Jacobian ("gradient").
-These could be be useful to R users, especially if documented. Moreover, we
+These could be useful to R users, especially if documented. Moreover, we
 wonder why the programmers have chosen to save so many quantities in "hidden"
 variables, i.e., with names preceded by ".". These are then not displayed by the `ls()`
 command, making them difficult to access.
 
 In the event that a selfStart model is not available, `nls()` sets all the starting parameters 
 to 1. This is, in our view, tolerable, but could be improved by using a set of values
-that are all slightly different, which, in the case of the example model $y \sim a*exp(-b*x) + c*exp(-d*x)$
-would avoid a singular Jacobiam because $b$ and $d$ were equal in value. 
+that are all slightly different, which, in the case of the example model $y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)$
+would avoid a singular Jacobian because $b$ and $d$ were equal in value. 
 A sequence like  1.0, 1.1, 1.2, 1.3 for the four parameters 
 could be provided quite simply instead of all 1's.
 
@@ -474,23 +474,32 @@ worth considering.
 
 The output of `nls()` is an object of class "nls" which has the following structure:
 
-```
-A list of:
+>A list of
 
-m	        an nlsModel object incorporating the model.
-data  	    the expression that was passed to nls as the data argument. The actual data values 
-              are present in the environment of the m components, e.g., environment(m$conv).
-call	    the matched call with several components, notably algorithm.
-na.action 	the "na.action" attribute (if any) of the model frame.
-dataClasses	the "dataClasses" attribute (if any) of the "terms" attribute of the model frame.
-model	    if model = TRUE, the model frame.
-weights	    if weights is supplied, the weights.
-convInfo	a list with convergence information.
-control	    the control list used, see the control argument.
+>`m` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  an `nlsModel` object incorporating the model.
 
-There are also two deprecated items if algorithm = "port" fit only. These are
-convergence (a code = 0 for convergence) and message. These are available from convInfo.
-```
+>`data`	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;the expression that was passed to `nls` as the data argument. The actual \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$  data values are present in the environment of the `m` components, e.g., \newline $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ `environment(m$conv)`.
+
+>`call` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the matched call with several components, notably `algorithm`.
+
+>`na.action` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the `"na.action"` attribute (if any) of the model frame.
+
+>`dataClasses` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $~$the `"dataClasses"` attribute (if any) of the "`terms`" attribute of the \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ model frame.
+
+>`model` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;if `model = TRUE`, the model frame.
+
+>`weights` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if `weights` is supplied, the weights.
+
+>`convInfo` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; a list with convergence information.
+
+>`control` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the control `list` used, see the `control` argument.
+
+>`convergence, message` &nbsp;for an `algorithm = "port"` fit only, a convergence code (`0` for  \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$convergence) and message.
+
+> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To use these is *deprecated*, as they are available from `convInfo` now.
 
 <!-- ### Example output -->
 
@@ -523,14 +532,14 @@ complexity of the object is a challenge to users.
 In the following, we use `result` as the returned object from `nls()`.
 
 The `data` return element is an R symbol. To actually access the data from this 
-element, we need to use the syntax
+element, we need to use the syntax:
 
 ```
 eval(parse(text=result$data))
 ```
 
 However, if the call is made with `model=TRUE`, then there is a returned element
-`model` which contains the data, and we can list its contents using 
+`model` which contains the data, and we can list its contents using:
 
 ```
 ls(result$model)
@@ -541,15 +550,21 @@ and if there is an element called `xdata`, it can be accessed as `result$model$x
 Let us compare the `nls()` result with that from 
 `nlsr::nlxb()`, with ostensibly solves the same problem:
 
-```
-coefficients    A named vector giving the parameter values at the supposed solution.
-ssquares        The sum of squared residuals at this set of parameters.
-resid           The residual vector at the returned parameters.
-jacobian        The jacobian matrix (partial derivatives of residuals w.r.t. the 
-                parameters) at the returned parameters.
-feval           The number of residual evaluations (sum of squares computations) used.
-jeval           The number of Jacobian evaluations used.
-```
+
+>`coefficients`    A named vector giving the parameter values at the supposed solution.
+
+>`ssquares` $~~~~~$ The sum of squared residuals at this set of parameters.
+
+>`resid` $~~~~~~~~~~$ The residual vector at the returned parameters.
+
+>`jacobian` $~~~~~$ The jacobian matrix (partial derivatives of residuals w.r.t. the 
+                parameters) at the \newline
+$~~~~~~~~~~~~~~~~~~~~$ returned parameters.
+
+>`feval` $~~~~~~~~~~$ The number of residual evaluations (sum of squares computations) used.
+
+>`jeval` $~~~~~~~~~~$ The number of Jacobian evaluations used.
+
 
 However, actually looking at the structure of a returned result gives a list of 11
 items. The extra 5 are:
@@ -598,12 +613,12 @@ function has made considerable progress in reducing the sum of squared residuals
 Here is an abbreviated example:
 
 ```{r tetrarun}
-time=c( 1,  2,  3,  4,  6 , 8, 10, 12, 16)
-conc = c( 0.7, 1.2, 1.4, 1.4, 1.1, 0.8, 0.6, 0.5, 0.3)
+time <- c( 1,  2,  3,  4,  6 , 8, 10, 12, 16)
+conc <- c( 0.7, 1.2, 1.4, 1.4, 1.1, 0.8, 0.6, 0.5, 0.3)
 NLSdata <- data.frame(time,conc)
-NLSstart <-c(lrc1=-2,lrc2=0.25,A1=150,A2=50) # a starting vector (named!)
-NLSformula <-conc ~ A1*exp(-exp(lrc1)*time)+A2*exp(-exp(lrc2)*time)
-tryit <- try(nls(NLSformula, data=NLSdata, start=NLSstart, trace=TRUE))
+NLSstart <- c(lrc1 = -2, lrc2 = 0.25, A1 = 150, A2 = 50) # a starting vector (named!)
+NLSformula <- conc ~ A1 * exp(-exp(lrc1) * time) + A2 * exp(-exp(lrc2) * time)
+tryit <- try(nls(NLSformula, data = NLSdata, start = NLSstart, trace = TRUE))
 print(tryit)
 ```
 
@@ -619,7 +634,7 @@ solver tools. Unfortunately, R allows multiple approaches within different
 modelling tools, and within `nls()` itself.
 
 One obvious case is that nonlinear modeling tools are a superset of linear ones.
-Yet the explicit model `y ~ a*x + b` does not work with the linear modeling 
+Yet the explicit model `y ~ a * x + b` does not work with the linear modeling 
 function `lm()`, which requires this model to be specified as `y ~ x`.
 
 Within `nls()`, consider the 
@@ -627,8 +642,8 @@ following FOUR different calling sequences for the same problem, though an intui
 labelled fm2a, will not work. In this failed
 attempt, putting the `Asym` parameter in the model causes the `plinear` algorithm
 to try to add another term to the model. We believe this is unfortunate, and would
-like to see a consistent syntax. At the time of writing we do
-not foresee a resolution for this issue. In the example we have NOT evaluated
+like to see a consistent syntax. At the time of writing, we do
+not foresee a resolution for this issue. In the example, we have NOT evaluated
 the commands to save space.
 
 ```{r log4ways, echo=TRUE, eval=FALSE}
@@ -638,25 +653,25 @@ fm1 <- nls(density ~ SSlogis(log(conc), Asym, xmid, scal), DNase1)
 summary(fm1)
 
 ## using conditional linearity - leave out the Asym parameter
-fm2 <- nls(density ~ 1/(1 + exp((xmid - log(conc))/scal)),
+fm2 <- nls(density ~ 1 / (1 + exp((xmid - log(conc)) / scal)),
                  data = DNase1, start = list(xmid = 0, scal = 1),
                  algorithm = "plinear")
 summary(fm2)
 
 ## without conditional linearity
-fm3 <- nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
+fm3 <- nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
                  data = DNase1,
                  start = list(Asym = 3, xmid = 0, scal = 1))
 summary(fm3)
 
 ## using Port's nl2sol algorithm
-fm4 <- try(nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)),
+fm4 <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
                  data = DNase1, start = list(Asym = 3, xmid = 0, scal = 1),
                  algorithm = "port"))
 summary(fm4)
 
 ## using conditional linearity AND Asym does NOT work
-fm2a <- try(nls(density ~ Asym/(1 + exp((xmid - log(conc))/scal)), 
+fm2a <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)), 
                  data = DNase1, start = list(Asym=3, xmid = 0, scal = 1),
                  algorithm = "plinear", trace = TRUE))
 summary(fm2a)
@@ -680,7 +695,7 @@ base index for arrays lead to traps for unwary programmers.
 
 For `nls()` the concern is demonstrated by a short email query from John Nash
 to Doug Bates and his reply.
-This is NOT a criticism of Prof. Bates (or any other) work, but a reflection on 
+This is NOT a criticism of Prof. Bates' (or any other) work, but a reflection on 
 how difficult it is to develop code in this subject area and to keep it maintainable. 
 We have experienced similar loss of understanding for some of our own codes.
 
@@ -798,7 +813,7 @@ than a few thousand.
 `nls()` can impose bounds on parameters, but only if the `port` algorithm is used. Unfortunately,
 the manual states 
 
-> The algorithm = "port" code appears unfinished, and does not even check that the starting 
+> The `algorithm = "port"` code appears unfinished, and does not even check that the starting 
   value is within the bounds. Use with caution, especially where bounds are supplied.
 
 This is clearly unsatisfactory for general use, but does find bounded solutions. 
@@ -813,20 +828,20 @@ good solution for the scaled Hobbs test problem.
 weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
           38.558, 50.156, 62.948, 75.995, 91.972)
 tt <- 1:12
-wf <- data.frame(y=weed, tt=tt)
-st <- c(b1=1, b2=1, b3=1) # a default starting vector (named!)
-wmods <- y ~ 100*b1/(1+10*b2*exp(-0.1*b3*tt)) ## Scaled model
+wf <- data.frame(y = weed, tt = tt)
+st <- c(b1 = 1, b2 = 1, b3 = 1) # a default starting vector (named!)
+wmods <- y ~ 100 * b1 / (1 + 10 * b2 * exp(-0.1 * b3 * tt)) ## Scaled model
 require(minpack.lm)
 require(nlsr)
 # Hobbs scaled problem with bounds, formula specification
-anlxb1 <- nlxb(wmods, start=st, data=wf, lower=c(0,0,0), upper=c(2,6,3))
+anlxb1 <- nlxb(wmods, start = st, data = wf, lower = c(0, 0, 0), upper = c(2, 6, 3))
 cat("Using nlsr::nlxb():")
 print(anlxb1)
 ## nlsLM seems NOT to work properly with bounds
-anlsLM1b <- nlsLM(wmods, start=st, data=wf, lower=c(0,0,0), upper=c(2,6,3))
+anlsLM1b <- nlsLM(wmods, start = st, data = wf, lower = c(0, 0, 0), upper = c(2, 6, 3))
 cat("\n"); cat("using minpack.lm::nlsLM():")
 print(anlsLM1b)
-anlsb<-nls(wmods, start=st, data=wf, algorithm="port", lower=c(0,0,0), upper=c(2,6,3))
+anlsb<-nls(wmods, start = st, data = wf, algorithm = "port", lower = c(0, 0, 0), upper = c(2, 6, 3))
 cat("Using nls with 'port':")
 print(anlsb)
 ```
@@ -837,21 +852,21 @@ Bounds on parameters raise some interesting and difficult questions about how un
 in parameter estimates should be computed or reported. That is, the traditional "standard
 errors" are generally taken to imply symmetric intervals about the point estimate in which
 the parameter may be expected to be found with some probability under certain assumptions.
-Bounds change those assumptions. Hence `nlsr::nlxb()` does not compute standard
+Bounds change those assumptions. Hence, `nlsr::nlxb()` does not compute standard
 errors nor their derived statistics when bounds are active.
 
 # Goals and progress of our effort to improve `nls()`
 
 ## Code rationalization and documentation
 
-We want
+We want:
 
 - to provide a packaged version of `nls()` (call it `nlsalt`) coded entirely in R 
   that matches the features in base R or what is packaged in `nlspkg` as described 
   in @PkgFromRbase22.
   
 - to streamline the overall `nls()` infrastructure. By this we
-  mean a re-factoring the routines so they are better suited to maintenance of both
+  mean a re-factoring of the routines so they are better suited to maintenance of both
   the existing `nls()` methods and features as well as new features we or others
   would like to add.
 
@@ -874,7 +889,7 @@ While not consistent with the `lm()` specification of linear models,
 nonlinear models need all parameters specified. 
 That is, the model formula should be written down as it would be computed.
 Thus a linear model (which is valid input for nonlinear estimatin) should
-be specified `y ~ a*x + b` rather than `y ~ x`. 
+be specified `y ~ a * x + b` rather than `y ~ x`. 
 Moreover, we want to avoid the partially linear parameters appearing 
 in the result object as `.lin1`, `.lin2`, etc., where the actual position 
 of parameters in the model is not explicit.
@@ -888,7 +903,7 @@ yet tried to code such a change, and welcome discussion from those working with
 other packages using model formulas.
 
 A further complication of model specification in R is that some formulas require
-the user to surround a term with `I(  )` to inhibit interpretation of arithmetic 
+the user to surround a term with `I()` to inhibit interpretation of arithmetic 
 operators. We would prefer that formulas be usable without this complication.
 
 <!-- It is also of interest to consider code that will detect partial linearity,  -->
@@ -914,7 +929,7 @@ Indexed models clearly have a place in some areas of research.
 <!-- We need to be able to process models, as the example above, where the -->
 <!-- model formula is  -->
 We need to be able to process models such as 
-`Length ~ a[Strip] + b[Strip] * exp(-Conc/th)` where `Strip` is the index. Data
+`Length ~ a[Strip] + b[Strip] * exp(-Conc / th)` where `Strip` is the index. Data
 `Length` and `Conc` are available for all observations and parameter `th` applies
 to every fitted point, but `a[Strip]` and `b[Strip]` depend on the index, which
 could be an experimental run number, or some other categorization. 
@@ -1166,8 +1181,7 @@ The aspects of `nls()` that have given us the most trouble:
   context correct.
   
 - The mixing of R, C and Fortran code was necessary for computational performance in the past.
-  Lacking decent  
-  developer documentation, programmers now face a lot of work to fix or improve code. 
+  Lacking decent developer documentation, programmers now face a lot of work to fix or improve code. 
   We believe in having at least a working reference version of code in a single programming language. 
   If necessary, by
   measuring ("profiling") the code, we can find bottlenecks and, if necessary, substitute just those slower 
