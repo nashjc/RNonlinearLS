@@ -971,9 +971,9 @@ Maintainers of packages need suitable tests and use-case examples in order:
   these bad inputs are caught by the programs.
   
 Such goals align with the aims of **unit testing** 
-(e.g., https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211), as well
-as with R package checking tools ?? reference??. ??Other refs.
-
+(e.g., https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211, @HWtestthat11, @HWdevtools21
+and the conventional R package testing tools).
+ 
 <!-- ??AB: perhaps we should put in the refernces?? -->
 <!-- I've emailed author to ask if there is preferred citation. JN -->
 
@@ -983,10 +983,11 @@ One of us has developed a working prototype package at https://github.com/ArkaB-
 A primary design objective of this is to allow the summarisation of multiple tests in
 a compact output. The prototype has a vignette to illustrate its use.
 
-<!-- ?? Arkajyoti -- do you want to expand? -->
-<!-- Trying to trim a lot of words, so am makign reference to package. Is it ready -->
+<!-- Arkajyoti -- do you want to expand? -->
+<!-- No. I think it would be tangential to the goal of the paper. We can have a -->
+<!-- separate article for that, maybe? -->
+<!-- Trying to trim a lot of words, so am making reference to package. Is it ready -->
 <!-- for others to use? -->
-
 
 <!-- When we have a "new" or trial solver function, we would like to know if it gives  -->
 <!-- acceptable results on a range of sample problems of different types, starting -->
@@ -1032,11 +1033,17 @@ a compact output. The prototype has a vignette to illustrate its use.
 
 <!-- - VarietyInNonlinearLeastSquaresCodes.Rmd: a review of the different algorithms and -->
 <!--   the many choices in their implementation for nonlinear least squares. This is still -->
-<!--   a DRAFT at 2021-8-20. ?? fix -->
+<!--   a DRAFT at 2022-6-20. -->
+
+<!-- Response to query about TestsDoc -->
+<!-- 4. Testing infrastructure, I think, is a general topic and not -->
+<!-- particularly relevant to nls(); i.e., it is important for all packages. -->
+<!-- So, I don't think we need to include that in RefactoringNLS. Could be a -->
+<!-- separate blog maybe?   -->
   
-<!-- ?? Arkajyoti: I think TestsDoc is too preliminary to mention, though the links might be -->
+<!-- Arkajyoti: I think TestsDoc is too preliminary to mention, though the links might be -->
 <!-- useful. Perhaps incorporate in the nlsCompare repo. -->
-<!-- - TestsDoc.Rmd (??citation) is a survey of testing tools in R. It has more  -->
+<!-- - TestsDoc.Rmd (?citation) is a survey of testing tools in R. It has more  -->
 <!--   general possibilities  -->
 <!--   and fits into the subject of regression testing, in which case a  -->
 <!--   more extensive literature review will be needed.  Note that this -->
@@ -1049,8 +1056,8 @@ a compact output. The prototype has a vignette to illustrate its use.
   <!-- view is that this COULD be a long term side-interest for your academic work, but -->
   <!-- that would depend on your own interests as well as opportunities. -->
 
-<!-- ?? needs more focus of where it may appear. -->
-<!-- - DerivsNLS.Rmd ??citation: a document to explain different ways in which Jacobian information -->
+<!-- This needs more focus of where it may appear. I'm thinking of a blog post -- JN-->
+<!-- - DerivsNLS.Rmd ?citation: a document to explain different ways in which Jacobian information -->
 <!--   is supplied to nonlinear least squares computation in R. File `ExDerivs.R` is -->
 <!--   a DRAFT of a script to provide examples. -->
 

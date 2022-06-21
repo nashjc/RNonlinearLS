@@ -385,6 +385,10 @@ We welcome conversation on how machine capability may be summarized and reported
 to allow sensible comparison of computational performance of algorithms and 
 systems.
 
+## Acknowledgement
+
+Colin Gillespie has done a great deal of work in preparing the `benchmarkme` package
+we have found important in the present work.
 
 ## References
 
