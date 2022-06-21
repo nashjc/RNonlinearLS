@@ -36,9 +36,10 @@ well as its nonlinear estimation tools.
 
 # The `nls()` function: strengths and shortcomings
 
-`nls()` is the tool in base R (the distributed software package from [CRAN](https://cran.r-project.org)
-for estimating nonlinear statistical models. The function dates to the 1980s and the work related
-to @bateswatts in S (see https://en.wikipedia.org/wiki/S_%28programming_language%29). 
+`nls()` is the tool in base R, the primary software software distribution
+from the Comprehensive R Archive Network (https://cran.r-project.org)
+for estimating nonlinear statistical models. The function dates to the 1980s and the work
+related to @bateswatts in S (see https://en.wikipedia.org/wiki/S_%28programming_language%29). 
 
 The `nls()` function has a remarkable and comprehensive set of capabilities for estimating
 nonlinear models that are expressed as **formulas**. In particular, we note that it

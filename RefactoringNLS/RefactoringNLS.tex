@@ -165,11 +165,11 @@ generally, as well as its nonlinear estimation tools.
 \section{\texorpdfstring{The \texttt{nls()} function: strengths and
 shortcomings}{The nls() function: strengths and shortcomings}}\label{the-nls-function-strengths-and-shortcomings}}
 
-\texttt{nls()} is the tool in base R (the distributed software package
-from \href{https://cran.r-project.org}{CRAN} for estimating nonlinear
-statistical models. The function dates to the 1980s and the work related
-to D. M. Bates and Watts (\protect\hyperlink{ref-bateswatts}{1988}) in S
-(see
+\texttt{nls()} is the tool in base R, the primary software software
+distribution from the Comprehensive R Archive Network
+(\url{https://cran.r-project.org}) for estimating nonlinear statistical
+models. The function dates to the 1980s and the work related to D. M.
+Bates and Watts (\protect\hyperlink{ref-bateswatts}{1988}) in S (see
 \url{https://en.wikipedia.org/wiki/S_\%28programming_language\%29}).
 
 The \texttt{nls()} function has a remarkable and comprehensive set of
@@ -345,11 +345,11 @@ a solution.
 ## residual sumsquares =  0  on  11 observations
 ##     after  1    Jacobian and  1 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## a                     -3            NA         NA         NA           0       26.49  
-## b                      5            NA         NA         NA           0       9.615  
-## c                    0.5            NA         NA         NA           0       2.466  
-## r                    0.7            NA         NA         NA           0      0.1098  
-## m                      1            NA         NA         NA           0   1.118e-16
+## a                     -3             0       -Inf          0           0       26.49  
+## b                      5             0        Inf          0           0       9.615  
+## c                    0.5             0        Inf          0           0       2.466  
+## r                    0.7             0        Inf          0           0      0.1098  
+## m                      1             0        Inf          0           0   1.949e-09
 \end{verbatim}
 
 \begin{Shaded}
@@ -768,7 +768,7 @@ an abbreviated example:
 \end{Shaded}
 
 \begin{verbatim}
-##      61216. (3.56e+03): par = (-2 0.25 150 50)
+## 61216.    (3.56e+03): par = (-2 0.25 150 50)
 ## 2.1757    (2.23e+01): par = (-1.9991 0.31711 2.6182 -1.3668)
 ## 1.6211    (7.14e+00): par = (-1.9605 -2.6203 2.5753 -0.55599)
 ## Error in nls(NLSformula, data = NLSdata, start = NLSstart, trace = TRUE) : 
@@ -1006,7 +1006,7 @@ solution for the scaled Hobbs test problem.
 ##     after  16    Jacobian and  17 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
 ## b1                     2U           NA         NA         NA           0       23.35  
-## b2               4.43325            NA         NA         NA   1.832e-10           0  
+## b2               4.43325            NA         NA         NA   1.015e-10           0  
 ## b3                     3U           NA         NA         NA           0           0
 \end{verbatim}
 
