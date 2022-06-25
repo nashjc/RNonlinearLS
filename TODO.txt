@@ -1,24 +1,49 @@
 TODO.txt
 
-- edit 20220527
+- edit 20220623
 
-- nlsCompare to be rigorously cleaned and checked, ready for submission
-  when CRAN reopens in January 2022
+- nlsCompare: 
+   - JN ideas about SAVE, probvec, methvec to be explored
+   - probably a CRAN package with a vignette that is a blog post.
+     The current vignette is more or less "documentation" of use
+     of the existing package. You (I'll suggest nlsCompare be
+     AB author and JN contributor) need to show how to extend with
+     new problems and methods.
+   - note that CRAN packages (should!) have citation files, and
+     we should make sure it gets seen, especially as it evolves.
+     JN plans to use it for a new nlsr version that allows some 
+     testing of scaled and unscaled Marquardt, which if the tests
+     show anything interesting, will highlight and reference the 
+     work AB did. So we need to eventually get it publicized.
+     If it is changing over time, may be simpler to leave on 
+     Github rather than try for CRAN.
+     
+- MachineSummary 
+   -- MachineSummary.Rmd is a decent basis for blog post
+   -- refer to MachID.R several places i.e., JN has pointed to it for the
+      StochOptim wrapper project in 2022 GSOC.
+      
+   -- Tests/TestsDoc -- AB blogpost? Perhaps keep on back burner. It could
+      be a useful contribution for graduate coursework.
+   
+   -- DerivsNLS  -- blog post JN. Best done when nlsr is revised on CRAN.
+   
+- RefactoringNLS 
+   This is probably close to trying with R Journal. 
+   JN: I think one more review. There's always another typo!
+   
+- VarietyInNonlinearLeastSquaresCodes -- 
+   intended for JSS, but I'm (JN) still not comfortable that it isn't just
+   a "collection" if material with uneven level of detail. Plan to keep at
+   it until September or so, then edit ruthlessly before submission. 
+   AB: Are you willing to review? I'd prefer joint authorship to show your
+   contributions. In fact, I suspect that the main contribution of the 
+   project is the various documentation outputs, since nls() is just so
+   awkward to work with.
 
-- review each potential "contribution".
-
-   --	nlsCompareArticle -- vignette in package and R-Journal shortened version
-                      should send to Heather when AB has draft
-   --	MachineSummary -- With fixup to benchmarkme (20220116 approx. by Gillespie)
-		JN will draft blog post,  AB to check then we post to R-bloggers??
-   --	Tests/TestsDoc -- AB blogpost
-   --	DerivsNLS  -- blog post JN
-   --	RefactoringNLS -- R Journal -- JN to continue work
-                AB to review
-                Need to add section on bounds and issue that nls() can only use
-                them with "port" algorithm (nlminb)
-   --	VarietyInNonlinearLeastSquaresCodes -- JN --> JSS
-   --	WorkingDocument4ImproveNLS -- internal JN will tidy and upload to repo
+- WorkingDocument4ImproveNLS -- internal JN will tidy and upload to repo 
+   JN had better take a look. But this is mainly for us to recall what we
+   did. However, a tidy will help future use.
 
 COMPLETED OR CLOSED
 
