@@ -177,7 +177,8 @@ We are pleased to note that this improvement is now in the R distributed code as
 
 ### More general termination tests
 
-The single convergence criterion of `nls()` leaves out some possibilities that could
+The convergence criterion above, the principal termination control of `nls()`, leaves out 
+some possibilities that could
 be useful for some problems. The package `nlsr` (@nlsr-manual) already offers both 
 the safeguarded relative offset test (**roffset**) as well as a **small sum of 
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
