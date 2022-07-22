@@ -154,12 +154,12 @@ Based on work for a Google Summer of Code project ``Improvements to
 function \texttt{nls()} in the context of improving and rationalizing R
 tools for nonlinear regression.
 
-An important consideration is the maintainability of the code base that
-provides the functionality \texttt{nls()} claims to offer. Our work
-suggests that the existing code makes maintenance and improvement very
-difficult, with legacy applications and examples blocking some important
-updates. Discussion of these matters is relevant to improving R
-generally, as well as its nonlinear estimation tools.
+Important considerations are the usability and maintainability of the
+code base that provides the functionality \texttt{nls()} claims to
+offer. Our work suggests that the existing code makes maintenance and
+improvement very difficult, with legacy applications and examples
+blocking some important updates. Discussion of these matters is relevant
+to improving R generally, as well as its nonlinear estimation tools.
 
 \hypertarget{the-nls-function-strengths-and-shortcomings}{%
 \section{\texorpdfstring{The \texttt{nls()} function: strengths and
@@ -179,9 +179,14 @@ capabilities for estimating nonlinear models that are expressed as
 \begin{itemize}
 \tightlist
 \item
-  handles formulas that include R functions
+  handles formulas that include R functions, even ones which call
+  calculations in other programming languages
 \item
-  allows data to be subset
+  allows data to be weighted or subset
+\item
+  can estimate bound constrained parameters
+\item
+  provides a mechanism for handling partially linear models
 \item
   permits parameters to be indexed over a set of related data
 \item
@@ -243,8 +248,8 @@ If you wish to test \texttt{nls} on artificial data please add a noise
 component, as shown in the example below.
 \end{quote}
 
-This amounts to admitting R cannot solve well-posed problems unless data
-is polluted with errors.
+This amounted to admitting R cannot solve well-posed problems unless
+data is polluted with errors.
 
 This issue can be easily resolved. The ``termination test'' for the
 \textbf{program} rather than for ``convergence'' of the underlying
@@ -272,9 +277,9 @@ the R distributed code as of version 4.1.0.
 \subsubsection{More general termination
 tests}\label{more-general-termination-tests}}
 
-The single convergence criterion of \texttt{nls()} leaves out some
-possibilities that could be useful for some problems. The package
-\texttt{nlsr} (John C. Nash and Murdoch
+The convergence criterion above, the principal termination control of
+\texttt{nls()}, leaves out some possibilities that could be useful for
+some problems. The package \texttt{nlsr} (John C. Nash and Murdoch
 (\protect\hyperlink{ref-nlsr-manual}{2019})) already offers both the
 safeguarded relative offset test (\textbf{roffset}) as well as a
 \textbf{small sum of squares} test (\textbf{smallsstest}) that compares
@@ -320,11 +325,11 @@ work, we prepared experimental prototypes of \texttt{nls} that
 incorporate stabilization, but integration with all the features of
 \texttt{nls()} has proved difficult.
 
-Let us consider an `singular gradient' example
+Let us consider a `singular gradient' example
 \emph{\url{https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values}}.
-\texttt{nlsr::nlxb()} displays the singular values of the Jacobian, so
-the \texttt{nls()} error message is correct, but unhelpful in obtaining
-a solution.
+\texttt{nlsr::nlxb()} displays the singular values of the Jacobian,
+which confirm that the \texttt{nls()} error message is correct, but this
+is not helpful in obtaining a solution.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -345,11 +350,11 @@ a solution.
 ## residual sumsquares =  0  on  11 observations
 ##     after  1    Jacobian and  1 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## a                     -3             0       -Inf          0           0       26.49  
-## b                      5             0        Inf          0           0       9.615  
-## c                    0.5             0        Inf          0           0       2.466  
-## r                    0.7             0        Inf          0           0      0.1098  
-## m                      1             0        Inf          0           0   1.949e-09
+## a                     -3            NA         NA         NA           0       26.49  
+## b                      5            NA         NA         NA           0       9.615  
+## c                    0.5            NA         NA         NA           0       2.466  
+## r                    0.7            NA         NA         NA           0      0.1098  
+## m                      1            NA         NA         NA           0   1.398e-16
 \end{verbatim}
 
 \begin{Shaded}
@@ -365,10 +370,10 @@ a solution.
 \end{verbatim}
 
 The Jacobian is essentially singular as shown by its singular values.
-Note that these are \textbf{displayed} in a single column in the output
-to provide a compact layout, but the values do \textbf{NOT} correspond
-to the individual parameters in whose row they appear; they are a
-property of the whole problem.
+Note that these are \textbf{displayed} by package \texttt{nlsr} in a
+single column in the output to provide a compact layout, but the values
+do \textbf{NOT} correspond to the individual parameters in whose row
+they appear; they are a property of the whole problem.
 
 \hypertarget{feature-jacobian-computation}{%
 \subsection{Feature: Jacobian
@@ -380,10 +385,24 @@ implemented as a mix of R and C code, but we have created a rather more
 compact version entirely in R. See
 \url{https://github.com/nashjc/RNonlinearLS/DerivsNLS} .
 
-The Jacobian used by \texttt{nlsr::nlxb()} is computed from analytic
-expressions, while that of \texttt{nls()} (and, by extension,
-\texttt{minpack.lm::nlsLM}) mostly use a numerical approximation. This
-can lead to different behaviour:
+As far as we can understand the logic in \texttt{nls()}, the Jacobian
+computation during parameter estimation is carried out entirely within
+the called C-language program, and the R code
+\texttt{function\ numericDeriv()}, part of
+\texttt{./src/library/stats/R/nls.R} in the R distribution source code,
+is used to provide Jacobian information in the \texttt{nlsModel()} and
+\texttt{nlsModel.plinear()} functions.
+
+The Jacobian used by \texttt{nlsr::nlxb()} is, by default, computed from
+analytic expressions, while that of \texttt{nls()} mostly uses a
+numerical approximation. Some selfStart models do provide ``gradient''
+information. \texttt{minpack.lm::nlsLM()} invokes
+\texttt{numericDeriv()} in its local version of \texttt{nlsModel()}, but
+it appears to use an internal approximate Jacobian code from the
+original Fortran \texttt{minpack} code, namely, \texttt{lmdif.f}. Such
+differences in approach can lead to different behaviour, though in our
+experience, one has to look for the differences, as they are generally
+minor.
 
 \begin{itemize}
 \item
@@ -409,16 +428,25 @@ can lead to different behaviour:
 \end{itemize}
 
 Note that the selfStart models in the base R
-\texttt{./src/library/stats/R/zzModels.R} file provide the Jacobian in
-the ``gradient'' attribute of the ``one-sided'' formula that defines
+\texttt{./src/library/stats/R/zzModels.R} file may provide the Jacobian
+in the ``gradient'' attribute of the ``one-sided'' formula that defines
 each model, and these Jacobians may be the analytic forms. The
 \texttt{nls()} function, after computing the ``right hand side'' or
 \texttt{rhs} of the residual, then checks to see if the ``gradient''
 attribute is defined, and, if not, uses \texttt{numericDeriv} to compute
 a Jacobian into that attribute. This code is within the
-\texttt{nlsModel()} or \texttt{nlsModel.pliner()} functions. The use of
+\texttt{nlsModel()} or \texttt{nlsModel.plinear()} functions. The use of
 analytic Jacobians almost certainly contributes to the good performance
 of \texttt{nls()} on selfStart models.
+
+\hypertarget{feature-weights-on-observations}{%
+\subsection{Feature: Weights on
+observations}\label{feature-weights-on-observations}}
+
+?? does resid return weighted or unweighted residuals
+
+?? do we want unweighted (raw) residuals? or are predictions / fits just
+as good?
 
 \hypertarget{feature-subsetting}{%
 \subsection{Feature: Subsetting}\label{feature-subsetting}}
@@ -493,7 +521,7 @@ in the form of the object \texttt{mf}. We feel that users could benefit
 from more extensive documentation and examples of its use.
 
 \hypertarget{feature-sources-of-data}{%
-\subsection{Feature: sources of data}\label{feature-sources-of-data}}
+\subsection{Feature: Sources of data}\label{feature-sources-of-data}}
 
 \texttt{nls()} can be called without specifying the \texttt{data}
 argument. In this case, it will search in the available environments
@@ -524,8 +552,11 @@ now-archived package \texttt{NRAIA}. Unfortunately, some
 \textbf{selfStart} codes entangle the calculation of starting values for
 parameters with the particulars of the \texttt{nls()} code. Though there
 is a \texttt{getInitial()} function, this is not easy to use to simply
-compute the initial parameter estimates, in part because it may call
-\texttt{nls()}. Such circular references are, in our view, dangerous.
+compute the initial parameter estimates outside of \texttt{nls()}, in
+part because it may call that function. Such circular references are, in
+our view, dangerous. Moreover, we believe that it would be helpful to
+have selfStart models that allow users to explicitly provide the
+starting parameters.
 
 Other concerns are revealed by the example below. Here, the
 \texttt{SSlogis} selfStart function is used to generate a set of initial
@@ -568,6 +599,12 @@ current calls back to \texttt{nls()}. Interactive tools, such as
 ``visual fitting'' (John C. Nash and Velleman
 (\protect\hyperlink{ref-nash1996nonlinear}{1996})) might be worth
 considering.
+
+We also note that the introduction of \texttt{scaleOffset} in R 4.1.1 to
+deal with the convergence test for small residual problems now requires
+that the \texttt{getInitial()} function have dot-arguments
+(\texttt{...}) in its argument list. This illustrates the entanglement
+of many features in \texttt{nls()}.
 
 \hypertarget{issue-returned-output-of-nls-and-its-documentation}{%
 \subsection{Issue: returned output of nls() and its
@@ -1006,7 +1043,7 @@ solution for the scaled Hobbs test problem.
 ##     after  16    Jacobian and  17 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
 ## b1                     2U           NA         NA         NA           0       23.35  
-## b2               4.43325            NA         NA         NA   1.583e-10           0  
+## b2               4.43325            NA         NA         NA   1.832e-10           0  
 ## b3                     3U           NA         NA         NA           0           0
 \end{verbatim}
 

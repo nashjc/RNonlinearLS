@@ -26,7 +26,7 @@ Based on work for a Google Summer of Code project "Improvements to `nls()`",
 we consider the features and limitations of the R function `nls()`
 in the context of improving and rationalizing R tools for nonlinear regression. 
 
-An important consideration is the  maintainability of
+Important considerations are the usability and  maintainability of
 the code base that provides the functionality `nls()` claims to offer.
 Our work suggests that the
 existing code makes maintenance and improvement very difficult,
@@ -44,8 +44,11 @@ related to @bateswatts in S (see https://en.wikipedia.org/wiki/S_%28programming_
 The `nls()` function has a remarkable and comprehensive set of capabilities for estimating
 nonlinear models that are expressed as **formulas**. In particular, we note that it
 
-- handles formulas that include R functions
-- allows data to be subset
+- handles formulas that include R functions, even ones which call calculations in
+  other programming languages
+- allows data to be weighted or subset
+- can estimate bound constrained parameters
+- provides a mechanism for handling partially linear models
 - permits parameters to be indexed over a set of related data
 - produces measures of variability (i.e., standard error estimates) for the estimated parameters
 - has related profiling capabilities for exploring the likelihood surface as parameters are changed
@@ -82,7 +85,7 @@ In the manual page for `nls()` in R 4.0.0 there is the warning:
 >  If you wish to test `nls` on artificial data please add a noise component, 
   as shown in the example below.
 
-This amounts to admitting R cannot solve well-posed problems unless data is polluted
+This amounted to admitting R cannot solve well-posed problems unless data is polluted
 with errors. 
 
 This issue can be easily resolved. The "termination test" for the **program** rather than for 
@@ -213,10 +216,10 @@ work-around is the Levenberg-Marquardt stabilization (see @Marquardt1963, @Leven
 In our work, we prepared experimental prototypes of `nls` that incorporate
 stabilization, but integration with all the features of `nls()` has proved difficult.
 
-Let us consider an 'singular gradient' example 
+Let us consider a 'singular gradient' example 
 *https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*.
-`nlsr::nlxb()` displays the singular values of the Jacobian, so the `nls()` error message is correct,
-but unhelpful in obtaining a solution.
+`nlsr::nlxb()` displays the singular values of the Jacobian, which confirm that the `nls()` error message is correct,
+but this is not helpful in obtaining a solution.
 
 ```{r SESingGrad}
 reala <- -3; realb <- 5; realc <- 0.5; realr <- 0.7; realm <- 1 # underlying parameters
@@ -233,7 +236,7 @@ linexp <- try(nls(jform, data = testdat, start = strt, trace = F))
 ```
 
 The Jacobian is essentially singular as shown by its singular
-values. Note that these are **displayed** in a single column in
+values. Note that these are **displayed** by package `nlsr` in a single column in
 the output to provide a compact layout, but the values do **NOT** correspond to 
 the individual parameters in 
 whose row they appear; they are a property of the whole problem.
@@ -247,9 +250,19 @@ See https://github.com/nashjc/RNonlinearLS/DerivsNLS .
 <!-- Code project. See the companion document **Jacobian Calculations for nls()** -->
 <!-- (?? need citation -- currently **DerivsNLS.pdf**). -->
 
-The Jacobian used by `nlsr::nlxb()` is computed from analytic expressions, while that
-of `nls()` (and, by extension, `minpack.lm::nlsLM`) mostly use a numerical approximation. 
-This can lead to different behaviour:
+As far as we can understand the logic in `nls()`, the Jacobian computation during
+parameter estimation is carried out entirely within the called C-language program,
+and the R code `function numericDeriv()`, part of `./src/library/stats/R/nls.R`
+in the R distribution source code, is used to provide Jacobian information in 
+the `nlsModel()` and `nlsModel.plinear()` functions.
+
+The Jacobian used by `nlsr::nlxb()` is, by default, computed from analytic expressions, while that
+of `nls()` mostly uses a numerical approximation. Some selfStart models do provide
+"gradient" information. `minpack.lm::nlsLM()` invokes `numericDeriv()` in its local 
+version of `nlsModel()`, but it appears to use an internal approximate Jacobian code from the 
+original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
+can lead to different behaviour, though in our experience, one has to look for the
+differences, as they are generally minor.
 
 - A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a poorly
   conditioned Jacobian and `nls()` fails with "singular gradient". 
@@ -265,13 +278,19 @@ This can lead to different behaviour:
   found a solution, though it can be debated whether such lucky accidents can be
   taken as an advantage.
 
-Note that the selfStart models in the base R `./src/library/stats/R/zzModels.R` file
+Note that the selfStart models in the base R `./src/library/stats/R/zzModels.R` file may
 provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines each
 model, and these Jacobians may be the analytic forms. The `nls()` function, after computing the
 "right hand side" or `rhs` of the residual, then checks to see if the "gradient" attribute is
 defined, and, if not, uses `numericDeriv` to compute a Jacobian into that attribute. This code
-is within the `nlsModel()` or `nlsModel.pliner()` functions. The use of analytic Jacobians
+is within the `nlsModel()` or `nlsModel.plinear()` functions. The use of analytic Jacobians
 almost certainly contributes to the good performance of `nls()` on selfStart models.
+
+## Feature: Weights on observations
+
+?? does resid return weighted or unweighted residuals
+
+?? do we want unweighted (raw) residuals? or are predictions / fits just as good?
 
 ## Feature: Subsetting
 
@@ -325,7 +344,7 @@ element `model` is NULL unless the calling argument `model` is TRUE. (Using the 
 be confusing.) However, the model frame is used within the function code in the form of the object
 `mf`. We feel that users could benefit from more extensive documentation and examples of its use.
 
-## Feature: sources of data
+## Feature: Sources of data
 
 `nls()` can be called without specifying the `data` argument. In this case, it will
 search in the available environments (i.e., workspaces) for suitable data objects. 
@@ -349,8 +368,11 @@ and others in R packages such as CRAN package `nlraa` (@MiguezNLRAA2021), as wel
 the now-archived package `NRAIA`. Unfortunately, some **selfStart** codes
 entangle the calculation of starting values for parameters
 with the particulars of the `nls()` code. Though there is a `getInitial()` function,
-this is not easy to use to simply compute the initial parameter estimates, in part 
-because it may call `nls()`. Such circular references are, in our view, dangerous.
+this is not easy to use to simply compute the initial parameter estimates outside of
+`nls()`, in part 
+because it may call that function. Such circular references are, in our view, dangerous.
+Moreover, we believe that it would be helpful to have selfStart models that allow
+users to explicitly provide the starting parameters.
 
 Other concerns are revealed by the example below. Here, the `SSlogis` selfStart function 
 is used to generate a set
@@ -469,7 +491,12 @@ documentation (file `./src/library/stats/man/selfStart.Rd`) is quite complicated
 We believe that the focus should be placed on getting good initial parameters,
 that is `getInitial()` function, though avoiding the current calls back to `nls()`.
 Interactive tools, such as "visual fitting" (@nash1996nonlinear) might be
-worth considering. 
+worth considering.
+
+We also note that the introduction of `scaleOffset` in R 4.1.1 to deal with the 
+convergence test for small residual problems now requires that the `getInitial()`
+function have dot-arguments (`...`) in its argument list. This illustrates the
+entanglement of many features in `nls()`.
 
 
 ## Issue: returned output of nls() and its documentation
