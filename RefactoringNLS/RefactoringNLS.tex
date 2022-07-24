@@ -783,6 +783,7 @@ SHORT EXAMPLE??
 \NormalTok{tt }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{:}\DecValTok{12}
 \NormalTok{weeddf }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(tt, weed)}
 \NormalTok{wts }\OtherTok{\textless{}{-}} \FloatTok{0.5}\SpecialCharTok{\^{}}\NormalTok{tt }\CommentTok{\# simple weights}
+\NormalTok{frmlogis }\OtherTok{\textless{}{-}}\NormalTok{ weed }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Asym}\SpecialCharTok{/}\NormalTok{(}\DecValTok{1} \SpecialCharTok{+} \FunctionTok{exp}\NormalTok{((xmid }\SpecialCharTok{{-}}\NormalTok{ tt)}\SpecialCharTok{/}\NormalTok{scal))}
 \NormalTok{Asym}\OtherTok{\textless{}{-}}\DecValTok{1}\NormalTok{; xmid}\OtherTok{\textless{}{-}}\DecValTok{1}\NormalTok{; scal}\OtherTok{\textless{}{-}}\DecValTok{1}
 \NormalTok{nowt}\OtherTok{\textless{}{-}}\FunctionTok{nls}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal))}
 \NormalTok{nowt}
@@ -860,28 +861,27 @@ SHORT EXAMPLE??
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{nowtx}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal), }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{control=}\FunctionTok{list}\NormalTok{(}\AttributeTok{japprox=}\StringTok{"jafwd"}\NormalTok{), }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{nowtx}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## Using approximation  jafwd   is.character(ctrl$japprox)= TRUE 
 ## <<lamda: 1e-04  SS= 23527 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
 ## <<lamda: 4e-05  SS= 10887 ( 0.8264 ) at  Asym = 52.337  xmid = 48.234  scal = 180.33 f/j  2 / 1
 ## <<lamda: 0.016  SS= 8948.4 ( 0.41672 ) at  Asym = 80.893  xmid = 48.394  scal = 169.52 f/j  6 / 2
 ## <<lamda: 0.0064  SS= 8853.5 ( 0.068832 ) at  Asym = 89.895  xmid = 66.542  scal = 118.27 f/j  7 / 3
 ## <<lamda: 0.0256  SS= 8673.7 ( 0.080434 ) at  Asym = 103.26  xmid = 69.707  scal = 91.474 f/j  9 / 4
 ## <<lamda: 0.1024  SS= 8563.7 ( 0.059227 ) at  Asym = 110.79  xmid = 67.869  scal = 81.345 f/j  11 / 5
-## <<lamda: 0.04096  SS= 8392.1 ( 0.12852 ) at  Asym = 129.64  xmid = 62.354  scal = 48.414 f/j  12 / 6
+## <<lamda: 0.04096  SS= 8392.1 ( 0.12852 ) at  Asym = 129.64  xmid = 62.354  scal = 48.413 f/j  12 / 6
 ## <<lamda: 0.16384  SS= 7777.5 ( 0.17269 ) at  Asym = 139.58  xmid = 48.216  scal = 39.581 f/j  14 / 7
-## <<lamda: 0.65536  SS= 7547.4 ( 0.11307 ) at  Asym = 142.31  xmid = 43.841  scal = 33.749 f/j  16 / 8
-## <<lamda: 0.26214  SS= 6213 ( 0.22183 ) at  Asym = 149.97  xmid = 28.124  scal = 17.452 f/j  17 / 9
-## <<lamda: 1.0486  SS= 2919.7 ( 0.33273 ) at  Asym = 152.81  xmid = 15.369  scal = 7.5443 f/j  19 / 10
-## <<lamda: 4.1943  SS= 1903.2 ( 0.74156 ) at  Asym = 153.41  xmid = 9.8394  scal = 1.8083 f/j  21 / 11
-## <<lamda: 1.6777  SS= 113.84 ( 0.73921 ) at  Asym = 153.46  xmid = 10.631  scal = 2.5864 f/j  22 / 12
-## <<lamda: 0.67109  SS= 11.222 ( 0.66287 ) at  Asym = 153.64  xmid = 10.972  scal = 2.8505 f/j  23 / 13
-## <<lamda: 0.26844  SS= 10.289 ( 0.19346 ) at  Asym = 154.03  xmid = 11.02  scal = 2.8798 f/j  24 / 14
-## <<lamda: 0.10737  SS= 9.8337 ( 0.11332 ) at  Asym = 154.95  xmid = 11.055  scal = 2.889 f/j  25 / 15
+## <<lamda: 0.65536  SS= 7547.4 ( 0.11307 ) at  Asym = 142.31  xmid = 43.841  scal = 33.748 f/j  16 / 8
+## <<lamda: 0.26214  SS= 6212.9 ( 0.22183 ) at  Asym = 149.97  xmid = 28.123  scal = 17.451 f/j  17 / 9
+## <<lamda: 1.0486  SS= 2919.3 ( 0.33274 ) at  Asym = 152.81  xmid = 15.368  scal = 7.5437 f/j  19 / 10
+## <<lamda: 4.1943  SS= 1904 ( 0.74162 ) at  Asym = 153.41  xmid = 9.8392  scal = 1.8081 f/j  21 / 11
+## <<lamda: 1.6777  SS= 113.91 ( 0.73923 ) at  Asym = 153.46  xmid = 10.631  scal = 2.5863 f/j  22 / 12
+## <<lamda: 0.67109  SS= 11.223 ( 0.6629 ) at  Asym = 153.64  xmid = 10.972  scal = 2.8504 f/j  23 / 13
+## <<lamda: 0.26844  SS= 10.289 ( 0.19356 ) at  Asym = 154.03  xmid = 11.02  scal = 2.8798 f/j  24 / 14
+## <<lamda: 0.10737  SS= 9.8336 ( 0.11332 ) at  Asym = 154.95  xmid = 11.055  scal = 2.889 f/j  25 / 15
 ## <<lamda: 0.04295  SS= 8.8717 ( 0.16811 ) at  Asym = 157.04  xmid = 11.133  scal = 2.9084 f/j  26 / 16
 ## <<lamda: 0.01718  SS= 7.2069 ( 0.21397 ) at  Asym = 161.34  xmid = 11.29  scal = 2.9469 f/j  27 / 17
 ## <<lamda: 0.0068719  SS= 5.1659 ( 0.30108 ) at  Asym = 168.61  xmid = 11.548  scal = 3.0079 f/j  28 / 18
@@ -890,9 +890,9 @@ SHORT EXAMPLE??
 ## <<lamda: 0.0004398  SS= 2.6123 ( 0.16163 ) at  Asym = 193.29  xmid = 12.334  scal = 3.1734 f/j  31 / 21
 ## <<lamda: 0.00017592  SS= 2.588 ( 0.056549 ) at  Asym = 195.68  xmid = 12.403  scal = 3.1863 f/j  32 / 22
 ## <<lamda: 7.0369e-05  SS= 2.5873 ( 0.010514 ) at  Asym = 196.14  xmid = 12.416  scal = 3.1889 f/j  33 / 23
-## <<lamda: 2.8147e-05  SS= 2.5873 ( 0.0009007 ) at  Asym = 196.18  xmid = 12.417  scal = 3.1891 f/j  34 / 24
-## <<lamda: 1.1259e-05  SS= 2.5873 ( 3.4226e-05 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  35 / 25
-## <<lamda: 4.5036e-06  SS= 2.5873 ( 6.5424e-07 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  36 / 26
+## <<lamda: 2.8147e-05  SS= 2.5873 ( 0.00090069 ) at  Asym = 196.18  xmid = 12.417  scal = 3.1891 f/j  34 / 24
+## <<lamda: 1.1259e-05  SS= 2.5873 ( 3.4237e-05 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  35 / 25
+## <<lamda: 4.5036e-06  SS= 2.5873 ( 6.5557e-07 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  36 / 26
 \end{verbatim}
 
 \begin{Shaded}
@@ -906,9 +906,41 @@ SHORT EXAMPLE??
 ## residual sumsquares =  2.5873  on  12 observations
 ##     after  27    Jacobian and  36 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## Asym             196.186         11.31      17.35  3.167e-08  -5.714e-10       44.93  
-## xmid             12.4173        0.3346      37.11  3.716e-11  -6.654e-08        15.6  
-## scal             3.18908        0.0698      45.69  5.768e-12   1.567e-07      0.0474
+## Asym             196.186         11.31      17.35  3.167e-08  -3.432e-10       44.93  
+## xmid             12.4173        0.3346      37.11  3.716e-11  -5.273e-08        15.6  
+## scal             3.18908        0.0698      45.69  5.768e-12   1.752e-07      0.0474
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# nowtSSx0\textless{}{-}nlxb(weed \textasciitilde{} SSlogis(tt, Asym=1, xmid=1, scal=1), start=c(Asym=1, xmid=1, scal=1), trace=TRUE)}
+\CommentTok{\# nowtSsx0}
+\CommentTok{\# nowtSSx\textless{}{-}nlxb(weed \textasciitilde{} SSlogis(tt, Asym=1, xmid=1, scal=1), start=c(Asym=100, xmid=2, scal=1), trace=TRUE, }
+\CommentTok{\#               control=list(japprox="jand"))}
+\CommentTok{\# nowtSSx}
+\NormalTok{nowtxi}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis, }\AttributeTok{start=}\NormalTok{inpar, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<lamda: 1e-04  SS= 2.5873 ( NA ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  1 / 0
+## <<lamda: 4e-05  SS= 2.5873 ( 9.4859e-07 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  2 / 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nowtxi}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## nlsr2  object: x 
+## residual sumsquares =  2.5873  on  12 observations
+##     after  2    Jacobian and  2 function evaluations
+##   name            coeff          SE       tstat      pval      gradient    JSingval   
+## Asym             196.186         11.31      17.35  3.167e-08  -1.769e-09       44.93  
+## xmid             12.4173        0.3346      37.11  3.716e-11  -2.902e-08        15.6  
+## scal             3.18908        0.0698      45.69  5.768e-12   3.896e-08      0.0474
 \end{verbatim}
 
 \begin{Shaded}
@@ -957,9 +989,143 @@ SHORT EXAMPLE??
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# usewtx\textless{}{-}nlxb(weed \textasciitilde{} SSlogis(tt, Asym, xmid, scal), start=inpar, weights=wts,}
-\CommentTok{\#              control=list(japprox="jafwd"), trace=TRUE)}
-\CommentTok{\# usewtx}
+\NormalTok{nmod }\OtherTok{\textless{}{-}} \FunctionTok{nlsModel}\NormalTok{(frmlogis, }\AttributeTok{data=}\NormalTok{weeddf, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{wts=}\NormalTok{wts)}
+\NormalTok{usewtx}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis,  }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{weights=}\NormalTok{wts, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<lamda: 1e-04  SS= 82.379 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
+## <<lamda: 4e-05  SS= 27.961 ( 0.87591 ) at  Asym = 23.072  xmid = 24.605  scal = 33.424 f/j  2 / 1
+## <<lamda: 0.0016  SS= 27.179 ( 0.10632 ) at  Asym = 27.088  xmid = 25.624  scal = 24.768 f/j  5 / 2
+## <<lamda: 0.0064  SS= 26.326 ( 0.11129 ) at  Asym = 30.015  xmid = 24.489  scal = 21.971 f/j  7 / 3
+## <<lamda: 0.00256  SS= 26.011 ( 0.18194 ) at  Asym = 36.922  xmid = 21.283  scal = 12.464 f/j  8 / 4
+## <<lamda: 0.01024  SS= 21.446 ( 0.27496 ) at  Asym = 39.825  xmid = 16.241  scal = 10.675 f/j  10 / 5
+## <<lamda: 0.04096  SS= 19.865 ( 0.18158 ) at  Asym = 40.684  xmid = 14.706  scal = 8.9148 f/j  12 / 6
+## <<lamda: 0.016384  SS= 11.81 ( 0.32805 ) at  Asym = 42.981  xmid = 9.344  scal = 4.7286 f/j  13 / 7
+## <<lamda: 0.065536  SS= 3.8548 ( 0.46972 ) at  Asym = 43.701  xmid = 6.3095  scal = 2.7564 f/j  15 / 8
+## <<lamda: 0.026214  SS= 2.8386 ( 0.45514 ) at  Asym = 44.458  xmid = 5.503  scal = 2.0895 f/j  16 / 9
+## <<lamda: 0.010486  SS= 2.4496 ( 0.2365 ) at  Asym = 46.866  xmid = 5.9479  scal = 2.3 f/j  17 / 10
+## <<lamda: 0.0041943  SS= 2.0123 ( 0.21463 ) at  Asym = 51.378  xmid = 6.3516  scal = 2.3762 f/j  18 / 11
+## <<lamda: 0.0016777  SS= 1.4462 ( 0.2703 ) at  Asym = 59.51  xmid = 7.03  scal = 2.5092 f/j  19 / 12
+## <<lamda: 0.00067109  SS= 0.91272 ( 0.306 ) at  Asym = 71.787  xmid = 7.8952  scal = 2.6532 f/j  20 / 13
+## <<lamda: 0.00026844  SS= 0.51816 ( 0.29993 ) at  Asym = 88.001  xmid = 8.8228  scal = 2.7857 f/j  21 / 14
+## <<lamda: 0.00010737  SS= 0.26988 ( 0.25879 ) at  Asym = 107.49  xmid = 9.727  scal = 2.901 f/j  22 / 15
+## <<lamda: 4.295e-05  SS= 0.13173 ( 0.20437 ) at  Asym = 129.22  xmid = 10.558  scal = 2.9978 f/j  23 / 16
+## <<lamda: 1.718e-05  SS= 0.062773 ( 0.16799 ) at  Asym = 151.62  xmid = 11.279  scal = 3.0748 f/j  24 / 17
+## <<lamda: 6.8719e-06  SS= 0.032464 ( 0.12324 ) at  Asym = 172.29  xmid = 11.849  scal = 3.1314 f/j  25 / 18
+## <<lamda: 2.7488e-06  SS= 0.021923 ( 0.076781 ) at  Asym = 188.07  xmid = 12.235  scal = 3.1673 f/j  26 / 19
+## <<lamda: 1.0995e-06  SS= 0.01977 ( 0.035429 ) at  Asym = 196.72  xmid = 12.43  scal = 3.1847 f/j  27 / 20
+## <<lamda: 4.398e-07  SS= 0.019619 ( 0.0092109 ) at  Asym = 199.45  xmid = 12.49  scal = 3.19 f/j  28 / 21
+## <<lamda: 1.7592e-07  SS= 0.019617 ( 0.00087595 ) at  Asym = 199.84  xmid = 12.499  scal = 3.1908 f/j  29 / 22
+## <<lamda: 7.0369e-08  SS= 0.019617 ( 4.7993e-05 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  30 / 23
+## <<lamda: 2.8147e-08  SS= 0.019617 ( 8.2336e-07 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  31 / 24
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{usewtx}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## nlsr2  object: x 
+## residual sumsquares =  0.019617  on  12 observations
+##     after  25    Jacobian and  31 function evaluations
+##   name            coeff          SE       tstat      pval      gradient    JSingval   
+## Asym             199.859         17.46      11.45  1.149e-06  -2.201e-11       7.858  
+## xmid             12.4994        0.4131      30.26    2.3e-10    2.22e-09        0.79  
+## scal             3.19088       0.04323      73.81  7.781e-14  -1.511e-08    0.002673
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# }\AlertTok{NOTE}\CommentTok{ jafwd and jaback fail!}
+\NormalTok{usewtxn}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis,  }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{weights=}\NormalTok{wts, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{control=}\FunctionTok{list}\NormalTok{(}\AttributeTok{japprox=}\StringTok{"jacentral"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Using approximation  jacentral   is.character(ctrl$japprox)= TRUE 
+## <<lamda: 1e-04  SS= 82.379 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
+## <<lamda: 4e-05  SS= 27.961 ( 0.87591 ) at  Asym = 23.072  xmid = 24.605  scal = 33.424 f/j  2 / 1
+## <<lamda: 0.0016  SS= 27.179 ( 0.10632 ) at  Asym = 27.088  xmid = 25.624  scal = 24.768 f/j  5 / 2
+## <<lamda: 0.0064  SS= 26.326 ( 0.11129 ) at  Asym = 30.015  xmid = 24.489  scal = 21.971 f/j  7 / 3
+## <<lamda: 0.00256  SS= 26.011 ( 0.18194 ) at  Asym = 36.922  xmid = 21.283  scal = 12.464 f/j  8 / 4
+## <<lamda: 0.01024  SS= 21.446 ( 0.27496 ) at  Asym = 39.825  xmid = 16.241  scal = 10.675 f/j  10 / 5
+## <<lamda: 0.04096  SS= 19.865 ( 0.18158 ) at  Asym = 40.684  xmid = 14.706  scal = 8.9148 f/j  12 / 6
+## <<lamda: 0.016384  SS= 11.81 ( 0.32805 ) at  Asym = 42.981  xmid = 9.344  scal = 4.7286 f/j  13 / 7
+## <<lamda: 0.065536  SS= 3.8548 ( 0.46972 ) at  Asym = 43.701  xmid = 6.3095  scal = 2.7564 f/j  15 / 8
+## <<lamda: 0.026214  SS= 2.8386 ( 0.45514 ) at  Asym = 44.458  xmid = 5.503  scal = 2.0895 f/j  16 / 9
+## <<lamda: 0.010486  SS= 2.4496 ( 0.2365 ) at  Asym = 46.866  xmid = 5.9479  scal = 2.3 f/j  17 / 10
+## <<lamda: 0.0041943  SS= 2.0123 ( 0.21463 ) at  Asym = 51.378  xmid = 6.3516  scal = 2.3762 f/j  18 / 11
+## <<lamda: 0.0016777  SS= 1.4462 ( 0.2703 ) at  Asym = 59.51  xmid = 7.03  scal = 2.5092 f/j  19 / 12
+## <<lamda: 0.00067109  SS= 0.91272 ( 0.306 ) at  Asym = 71.787  xmid = 7.8952  scal = 2.6532 f/j  20 / 13
+## <<lamda: 0.00026844  SS= 0.51816 ( 0.29993 ) at  Asym = 88.001  xmid = 8.8228  scal = 2.7857 f/j  21 / 14
+## <<lamda: 0.00010737  SS= 0.26988 ( 0.25879 ) at  Asym = 107.49  xmid = 9.727  scal = 2.901 f/j  22 / 15
+## <<lamda: 4.295e-05  SS= 0.13173 ( 0.20437 ) at  Asym = 129.22  xmid = 10.558  scal = 2.9978 f/j  23 / 16
+## <<lamda: 1.718e-05  SS= 0.062773 ( 0.16799 ) at  Asym = 151.62  xmid = 11.279  scal = 3.0748 f/j  24 / 17
+## <<lamda: 6.8719e-06  SS= 0.032464 ( 0.12324 ) at  Asym = 172.29  xmid = 11.849  scal = 3.1314 f/j  25 / 18
+## <<lamda: 2.7488e-06  SS= 0.021923 ( 0.076781 ) at  Asym = 188.07  xmid = 12.235  scal = 3.1673 f/j  26 / 19
+## <<lamda: 1.0995e-06  SS= 0.01977 ( 0.035429 ) at  Asym = 196.72  xmid = 12.43  scal = 3.1847 f/j  27 / 20
+## <<lamda: 4.398e-07  SS= 0.019619 ( 0.0092109 ) at  Asym = 199.45  xmid = 12.49  scal = 3.19 f/j  28 / 21
+## <<lamda: 1.7592e-07  SS= 0.019617 ( 0.00087595 ) at  Asym = 199.84  xmid = 12.499  scal = 3.1908 f/j  29 / 22
+## <<lamda: 7.0369e-08  SS= 0.019617 ( 4.7993e-05 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  30 / 23
+## <<lamda: 2.8147e-08  SS= 0.019617 ( 8.24e-07 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  31 / 24
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{usewtxn}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## nlsr2  object: x 
+## residual sumsquares =  0.019617  on  12 observations
+##     after  25    Jacobian and  31 function evaluations
+##   name            coeff          SE       tstat      pval      gradient    JSingval   
+## Asym             199.859         17.46      11.45  1.149e-06  -2.105e-11       7.858  
+## xmid             12.4994        0.4131      30.26    2.3e-10   2.212e-09        0.79  
+## scal             3.19088       0.04323      73.81  7.781e-14  -1.514e-08    0.002673
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{usewtxi}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis, }\AttributeTok{start=}\NormalTok{inpar, }\AttributeTok{weights=}\NormalTok{wts, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<lamda: 1e-04  SS= 0.020914 ( NA ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  1 / 0
+## <<lamda: 4e-05  SS= 0.019704 ( 0.028209 ) at  Asym = 196.45  xmid = 12.419  scal = 3.1833 f/j  2 / 1
+## <<lamda: 1.6e-05  SS= 0.019678 ( 0.0029702 ) at  Asym = 196.99  xmid = 12.432  scal = 3.1845 f/j  3 / 2
+## <<lamda: 6.4e-06  SS= 0.019645 ( 0.0031987 ) at  Asym = 197.91  xmid = 12.453  scal = 3.1866 f/j  4 / 3
+## <<lamda: 2.56e-06  SS= 0.019623 ( 0.0031067 ) at  Asym = 198.96  xmid = 12.478  scal = 3.1889 f/j  5 / 4
+## <<lamda: 1.024e-06  SS= 0.019617 ( 0.0017597 ) at  Asym = 199.63  xmid = 12.494  scal = 3.1904 f/j  6 / 5
+## <<lamda: 4.096e-07  SS= 0.019617 ( 0.00050079 ) at  Asym = 199.83  xmid = 12.499  scal = 3.1908 f/j  7 / 6
+## <<lamda: 1.6384e-07  SS= 0.019617 ( 6.2448e-05 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  8 / 7
+## <<lamda: 6.5536e-08  SS= 0.019617 ( 2.9857e-06 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  9 / 8
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{usewtxi}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## nlsr2  object: x 
+## residual sumsquares =  0.019617  on  12 observations
+##     after  9    Jacobian and  9 function evaluations
+##   name            coeff          SE       tstat      pval      gradient    JSingval   
+## Asym             199.859         17.46      11.45  1.149e-06  -2.056e-10       7.858  
+## xmid             12.4994        0.4131      30.26    2.3e-10   9.074e-09        0.79  
+## scal             3.19088       0.04323      73.81  7.781e-14  -5.703e-08    0.002673
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{\# usewtx$resid}
 \end{Highlighting}
 \end{Shaded}
