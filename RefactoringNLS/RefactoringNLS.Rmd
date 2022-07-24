@@ -530,6 +530,8 @@ $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$convergence) and message.
 
 > &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To use these is *deprecated*, as they are available from `convInfo` now.
 
+                  -----------------------------------------------------------
+
 <!-- ### Example output -->
 
 <!-- To illustrate, let us run the Croucher example. -->
@@ -555,7 +557,7 @@ $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$convergence) and message.
 <!-- ### Concerns with content of the nls result object -->
 
 The `nls` object contains some elements that are awkward to produce by other algorithms,
-but some information that would be useful is not presented obviously. Moreover, the
+but some information that would be useful is not presented in a clear manner. Moreover, the
 complexity of the object is a challenge to users.
 
 In the following, we use `result` as the returned object from `nls()`.
@@ -616,6 +618,8 @@ actually computed in the `print` and `summary` methods for the result.)
 We noted several potential updates to the `nlsr` documentation as well as that
 for `nls()` as we made our comparisons.
 
+<!-- nlsr2 has some extra info ?? -->
+
 ### Weights in returned functions from nls()
 
 The functions `resid()` (an alias for `residuals()`) and `fitted()` and `lhs()` are UNWEIGHTED.
@@ -623,6 +627,40 @@ But if we return `ans` from `nls()` or `minpack.lm::nlsLM` or our new `nlsj` (in
 then `ans$m$resid()` is WEIGHTED. This needs clear documentation so users can get the answers
 intended.
 
+SHORT EXAMPLE??
+
+```{r nlswtx, echo=TRUE}
+weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
+          38.558, 50.156, 62.948, 75.995, 91.972)
+tt <- 1:12
+weeddf <- data.frame(tt, weed)
+wts <- 0.5^tt # simple weights
+frmlogis <- weed ~ Asym/(1 + exp((xmid - tt)/scal))
+Asym<-1; xmid<-1; scal<-1
+nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal))
+nowt
+nowt$m$resid()
+inpar<-getInitial(weed ~ SSlogis(tt, Asym, xmid, scal), data=weeddf)
+print(inpar)
+library(nlsr2)
+nowtx<-nlxb(frmlogis, start=c(Asym=1, xmid=1, scal=1), trace=TRUE)
+nowtx
+nowtxi<-nlxb(frmlogis, start=inpar, trace=TRUE)
+nowtxi
+usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
+usewt
+usewt$m$resid()
+nmod <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
+usewtx<-nlxb(frmlogis,  start=c(Asym=1, xmid=1, scal=1), weights=wts,
+              control=list(japprox="jafwd"), trace=TRUE)
+usewtx
+usewtxi<-nlxb(frmlogis, start=inpar, weights=wts,
+              weights=wts, control=list(japprox="jafwd"), trace=TRUE)
+usewtxi
+# usewtx$resid
+```
+
+?? NOTE -- nlxb NOT handling weights correctly here
 ### Interim output from the "port" algorithm
 
 As the `nls()` **man** page states, when the "port" algorithm is used with the `trace` argument

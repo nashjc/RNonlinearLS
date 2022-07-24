@@ -678,10 +678,14 @@ only, a convergence code (\texttt{0} for \newline
 they are available from \texttt{convInfo} now.
 \end{quote}
 
+\begin{verbatim}
+              -----------------------------------------------------------
+\end{verbatim}
+
 The \texttt{nls} object contains some elements that are awkward to
 produce by other algorithms, but some information that would be useful
-is not presented obviously. Moreover, the complexity of the object is a
-challenge to users.
+is not presented in a clear manner. Moreover, the complexity of the
+object is a challenge to users.
 
 In the following, we use \texttt{result} as the returned object from
 \texttt{nls()}.
@@ -769,6 +773,196 @@ The functions \texttt{resid()} (an alias for \texttt{residuals()}) and
 new \texttt{nlsj} (interim package), then \texttt{ans\$m\$resid()} is
 WEIGHTED. This needs clear documentation so users can get the answers
 intended.
+
+SHORT EXAMPLE??
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{weed }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\FloatTok{5.308}\NormalTok{, }\FloatTok{7.24}\NormalTok{, }\FloatTok{9.638}\NormalTok{, }\FloatTok{12.866}\NormalTok{, }\FloatTok{17.069}\NormalTok{, }\FloatTok{23.192}\NormalTok{, }\FloatTok{31.443}\NormalTok{,}
+          \FloatTok{38.558}\NormalTok{, }\FloatTok{50.156}\NormalTok{, }\FloatTok{62.948}\NormalTok{, }\FloatTok{75.995}\NormalTok{, }\FloatTok{91.972}\NormalTok{)}
+\NormalTok{tt }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{:}\DecValTok{12}
+\NormalTok{weeddf }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(tt, weed)}
+\NormalTok{wts }\OtherTok{\textless{}{-}} \FloatTok{0.5}\SpecialCharTok{\^{}}\NormalTok{tt }\CommentTok{\# simple weights}
+\NormalTok{Asym}\OtherTok{\textless{}{-}}\DecValTok{1}\NormalTok{; xmid}\OtherTok{\textless{}{-}}\DecValTok{1}\NormalTok{; scal}\OtherTok{\textless{}{-}}\DecValTok{1}
+\NormalTok{nowt}\OtherTok{\textless{}{-}}\FunctionTok{nls}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal))}
+\NormalTok{nowt}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Nonlinear regression model
+##   model: weed ~ SSlogis(tt, Asym, xmid, scal)
+##    data: parent.frame()
+##   Asym   xmid   scal 
+## 196.19  12.42   3.19 
+##  residual sum-of-squares: 2.59
+## 
+## Number of iterations to convergence: 0 
+## Achieved convergence tolerance: 1.13e-06
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nowt}\SpecialCharTok{$}\NormalTok{m}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] -0.011900  0.032755 -0.092030 -0.208782 -0.392634  0.057594  1.105728
+##  [8] -0.715786  0.107647  0.348396 -0.652592  0.287569
+## attr(,"gradient")
+##           Asym     xmid    scal
+##  [1,] 0.027117  -1.6229  5.8103
+##  [2,] 0.036737  -2.1769  7.1111
+##  [3,] 0.049596  -2.8997  8.5628
+##  [4,] 0.066645  -3.8266 10.1000
+##  [5,] 0.089005  -4.9881 11.6015
+##  [6,] 0.117921  -6.3988 12.8762
+##  [7,] 0.154635  -8.0418 13.6607
+##  [8,] 0.200186  -9.8498 13.6432
+##  [9,] 0.255106 -11.6901 12.5267
+## [10,] 0.319083 -13.3660 10.1313
+## [11,] 0.390688 -14.6444  6.5083
+## [12,] 0.467334 -15.3139  2.0038
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{inpar}\OtherTok{\textless{}{-}}\FunctionTok{getInitial}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal), }\AttributeTok{data=}\NormalTok{weeddf)}
+\FunctionTok{print}\NormalTok{(inpar)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     Asym     xmid     scal 
+## 196.1862  12.4173   3.1891
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(nlsr2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'nlsr2'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:nlsr':
+## 
+##     codeDeriv, findSubexprs, fnDeriv, isCALL, isMINUSONE, isONE,
+##     isZERO, model2rjfun, model2ssgrfun, modelexpr, newDeriv,
+##     newSimplification, nlfb, nlsDeriv, nlsSimplify, nlxb, resgr, resss,
+##     rjfundoc, sysDerivs, sysSimplifications, wrapnlsr
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nowtx}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal), }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{control=}\FunctionTok{list}\NormalTok{(}\AttributeTok{japprox=}\StringTok{"jafwd"}\NormalTok{), }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Using approximation  jafwd   is.character(ctrl$japprox)= TRUE 
+## <<lamda: 1e-04  SS= 23527 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
+## <<lamda: 4e-05  SS= 10887 ( 0.8264 ) at  Asym = 52.337  xmid = 48.234  scal = 180.33 f/j  2 / 1
+## <<lamda: 0.016  SS= 8948.4 ( 0.41672 ) at  Asym = 80.893  xmid = 48.394  scal = 169.52 f/j  6 / 2
+## <<lamda: 0.0064  SS= 8853.5 ( 0.068832 ) at  Asym = 89.895  xmid = 66.542  scal = 118.27 f/j  7 / 3
+## <<lamda: 0.0256  SS= 8673.7 ( 0.080434 ) at  Asym = 103.26  xmid = 69.707  scal = 91.474 f/j  9 / 4
+## <<lamda: 0.1024  SS= 8563.7 ( 0.059227 ) at  Asym = 110.79  xmid = 67.869  scal = 81.345 f/j  11 / 5
+## <<lamda: 0.04096  SS= 8392.1 ( 0.12852 ) at  Asym = 129.64  xmid = 62.354  scal = 48.414 f/j  12 / 6
+## <<lamda: 0.16384  SS= 7777.5 ( 0.17269 ) at  Asym = 139.58  xmid = 48.216  scal = 39.581 f/j  14 / 7
+## <<lamda: 0.65536  SS= 7547.4 ( 0.11307 ) at  Asym = 142.31  xmid = 43.841  scal = 33.749 f/j  16 / 8
+## <<lamda: 0.26214  SS= 6213 ( 0.22183 ) at  Asym = 149.97  xmid = 28.124  scal = 17.452 f/j  17 / 9
+## <<lamda: 1.0486  SS= 2919.7 ( 0.33273 ) at  Asym = 152.81  xmid = 15.369  scal = 7.5443 f/j  19 / 10
+## <<lamda: 4.1943  SS= 1903.2 ( 0.74156 ) at  Asym = 153.41  xmid = 9.8394  scal = 1.8083 f/j  21 / 11
+## <<lamda: 1.6777  SS= 113.84 ( 0.73921 ) at  Asym = 153.46  xmid = 10.631  scal = 2.5864 f/j  22 / 12
+## <<lamda: 0.67109  SS= 11.222 ( 0.66287 ) at  Asym = 153.64  xmid = 10.972  scal = 2.8505 f/j  23 / 13
+## <<lamda: 0.26844  SS= 10.289 ( 0.19346 ) at  Asym = 154.03  xmid = 11.02  scal = 2.8798 f/j  24 / 14
+## <<lamda: 0.10737  SS= 9.8337 ( 0.11332 ) at  Asym = 154.95  xmid = 11.055  scal = 2.889 f/j  25 / 15
+## <<lamda: 0.04295  SS= 8.8717 ( 0.16811 ) at  Asym = 157.04  xmid = 11.133  scal = 2.9084 f/j  26 / 16
+## <<lamda: 0.01718  SS= 7.2069 ( 0.21397 ) at  Asym = 161.34  xmid = 11.29  scal = 2.9469 f/j  27 / 17
+## <<lamda: 0.0068719  SS= 5.1659 ( 0.30108 ) at  Asym = 168.61  xmid = 11.548  scal = 3.0079 f/j  28 / 18
+## <<lamda: 0.0027488  SS= 3.5835 ( 0.33934 ) at  Asym = 178.1  xmid = 11.867  scal = 3.079 f/j  29 / 19
+## <<lamda: 0.0010995  SS= 2.8237 ( 0.28331 ) at  Asym = 187.23  xmid = 12.155  scal = 3.1385 f/j  30 / 20
+## <<lamda: 0.0004398  SS= 2.6123 ( 0.16163 ) at  Asym = 193.29  xmid = 12.334  scal = 3.1734 f/j  31 / 21
+## <<lamda: 0.00017592  SS= 2.588 ( 0.056549 ) at  Asym = 195.68  xmid = 12.403  scal = 3.1863 f/j  32 / 22
+## <<lamda: 7.0369e-05  SS= 2.5873 ( 0.010514 ) at  Asym = 196.14  xmid = 12.416  scal = 3.1889 f/j  33 / 23
+## <<lamda: 2.8147e-05  SS= 2.5873 ( 0.0009007 ) at  Asym = 196.18  xmid = 12.417  scal = 3.1891 f/j  34 / 24
+## <<lamda: 1.1259e-05  SS= 2.5873 ( 3.4226e-05 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  35 / 25
+## <<lamda: 4.5036e-06  SS= 2.5873 ( 6.5424e-07 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  36 / 26
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nowtx}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## nlsr2  object: x 
+## residual sumsquares =  2.5873  on  12 observations
+##     after  27    Jacobian and  36 function evaluations
+##   name            coeff          SE       tstat      pval      gradient    JSingval   
+## Asym             196.186         11.31      17.35  3.167e-08  -5.714e-10       44.93  
+## xmid             12.4173        0.3346      37.11  3.716e-11  -6.654e-08        15.6  
+## scal             3.18908        0.0698      45.69  5.768e-12   1.567e-07      0.0474
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{usewt }\OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal), }\AttributeTok{weights=}\NormalTok{wts)}
+\NormalTok{usewt}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Nonlinear regression model
+##   model: weed ~ SSlogis(tt, Asym, xmid, scal)
+##    data: parent.frame()
+##   Asym   xmid   scal 
+## 199.86  12.50   3.19 
+##  weighted residual sum-of-squares: 0.0196
+## 
+## Number of iterations to convergence: 2 
+## Achieved convergence tolerance: 8.29e-06
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{usewt}\SpecialCharTok{$}\NormalTok{m}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1]  0.0085640  0.0324442 -0.0176652 -0.0388479 -0.0579575  0.0163623
+##  [7]  0.1042380 -0.0411766  0.0052509  0.0084324 -0.0194246 -0.0024053
+## attr(,"gradient")
+##           Asym     xmid    scal
+##  [1,] 0.026498  -1.6157  5.8228
+##  [2,] 0.035901  -2.1679  7.1333
+##  [3,] 0.048474  -2.8890  8.6006
+##  [4,] 0.065153  -3.8149 10.1617
+##  [5,] 0.087046  -4.9775 11.6983
+##  [6,] 0.115387  -6.3933 13.0222
+##  [7,] 0.151425  -8.0483 13.8709
+##  [8,] 0.196222  -9.8787 13.9297
+##  [9,] 0.250362 -11.7553 12.8918
+## [10,] 0.313611 -13.4827 10.5608
+## [11,] 0.384641 -14.8251  6.9663
+## [12,] 0.460954 -15.5631  2.4357
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# usewtx\textless{}{-}nlxb(weed \textasciitilde{} SSlogis(tt, Asym, xmid, scal), start=inpar, weights=wts,}
+\CommentTok{\#              control=list(japprox="jafwd"), trace=TRUE)}
+\CommentTok{\# usewtx}
+\CommentTok{\# usewtx$resid}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{interim-output-from-the-port-algorithm}{%
 \subsubsection{Interim output from the ``port''
@@ -1038,12 +1232,12 @@ solution for the scaled Hobbs test problem.
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr object: x 
+## nlsr2  object: anlxb1 
 ## residual sumsquares =  9.4726  on  12 observations
-##     after  16    Jacobian and  17 function evaluations
+##     after  12    Jacobian and  12 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
 ## b1                     2U           NA         NA         NA           0       23.35  
-## b2               4.43325            NA         NA         NA   1.832e-10           0  
+## b2               4.43325            NA         NA         NA   -2.16e-07           0  
 ## b3                     3U           NA         NA         NA           0           0
 \end{verbatim}
 
