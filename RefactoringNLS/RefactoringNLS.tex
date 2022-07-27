@@ -279,14 +279,16 @@ tests}\label{more-general-termination-tests}}
 
 The convergence criterion above, the principal termination control of
 \texttt{nls()}, leaves out some possibilities that could be useful for
-some problems. The package \texttt{nlsr}
-((\protect\hyperlink{ref-nlsr-manual}{\textbf{nlsr-manual?}})) already
-offers both the safeguarded relative offset test (\textbf{roffset}) as
-well as a \textbf{small sum of squares} test (\textbf{smallsstest}) that
-compares the latest evaluated sum of squared (weighted) residuals to
-\texttt{e4} times the initial sum of squares, where
+some problems. The package \texttt{nlsr} (John C Nash and Duncan Murdoch
+(\protect\hyperlink{ref-nlsr2019manual}{2019})) already offers both the
+safeguarded relative offset test (\textbf{roffset}) as well as a
+\textbf{small sum of squares} test (\textbf{smallsstest}) that compares
+the latest evaluated sum of squared (weighted) residuals to \texttt{e4}
+times the initial sum of squares, where
 \texttt{e4\ \textless{}-\ (100*.Machine\$double.eps)\^{}4} is
-approximately 2.43e-55.
+approximately 2.43e-55. (NOTE: For the purposes of this article, we use
+a developmental version of package \texttt{nlsr} labelled
+\texttt{nlsr2}.)
 
 We note that \texttt{nls()} uses a termination test to stop after
 \texttt{maxiter} ``iterations''. Unfortunately, the meaning of
@@ -339,14 +341,14 @@ is not helpful in obtaining a solution.
 \NormalTok{testdat }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(x, y) }\CommentTok{\# save in a data frame}
 \NormalTok{strt }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{a =} \SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\AttributeTok{b =} \DecValTok{5}\NormalTok{, }\AttributeTok{c =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{r =} \FloatTok{0.7}\NormalTok{, }\AttributeTok{m =} \DecValTok{1}\NormalTok{) }\CommentTok{\# give programs a good start}
 \NormalTok{jform }\OtherTok{\textless{}{-}}\NormalTok{ y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ a }\SpecialCharTok{+}\NormalTok{ b }\SpecialCharTok{*}\NormalTok{ r}\SpecialCharTok{\^{}}\NormalTok{(x }\SpecialCharTok{{-}}\NormalTok{ m) }\SpecialCharTok{+}\NormalTok{ c }\SpecialCharTok{*}\NormalTok{ x }\CommentTok{\# Formula}
-\FunctionTok{library}\NormalTok{(nlsr)}
-\NormalTok{linexp2 }\OtherTok{\textless{}{-}} \FunctionTok{try}\NormalTok{(}\FunctionTok{nlxb}\NormalTok{(jform, }\AttributeTok{data =}\NormalTok{ testdat, }\AttributeTok{start =}\NormalTok{ strt, }\AttributeTok{trace =}\NormalTok{ F))}
+\FunctionTok{library}\NormalTok{(nlsr2)}
+\NormalTok{linexp2 }\OtherTok{\textless{}{-}} \FunctionTok{try}\NormalTok{(}\FunctionTok{nlxb}\NormalTok{(jform, }\AttributeTok{data =}\NormalTok{ testdat, }\AttributeTok{start =}\NormalTok{ strt, }\AttributeTok{trace =} \ConstantTok{FALSE}\NormalTok{))}
 \NormalTok{linexp2 }\CommentTok{\# Note singular values of Jacobian in rightmost column}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr object: x 
+## nlsr2  object: x 
 ## residual sumsquares =  0  on  11 observations
 ##     after  1    Jacobian and  1 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
@@ -360,7 +362,7 @@ is not helpful in obtaining a solution.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# We get an error with nls()}
-\NormalTok{linexp }\OtherTok{\textless{}{-}} \FunctionTok{try}\NormalTok{(}\FunctionTok{nls}\NormalTok{(jform, }\AttributeTok{data =}\NormalTok{ testdat, }\AttributeTok{start =}\NormalTok{ strt, }\AttributeTok{trace =}\NormalTok{ F))}
+\NormalTok{linexp }\OtherTok{\textless{}{-}} \FunctionTok{try}\NormalTok{(}\FunctionTok{nls}\NormalTok{(jform, }\AttributeTok{data =}\NormalTok{ testdat, }\AttributeTok{start =}\NormalTok{ strt, }\AttributeTok{trace =} \ConstantTok{FALSE}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
@@ -767,14 +769,10 @@ updates to the \texttt{nlsr} documentation as well as that for
 \subsubsection{Weights in returned functions from
 nls()}\label{weights-in-returned-functions-from-nls}}
 
-The functions \texttt{resid()} (an alias for \texttt{residuals()}) and
-\texttt{fitted()} and \texttt{lhs()} are UNWEIGHTED. But if we return
-\texttt{ans} from \texttt{nls()} or \texttt{minpack.lm::nlsLM} or our
-new \texttt{nlsj} (interim package), then \texttt{ans\$m\$resid()} is
-WEIGHTED. This needs clear documentation so users can get the answers
-intended.
-
-SHORT EXAMPLE??
+The function \texttt{resid()} (an alias for \texttt{residuals()})
+\texttt{nlsModel()} is WEIGHTED, as are those in the structured object
+\texttt{m} returned by \texttt{nls()} or \texttt{minpack.lm::nlsLM},
+e.g., \texttt{ans\$m\$resid()}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -785,7 +783,7 @@ SHORT EXAMPLE??
 \NormalTok{wts }\OtherTok{\textless{}{-}} \FloatTok{0.5}\SpecialCharTok{\^{}}\NormalTok{tt }\CommentTok{\# simple weights}
 \NormalTok{frmlogis }\OtherTok{\textless{}{-}}\NormalTok{ weed }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Asym}\SpecialCharTok{/}\NormalTok{(}\DecValTok{1} \SpecialCharTok{+} \FunctionTok{exp}\NormalTok{((xmid }\SpecialCharTok{{-}}\NormalTok{ tt)}\SpecialCharTok{/}\NormalTok{scal))}
 \NormalTok{Asym}\OtherTok{\textless{}{-}}\DecValTok{1}\NormalTok{; xmid}\OtherTok{\textless{}{-}}\DecValTok{1}\NormalTok{; scal}\OtherTok{\textless{}{-}}\DecValTok{1}
-\NormalTok{nowt}\OtherTok{\textless{}{-}}\FunctionTok{nls}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal))}
+\NormalTok{nowt}\OtherTok{\textless{}{-}}\FunctionTok{nls}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal)) }\CommentTok{\# UNWEIGHTED}
 \NormalTok{nowt}
 \end{Highlighting}
 \end{Shaded}
@@ -804,7 +802,7 @@ SHORT EXAMPLE??
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{nowt}\SpecialCharTok{$}\NormalTok{m}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{()}
+\NormalTok{nowt}\SpecialCharTok{$}\NormalTok{m}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{() }\CommentTok{\# This has UNWEIGHTED residual and Jacobian. Does NOT take coefficients.}
 \end{Highlighting}
 \end{Shaded}
 
@@ -829,122 +827,6 @@ SHORT EXAMPLE??
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{inpar}\OtherTok{\textless{}{-}}\FunctionTok{getInitial}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal), }\AttributeTok{data=}\NormalTok{weeddf)}
-\FunctionTok{print}\NormalTok{(inpar)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##     Asym     xmid     scal 
-## 196.1862  12.4173   3.1891
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{library}\NormalTok{(nlsr2)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## 
-## Attaching package: 'nlsr2'
-\end{verbatim}
-
-\begin{verbatim}
-## The following objects are masked from 'package:nlsr':
-## 
-##     codeDeriv, findSubexprs, fnDeriv, isCALL, isMINUSONE, isONE,
-##     isZERO, model2rjfun, model2ssgrfun, modelexpr, newDeriv,
-##     newSimplification, nlfb, nlsDeriv, nlsSimplify, nlxb, resgr, resss,
-##     rjfundoc, sysDerivs, sysSimplifications, wrapnlsr
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{nowtx}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## <<lamda: 1e-04  SS= 23527 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
-## <<lamda: 4e-05  SS= 10887 ( 0.8264 ) at  Asym = 52.337  xmid = 48.234  scal = 180.33 f/j  2 / 1
-## <<lamda: 0.016  SS= 8948.4 ( 0.41672 ) at  Asym = 80.893  xmid = 48.394  scal = 169.52 f/j  6 / 2
-## <<lamda: 0.0064  SS= 8853.5 ( 0.068832 ) at  Asym = 89.895  xmid = 66.542  scal = 118.27 f/j  7 / 3
-## <<lamda: 0.0256  SS= 8673.7 ( 0.080434 ) at  Asym = 103.26  xmid = 69.707  scal = 91.474 f/j  9 / 4
-## <<lamda: 0.1024  SS= 8563.7 ( 0.059227 ) at  Asym = 110.79  xmid = 67.869  scal = 81.345 f/j  11 / 5
-## <<lamda: 0.04096  SS= 8392.1 ( 0.12852 ) at  Asym = 129.64  xmid = 62.354  scal = 48.413 f/j  12 / 6
-## <<lamda: 0.16384  SS= 7777.5 ( 0.17269 ) at  Asym = 139.58  xmid = 48.216  scal = 39.581 f/j  14 / 7
-## <<lamda: 0.65536  SS= 7547.4 ( 0.11307 ) at  Asym = 142.31  xmid = 43.841  scal = 33.748 f/j  16 / 8
-## <<lamda: 0.26214  SS= 6212.9 ( 0.22183 ) at  Asym = 149.97  xmid = 28.123  scal = 17.451 f/j  17 / 9
-## <<lamda: 1.0486  SS= 2919.3 ( 0.33274 ) at  Asym = 152.81  xmid = 15.368  scal = 7.5437 f/j  19 / 10
-## <<lamda: 4.1943  SS= 1904 ( 0.74162 ) at  Asym = 153.41  xmid = 9.8392  scal = 1.8081 f/j  21 / 11
-## <<lamda: 1.6777  SS= 113.91 ( 0.73923 ) at  Asym = 153.46  xmid = 10.631  scal = 2.5863 f/j  22 / 12
-## <<lamda: 0.67109  SS= 11.223 ( 0.6629 ) at  Asym = 153.64  xmid = 10.972  scal = 2.8504 f/j  23 / 13
-## <<lamda: 0.26844  SS= 10.289 ( 0.19356 ) at  Asym = 154.03  xmid = 11.02  scal = 2.8798 f/j  24 / 14
-## <<lamda: 0.10737  SS= 9.8336 ( 0.11332 ) at  Asym = 154.95  xmid = 11.055  scal = 2.889 f/j  25 / 15
-## <<lamda: 0.04295  SS= 8.8717 ( 0.16811 ) at  Asym = 157.04  xmid = 11.133  scal = 2.9084 f/j  26 / 16
-## <<lamda: 0.01718  SS= 7.2069 ( 0.21397 ) at  Asym = 161.34  xmid = 11.29  scal = 2.9469 f/j  27 / 17
-## <<lamda: 0.0068719  SS= 5.1659 ( 0.30108 ) at  Asym = 168.61  xmid = 11.548  scal = 3.0079 f/j  28 / 18
-## <<lamda: 0.0027488  SS= 3.5835 ( 0.33934 ) at  Asym = 178.1  xmid = 11.867  scal = 3.079 f/j  29 / 19
-## <<lamda: 0.0010995  SS= 2.8237 ( 0.28331 ) at  Asym = 187.23  xmid = 12.155  scal = 3.1385 f/j  30 / 20
-## <<lamda: 0.0004398  SS= 2.6123 ( 0.16163 ) at  Asym = 193.29  xmid = 12.334  scal = 3.1734 f/j  31 / 21
-## <<lamda: 0.00017592  SS= 2.588 ( 0.056549 ) at  Asym = 195.68  xmid = 12.403  scal = 3.1863 f/j  32 / 22
-## <<lamda: 7.0369e-05  SS= 2.5873 ( 0.010514 ) at  Asym = 196.14  xmid = 12.416  scal = 3.1889 f/j  33 / 23
-## <<lamda: 2.8147e-05  SS= 2.5873 ( 0.00090069 ) at  Asym = 196.18  xmid = 12.417  scal = 3.1891 f/j  34 / 24
-## <<lamda: 1.1259e-05  SS= 2.5873 ( 3.4237e-05 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  35 / 25
-## <<lamda: 4.5036e-06  SS= 2.5873 ( 6.5557e-07 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  36 / 26
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{nowtx}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## nlsr2  object: x 
-## residual sumsquares =  2.5873  on  12 observations
-##     after  27    Jacobian and  36 function evaluations
-##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## Asym             196.186         11.31      17.35  3.167e-08  -3.432e-10       44.93  
-## xmid             12.4173        0.3346      37.11  3.716e-11  -5.273e-08        15.6  
-## scal             3.18908        0.0698      45.69  5.768e-12   1.752e-07      0.0474
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# nowtSSx0\textless{}{-}nlxb(weed \textasciitilde{} SSlogis(tt, Asym=1, xmid=1, scal=1), start=c(Asym=1, xmid=1, scal=1), trace=TRUE)}
-\CommentTok{\# nowtSsx0}
-\CommentTok{\# nowtSSx\textless{}{-}nlxb(weed \textasciitilde{} SSlogis(tt, Asym=1, xmid=1, scal=1), start=c(Asym=100, xmid=2, scal=1), trace=TRUE, }
-\CommentTok{\#               control=list(japprox="jand"))}
-\CommentTok{\# nowtSSx}
-\NormalTok{nowtxi}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis, }\AttributeTok{start=}\NormalTok{inpar, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## <<lamda: 1e-04  SS= 2.5873 ( NA ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  1 / 0
-## <<lamda: 4e-05  SS= 2.5873 ( 9.4859e-07 ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  2 / 1
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{nowtxi}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## nlsr2  object: x 
-## residual sumsquares =  2.5873  on  12 observations
-##     after  2    Jacobian and  2 function evaluations
-##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## Asym             196.186         11.31      17.35  3.167e-08  -1.769e-09       44.93  
-## xmid             12.4173        0.3346      37.11  3.716e-11  -2.902e-08        15.6  
-## scal             3.18908        0.0698      45.69  5.768e-12   3.896e-08      0.0474
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \NormalTok{usewt }\OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(weed }\SpecialCharTok{\textasciitilde{}} \FunctionTok{SSlogis}\NormalTok{(tt, Asym, xmid, scal), }\AttributeTok{weights=}\NormalTok{wts)}
 \NormalTok{usewt}
 \end{Highlighting}
@@ -964,7 +846,7 @@ SHORT EXAMPLE??
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{usewt}\SpecialCharTok{$}\NormalTok{m}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{()}
+\NormalTok{usewt}\SpecialCharTok{$}\NormalTok{m}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{() }\CommentTok{\# WEIGHTED. Does NOT take coefficients.}
 \end{Highlighting}
 \end{Shaded}
 
@@ -989,147 +871,27 @@ SHORT EXAMPLE??
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{nmod }\OtherTok{\textless{}{-}} \FunctionTok{nlsModel}\NormalTok{(frmlogis, }\AttributeTok{data=}\NormalTok{weeddf, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{wts=}\NormalTok{wts)}
-\NormalTok{usewtx}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis,  }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{weights=}\NormalTok{wts, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{nmod0 }\OtherTok{\textless{}{-}} \FunctionTok{nlsModel}\NormalTok{(frmlogis, }\AttributeTok{data=}\NormalTok{weeddf, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{wts=}\NormalTok{wts)}
+\NormalTok{nmod0}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{() }\CommentTok{\# Parameters are supplied in nlsModel() \textasciigrave{}start\textasciigrave{} above.}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## <<lamda: 1e-04  SS= 82.379 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
-## <<lamda: 4e-05  SS= 27.961 ( 0.87591 ) at  Asym = 23.072  xmid = 24.605  scal = 33.424 f/j  2 / 1
-## <<lamda: 0.0016  SS= 27.179 ( 0.10632 ) at  Asym = 27.088  xmid = 25.624  scal = 24.768 f/j  5 / 2
-## <<lamda: 0.0064  SS= 26.326 ( 0.11129 ) at  Asym = 30.015  xmid = 24.489  scal = 21.971 f/j  7 / 3
-## <<lamda: 0.00256  SS= 26.011 ( 0.18194 ) at  Asym = 36.922  xmid = 21.283  scal = 12.464 f/j  8 / 4
-## <<lamda: 0.01024  SS= 21.446 ( 0.27496 ) at  Asym = 39.825  xmid = 16.241  scal = 10.675 f/j  10 / 5
-## <<lamda: 0.04096  SS= 19.865 ( 0.18158 ) at  Asym = 40.684  xmid = 14.706  scal = 8.9148 f/j  12 / 6
-## <<lamda: 0.016384  SS= 11.81 ( 0.32805 ) at  Asym = 42.981  xmid = 9.344  scal = 4.7286 f/j  13 / 7
-## <<lamda: 0.065536  SS= 3.8548 ( 0.46972 ) at  Asym = 43.701  xmid = 6.3095  scal = 2.7564 f/j  15 / 8
-## <<lamda: 0.026214  SS= 2.8386 ( 0.45514 ) at  Asym = 44.458  xmid = 5.503  scal = 2.0895 f/j  16 / 9
-## <<lamda: 0.010486  SS= 2.4496 ( 0.2365 ) at  Asym = 46.866  xmid = 5.9479  scal = 2.3 f/j  17 / 10
-## <<lamda: 0.0041943  SS= 2.0123 ( 0.21463 ) at  Asym = 51.378  xmid = 6.3516  scal = 2.3762 f/j  18 / 11
-## <<lamda: 0.0016777  SS= 1.4462 ( 0.2703 ) at  Asym = 59.51  xmid = 7.03  scal = 2.5092 f/j  19 / 12
-## <<lamda: 0.00067109  SS= 0.91272 ( 0.306 ) at  Asym = 71.787  xmid = 7.8952  scal = 2.6532 f/j  20 / 13
-## <<lamda: 0.00026844  SS= 0.51816 ( 0.29993 ) at  Asym = 88.001  xmid = 8.8228  scal = 2.7857 f/j  21 / 14
-## <<lamda: 0.00010737  SS= 0.26988 ( 0.25879 ) at  Asym = 107.49  xmid = 9.727  scal = 2.901 f/j  22 / 15
-## <<lamda: 4.295e-05  SS= 0.13173 ( 0.20437 ) at  Asym = 129.22  xmid = 10.558  scal = 2.9978 f/j  23 / 16
-## <<lamda: 1.718e-05  SS= 0.062773 ( 0.16799 ) at  Asym = 151.62  xmid = 11.279  scal = 3.0748 f/j  24 / 17
-## <<lamda: 6.8719e-06  SS= 0.032464 ( 0.12324 ) at  Asym = 172.29  xmid = 11.849  scal = 3.1314 f/j  25 / 18
-## <<lamda: 2.7488e-06  SS= 0.021923 ( 0.076781 ) at  Asym = 188.07  xmid = 12.235  scal = 3.1673 f/j  26 / 19
-## <<lamda: 1.0995e-06  SS= 0.01977 ( 0.035429 ) at  Asym = 196.72  xmid = 12.43  scal = 3.1847 f/j  27 / 20
-## <<lamda: 4.398e-07  SS= 0.019619 ( 0.0092109 ) at  Asym = 199.45  xmid = 12.49  scal = 3.19 f/j  28 / 21
-## <<lamda: 1.7592e-07  SS= 0.019617 ( 0.00087595 ) at  Asym = 199.84  xmid = 12.499  scal = 3.1908 f/j  29 / 22
-## <<lamda: 7.0369e-08  SS= 0.019617 ( 4.7993e-05 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  30 / 23
-## <<lamda: 2.8147e-08  SS= 0.019617 ( 8.2336e-07 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  31 / 24
+##  [1] 3.3998 3.2545 3.0961 2.9784 2.8438 2.7748 2.6910 2.3474 2.1724 1.9359
+## [11] 1.6572 1.4214
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{usewtx}
+\NormalTok{nmod }\OtherTok{\textless{}{-}} \FunctionTok{nlsModel}\NormalTok{(frmlogis, }\AttributeTok{data=}\NormalTok{weeddf, }\AttributeTok{start=}\FunctionTok{coef}\NormalTok{(usewt), }\AttributeTok{wts=}\NormalTok{wts)}
+\NormalTok{nmod}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{()}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr2  object: x 
-## residual sumsquares =  0.019617  on  12 observations
-##     after  25    Jacobian and  31 function evaluations
-##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## Asym             199.859         17.46      11.45  1.149e-06  -2.201e-11       7.858  
-## xmid             12.4994        0.4131      30.26    2.3e-10    2.22e-09        0.79  
-## scal             3.19088       0.04323      73.81  7.781e-14  -1.511e-08    0.002673
+##  [1]  0.0085640  0.0324442 -0.0176652 -0.0388479 -0.0579575  0.0163623
+##  [7]  0.1042380 -0.0411766  0.0052509  0.0084324 -0.0194246 -0.0024053
 \end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# }\AlertTok{NOTE}\CommentTok{ jafwd and jaback fail!}
-\NormalTok{usewtxn}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis,  }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{weights=}\NormalTok{wts, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{control=}\FunctionTok{list}\NormalTok{(}\AttributeTok{japprox=}\StringTok{"jacentral"}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Using approximation  jacentral  
-##       is.character(ctrl$japprox)= TRUE 
-## <<lamda: 1e-04  SS= 82.379 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
-## <<lamda: 4e-05  SS= 27.961 ( 0.87591 ) at  Asym = 23.072  xmid = 24.605  scal = 33.424 f/j  2 / 1
-## <<lamda: 0.0016  SS= 27.179 ( 0.10632 ) at  Asym = 27.088  xmid = 25.624  scal = 24.768 f/j  5 / 2
-## <<lamda: 0.0064  SS= 26.326 ( 0.11129 ) at  Asym = 30.015  xmid = 24.489  scal = 21.971 f/j  7 / 3
-## <<lamda: 0.00256  SS= 26.011 ( 0.18194 ) at  Asym = 36.922  xmid = 21.283  scal = 12.464 f/j  8 / 4
-## <<lamda: 0.01024  SS= 21.446 ( 0.27496 ) at  Asym = 39.825  xmid = 16.241  scal = 10.675 f/j  10 / 5
-## <<lamda: 0.04096  SS= 19.865 ( 0.18158 ) at  Asym = 40.684  xmid = 14.706  scal = 8.9148 f/j  12 / 6
-## <<lamda: 0.016384  SS= 11.81 ( 0.32805 ) at  Asym = 42.981  xmid = 9.344  scal = 4.7286 f/j  13 / 7
-## <<lamda: 0.065536  SS= 3.8548 ( 0.46972 ) at  Asym = 43.701  xmid = 6.3095  scal = 2.7564 f/j  15 / 8
-## <<lamda: 0.026214  SS= 2.8386 ( 0.45514 ) at  Asym = 44.458  xmid = 5.503  scal = 2.0895 f/j  16 / 9
-## <<lamda: 0.010486  SS= 2.4496 ( 0.2365 ) at  Asym = 46.866  xmid = 5.9479  scal = 2.3 f/j  17 / 10
-## <<lamda: 0.0041943  SS= 2.0123 ( 0.21463 ) at  Asym = 51.378  xmid = 6.3516  scal = 2.3762 f/j  18 / 11
-## <<lamda: 0.0016777  SS= 1.4462 ( 0.2703 ) at  Asym = 59.51  xmid = 7.03  scal = 2.5092 f/j  19 / 12
-## <<lamda: 0.00067109  SS= 0.91272 ( 0.306 ) at  Asym = 71.787  xmid = 7.8952  scal = 2.6532 f/j  20 / 13
-## <<lamda: 0.00026844  SS= 0.51816 ( 0.29993 ) at  Asym = 88.001  xmid = 8.8228  scal = 2.7857 f/j  21 / 14
-## <<lamda: 0.00010737  SS= 0.26988 ( 0.25879 ) at  Asym = 107.49  xmid = 9.727  scal = 2.901 f/j  22 / 15
-## <<lamda: 4.295e-05  SS= 0.13173 ( 0.20437 ) at  Asym = 129.22  xmid = 10.558  scal = 2.9978 f/j  23 / 16
-## <<lamda: 1.718e-05  SS= 0.062773 ( 0.16799 ) at  Asym = 151.62  xmid = 11.279  scal = 3.0748 f/j  24 / 17
-## <<lamda: 6.8719e-06  SS= 0.032464 ( 0.12324 ) at  Asym = 172.29  xmid = 11.849  scal = 3.1314 f/j  25 / 18
-## <<lamda: 2.7488e-06  SS= 0.021923 ( 0.076781 ) at  Asym = 188.07  xmid = 12.235  scal = 3.1673 f/j  26 / 19
-## <<lamda: 1.0995e-06  SS= 0.01977 ( 0.035429 ) at  Asym = 196.72  xmid = 12.43  scal = 3.1847 f/j  27 / 20
-## <<lamda: 4.398e-07  SS= 0.019619 ( 0.0092109 ) at  Asym = 199.45  xmid = 12.49  scal = 3.19 f/j  28 / 21
-## <<lamda: 1.7592e-07  SS= 0.019617 ( 0.00087595 ) at  Asym = 199.84  xmid = 12.499  scal = 3.1908 f/j  29 / 22
-## <<lamda: 7.0369e-08  SS= 0.019617 ( 4.7993e-05 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  30 / 23
-## <<lamda: 2.8147e-08  SS= 0.019617 ( 8.24e-07 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  31 / 24
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{usewtxn}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## nlsr2  object: x 
-## residual sumsquares =  0.019617  on  12 observations
-##     after  25    Jacobian and  31 function evaluations
-##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## Asym             199.859         17.46      11.45  1.149e-06  -2.105e-11       7.858  
-## xmid             12.4994        0.4131      30.26    2.3e-10   2.212e-09        0.79  
-## scal             3.19088       0.04323      73.81  7.781e-14  -1.514e-08    0.002673
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{usewtxi}\OtherTok{\textless{}{-}}\FunctionTok{nlxb}\NormalTok{(frmlogis, }\AttributeTok{start=}\NormalTok{inpar, }\AttributeTok{weights=}\NormalTok{wts, }\AttributeTok{trace=}\ConstantTok{TRUE}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## <<lamda: 1e-04  SS= 0.020914 ( NA ) at  Asym = 196.19  xmid = 12.417  scal = 3.1891 f/j  1 / 0
-## <<lamda: 4e-05  SS= 0.019704 ( 0.028209 ) at  Asym = 196.45  xmid = 12.419  scal = 3.1833 f/j  2 / 1
-## <<lamda: 1.6e-05  SS= 0.019678 ( 0.0029702 ) at  Asym = 196.99  xmid = 12.432  scal = 3.1845 f/j  3 / 2
-## <<lamda: 6.4e-06  SS= 0.019645 ( 0.0031987 ) at  Asym = 197.91  xmid = 12.453  scal = 3.1866 f/j  4 / 3
-## <<lamda: 2.56e-06  SS= 0.019623 ( 0.0031067 ) at  Asym = 198.96  xmid = 12.478  scal = 3.1889 f/j  5 / 4
-## <<lamda: 1.024e-06  SS= 0.019617 ( 0.0017597 ) at  Asym = 199.63  xmid = 12.494  scal = 3.1904 f/j  6 / 5
-## <<lamda: 4.096e-07  SS= 0.019617 ( 0.00050079 ) at  Asym = 199.83  xmid = 12.499  scal = 3.1908 f/j  7 / 6
-## <<lamda: 1.6384e-07  SS= 0.019617 ( 6.2448e-05 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  8 / 7
-## <<lamda: 6.5536e-08  SS= 0.019617 ( 2.9857e-06 ) at  Asym = 199.86  xmid = 12.499  scal = 3.1909 f/j  9 / 8
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{usewtxi}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## nlsr2  object: x 
-## residual sumsquares =  0.019617  on  12 observations
-##     after  9    Jacobian and  9 function evaluations
-##   name            coeff          SE       tstat      pval      gradient    JSingval   
-## Asym             199.859         17.46      11.45  1.149e-06  -2.056e-10       7.858  
-## xmid             12.4994        0.4131      30.26    2.3e-10   9.074e-09        0.79  
-## scal             3.19088       0.04323      73.81  7.781e-14  -5.703e-08    0.002673
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# usewtx$resid}
-\end{Highlighting}
-\end{Shaded}
 
 \hypertarget{interim-output-from-the-port-algorithm}{%
 \subsubsection{Interim output from the ``port''
@@ -1278,39 +1040,13 @@ Here we use a truncated version of the example to save display space.
 \DocumentationTok{\#\# (identifier of muscle), Conc (Cacl concentration) and Length}
 \DocumentationTok{\#\# (resulting length of muscle section).}
 \ControlFlowTok{if}\NormalTok{(}\SpecialCharTok{!} \FunctionTok{requireNamespace}\NormalTok{(}\StringTok{"MASS"}\NormalTok{, }\AttributeTok{quietly =} \ConstantTok{TRUE}\NormalTok{)) }\FunctionTok{stop}\NormalTok{(}\StringTok{"Need MASS pkg"}\NormalTok{)}
-\NormalTok{mm}\OtherTok{\textless{}{-}}\NormalTok{ MASS}\SpecialCharTok{::}\NormalTok{muscle[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{12}\NormalTok{,] }\CommentTok{\# take only 1st few values of Strip}
-\FunctionTok{str}\NormalTok{(mm)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## 'data.frame':    12 obs. of  3 variables:
-##  $ Strip : Factor w/ 21 levels "S01","S02","S03",..: 1 1 1 1 2 2 2 2 3 3 ...
-##  $ Conc  : num  1 2 3 4 1 2 3 4 0.25 0.5 ...
-##  $ Length: num  15.8 20.8 22.6 23.8 20.6 26.8 28.4 27 7.2 15.4 ...
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{mm}\OtherTok{\textless{}{-}}\FunctionTok{droplevels}\NormalTok{(mm)}
-\FunctionTok{str}\NormalTok{(mm)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## 'data.frame':    12 obs. of  3 variables:
-##  $ Strip : Factor w/ 3 levels "S01","S02","S03": 1 1 1 1 2 2 2 2 3 3 ...
-##  $ Conc  : num  1 2 3 4 1 2 3 4 0.25 0.5 ...
-##  $ Length: num  15.8 20.8 22.6 23.8 20.6 26.8 28.4 27 7.2 15.4 ...
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
+\NormalTok{mm}\OtherTok{\textless{}{-}}\NormalTok{ MASS}\SpecialCharTok{::}\NormalTok{muscle[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{12}\NormalTok{,] }\CommentTok{\# take only 1st few values of Strip (TRUNCATION OF EXAMPLE)}
+\NormalTok{mm}\OtherTok{\textless{}{-}}\FunctionTok{droplevels}\NormalTok{(mm) }\CommentTok{\# remove unused levels after truncation}
 \NormalTok{nlev }\OtherTok{\textless{}{-}} \FunctionTok{nlevels}\NormalTok{(mm)}
 \FunctionTok{withAutoprint}\NormalTok{(\{}
   \DocumentationTok{\#\# The non linear model considered is}
   \DocumentationTok{\#\#       Length = alpha + beta*exp({-}Conc/theta) + error}
-  \DocumentationTok{\#\# where theta is constant but alpha and beta may vary with Strip.}
+  \DocumentationTok{\#\# where theta is constant. For now alpha and beta do NOT vary with Strip.}
   \FunctionTok{with}\NormalTok{(mm, }\FunctionTok{table}\NormalTok{(Strip)) }\CommentTok{\# 2, 3 or 4 obs per strip}
 \NormalTok{  nl }\OtherTok{\textless{}{-}} \FunctionTok{nlevels}\NormalTok{(mm}\SpecialCharTok{$}\NormalTok{Strip)}
   \DocumentationTok{\#\# We first use the plinear algorithm to fit an overall model,}
@@ -1327,7 +1063,6 @@ Here we use a truncated version of the example to save display space.
   \DocumentationTok{\#\# given in a list (with names):}
   \DocumentationTok{\#\# ?? but why use b here AND in the new formula??}
 \NormalTok{  b }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(musc}\FloatTok{.1}\NormalTok{)}
-
 \NormalTok{  musc}\FloatTok{.2} \OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(Length }\SpecialCharTok{\textasciitilde{}}\NormalTok{ a[Strip] }\SpecialCharTok{+}\NormalTok{ b[Strip]}\SpecialCharTok{*}\FunctionTok{exp}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{Conc}\SpecialCharTok{/}\NormalTok{th), }\AttributeTok{data=}\NormalTok{mm,}
                 \AttributeTok{start =} \FunctionTok{list}\NormalTok{(}\AttributeTok{a =} \FunctionTok{rep}\NormalTok{(b[}\DecValTok{2}\NormalTok{], nl), }\AttributeTok{b =} \FunctionTok{rep}\NormalTok{(b[}\DecValTok{3}\NormalTok{], nl), }\AttributeTok{th =}\NormalTok{ b[}\DecValTok{1}\NormalTok{]))}
   \FunctionTok{summary}\NormalTok{(musc}\FloatTok{.2}\NormalTok{)}
@@ -1386,11 +1121,9 @@ Here we use a truncated version of the example to save display space.
 \end{verbatim}
 
 Running the example reveals that the answers for the parameters are NOT
-indexed. We do not see \texttt{a{[}1{]},\ a{[}2{]},\ a{[}3{]}} but
-\texttt{a1,\ a2,\ a3}. This is no doubt because programming for indexed
-parameters is extremely challenging. However, we believe the current
-structure is could cause confusion and error, and propose an alternative
-approach below.
+indexed. That is, we do not see \texttt{a{[}1{]},\ a{[}2{]},\ a{[}3{]}}
+but \texttt{a1,\ a2,\ a3}. This is no doubt because programming for
+indexed parameters is extremely challenging.
 
 \hypertarget{issue-code-structure-and-documentation-for-maintenance}{%
 \subsection{Issue: code structure and documentation for
@@ -1463,6 +1196,29 @@ solution for the scaled Hobbs test problem.
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{require}\NormalTok{(nlsr)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: nlsr
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'nlsr'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:nlsr2':
+## 
+##     codeDeriv, findSubexprs, fnDeriv, isCALL, isMINUSONE, isONE,
+##     isZERO, model2rjfun, model2ssgrfun, modelexpr, newDeriv,
+##     newSimplification, nlfb, nlsDeriv, nlsSimplify, nlxb, resgr, resss,
+##     rjfundoc, sysDerivs, sysSimplifications, wrapnlsr
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{\# Hobbs scaled problem with bounds, formula specification}
 \NormalTok{anlxb1 }\OtherTok{\textless{}{-}} \FunctionTok{nlxb}\NormalTok{(wmods, }\AttributeTok{start =}\NormalTok{ st, }\AttributeTok{data =}\NormalTok{ wf, }\AttributeTok{lower =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{), }\AttributeTok{upper =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{6}\NormalTok{, }\DecValTok{3}\NormalTok{))}
 \FunctionTok{cat}\NormalTok{(}\StringTok{"Using nlsr::nlxb():"}\NormalTok{)}
@@ -1480,12 +1236,12 @@ solution for the scaled Hobbs test problem.
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr2  object: anlxb1 
+## nlsr object: x 
 ## residual sumsquares =  9.4726  on  12 observations
-##     after  12    Jacobian and  12 function evaluations
+##     after  16    Jacobian and  17 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
 ## b1                     2U           NA         NA         NA           0       23.35  
-## b2               4.43325            NA         NA         NA   -2.16e-07           0  
+## b2               4.43325            NA         NA         NA   1.832e-10           0  
 ## b3                     3U           NA         NA         NA           0           0
 \end{verbatim}
 
@@ -1575,17 +1331,20 @@ We want:
   to provide a packaged version of \texttt{nls()} (call it
   \texttt{nlsalt}) coded entirely in R that matches the features in base
   R or what is packaged in \texttt{nlspkg} as described in Nash and
-  Bhattacharjee (\protect\hyperlink{ref-PkgFromRbase22}{2022}).
+  Bhattacharjee (\protect\hyperlink{ref-PkgFromRbase22}{2022}). The R
+  version can either serve as the operational code or as a reference
+  version to facilitate the maintenance of C, Fortran, or other versions
+  of the software.
 \item
   to streamline the overall \texttt{nls()} infrastructure. By this we
   mean a re-factoring of the routines so they are better suited to
   maintenance of both the existing \texttt{nls()} methods and features
   as well as new features we or others would like to add.
 \item
-  to explain what we do, either in comments or separate maintainer
-  documentation. Since we are complaining about the lack of explanatory
-  material for the current code, we feel it is incumbent on us to
-  provide such material for our own work, and if possible for the
+  to explain what we do, either in comments, examples, or separate
+  maintainer documentation. Since we are complaining about the lack of
+  explanatory material for the current code, we feel it is incumbent on
+  us to provide such material for our own work, and if possible for the
   existing code.
 \end{itemize}
 
@@ -1601,15 +1360,17 @@ from the default if the \texttt{plinear} algorithm is used. This is
 unfortunate, since the user cannot then simply add
 \texttt{algorithm="plinear"} to the call, making errors more likely.
 
-While not consistent with the \texttt{lm()} specification of linear
-models, nonlinear models need all parameters specified. That is, the
-model formula should be written down as it would be computed. Thus a
-linear model (which is valid input for nonlinear estimatin) should be
-specified \texttt{y\ \textasciitilde{}\ a\ *\ x\ +\ b} rather than
+Nonlinear models, apart from those using the ``plinear'' algorithm, need
+all parameters specified. That is, the model formula should be written
+down as it would be computed. Thus a linear model (which is valid input
+for nonlinear estimation) should be specified
+\texttt{y\ \textasciitilde{}\ a\ *\ x\ +\ b} rather than
 \texttt{y\ \textasciitilde{}\ x}. Moreover, we want to avoid the
 partially linear parameters appearing in the result object as
 \texttt{.lin1}, \texttt{.lin2}, etc., where the actual position of
-parameters in the model is not explicit.
+parameters in the model is not explicit. We are unclear why these
+parameters begin with a dot, that is, that they have the ``hidden''
+indicator.
 
 A possible workaround to allow consistency would be to specify the
 partially linear parameters when the \texttt{plinear} option is
@@ -1635,7 +1396,7 @@ to be able to process models such as
 where \texttt{Strip} is the index. Data \texttt{Length} and
 \texttt{Conc} are available for all observations and parameter
 \texttt{th} applies to every fitted point, but \texttt{a{[}Strip{]}} and
-\texttt{b{[}Strip{]}} depend on the index, which could be an
+\texttt{b{[}Strip{]}} apply only to data indexed, which could be an
 experimental run number, or some other categorization.
 
 Given that \texttt{{[}\ {]}} are the R method to index arrays, their
@@ -1643,12 +1404,12 @@ presence in a model formula signals indexing. The question is how to
 perform the correct calculations.
 
 Our view is that inclusion of the indexing \textbf{within}
-\texttt{nls()} introduces complexity that could be avoided by a suitable
-wrapper function. The modeling formula must be expanded to encompass all
-the index cases, likely with indexed parameters renamed e.g.,
-\texttt{a{[}2{]}} becomes \texttt{a2} as at present with \texttt{nls()}.
-However, we believe the wrapper should be able to process output to
-present the indexed parameters correctly.
+\texttt{nls()} or similar tools introduces complexity that could be
+avoided by a suitable wrapper function. The modeling formula must be
+expanded to encompass all the index cases, likely with indexed
+parameters renamed e.g., \texttt{a{[}2{]}} becomes \texttt{a2} as at
+present with \texttt{nls()}. However, a wrapper could process output to
+reconstitute the indexing of parameters.
 
 \hypertarget{streamlining-code}{%
 \subsubsection{Streamlining code}\label{streamlining-code}}
@@ -1762,13 +1523,13 @@ aspects of \texttt{nls()} that have given us the most trouble:
   The functions that compute the residuals and jacobians often presume
   the data and parameters needed are available in a particular
   environment. As long as the correct environment is used, this provides
-  a short syntax to invoke the calculations. The danger is that the
+  a compact syntax to invoke the calculations. The danger is that the
   wrong data is accessed if the internal search finds a valid name that
   is not the object we want.
 \item
-  Weights, subsets, and various contextual controls such as that for the
-  \texttt{na.action} option are similarly taken from the first available
-  source. Again, this makes for a very simple invocation of
+  Weights, subsets, and various contextual controls (such as that for
+  the \texttt{na.action} option) are similarly taken from the first
+  available source. Again, this makes for a very simple invocation of
   calculations, but the context is hidden from the user. Furthermore, it
   can be difficult for those of us trying to maintain or improve the
   code to be certain we have the context correct.
@@ -1778,22 +1539,24 @@ aspects of \texttt{nls()} that have given us the most trouble:
   programmers now face a lot of work to fix or improve code. We believe
   in having at least a working reference version of code in a single
   programming language. If necessary, by measuring (``profiling'') the
-  code, we can find bottlenecks and, if necessary, substitute just those
-  slower parts of the reference code.
+  code, we can find bottlenecks and substitute for those slower parts of
+  the reference code.
 \item
   A design that isolates the setup, solution, and post-solution parts of
   for complicated calculations reduces the number of objects that must
-  be kept in alignment.
+  be kept in alignment. On the other hand, it may mean users have to add
+  more commands to complete their computations.
 \item
   All iterative codes should return the best solution they have found so
   far, even if there are untoward conditions reached, such as a singular
   Jacobian. This modification could be made to \texttt{nls()} in the
-  short term.
+  short term, correcting the issue identified above under ``Failure to
+  return best result achieved''.
 \item
   Given the existence of examples of good practices such as analytic
-  derivatives, stabilized solution of Gauss-Newton equations and bounds
-  constrained parameters, base R tools should be moving to incorporate
-  them.
+  derivatives, stabilized solution of Gauss-Newton equations and
+  bounds-constrained parameters, base R tools should be moving to
+  incorporate them.
 \end{itemize}
 
 \hypertarget{acknowledgement}{%
@@ -1827,6 +1590,10 @@ Separate.''} \emph{SIAM Journal of Numerical Analysis} 10 (2): 413--32.
 Huet, S., A. Bouvier, M.-A. Poursat, and E. Jolivet. 2004.
 \emph{Statistical Tools for Nonlinear Regression: A Practical Guide with
 {S-PLUS} Examples, 2nd Edition}. Berlin \& New York: Springer-Verlag.
+
+\leavevmode\vadjust pre{\hypertarget{ref-nlsr2019manual}{}}%
+John C Nash, and Duncan Murdoch. 2019. \emph{{nlsr: Functions for
+Nonlinear Least Squares Solutions}}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-Levenberg1944}{}}%
 Levenberg, Kenneth. 1944. {``A Method for the Solution of Certain

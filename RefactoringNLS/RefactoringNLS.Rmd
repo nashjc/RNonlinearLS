@@ -184,11 +184,13 @@ We are pleased to note that this improvement is now in the R distributed code as
 
 The convergence criterion above, the principal termination control of `nls()`, leaves out 
 some possibilities that could
-be useful for some problems. The package `nlsr` (@nlsr-manual) already offers both 
+be useful for some problems. The package `nlsr` (@nlsr2019manual) already offers both 
 the safeguarded relative offset test (**roffset**) as well as a **small sum of 
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
 (weighted) residuals to `e4` times the initial sum of squares, where
 `e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
+(NOTE: For the purposes of this article, we use a developmental version of package
+`nlsr` labelled `nlsr2`.)
 
 We note that `nls()` uses a termination test to stop after `maxiter` "iterations". 
 Unfortunately, the meaning of "iteration" varies among programs and requires 
@@ -230,11 +232,11 @@ y <- reala + realb * realr^(x - realm) + realc * x # linear + exponential functi
 testdat <- data.frame(x, y) # save in a data frame
 strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1) # give programs a good start
 jform <- y ~ a + b * r^(x - m) + c * x # Formula
-library(nlsr)
-linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = F))
+library(nlsr2)
+linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = FALSE))
 linexp2 # Note singular values of Jacobian in rightmost column
 # We get an error with nls()
-linexp <- try(nls(jform, data = testdat, start = strt, trace = F))
+linexp <- try(nls(jform, data = testdat, start = strt, trace = FALSE))
 ```
 
 The Jacobian is essentially singular as shown by its singular
@@ -624,12 +626,9 @@ for `nls()` as we made our comparisons.
 
 ### Weights in returned functions from nls()
 
-The functions `resid()` (an alias for `residuals()`) and `fitted()` and `lhs()` are UNWEIGHTED.
-But if we return `ans` from `nls()` or `minpack.lm::nlsLM` or our new `nlsj` (interim package), 
-then `ans$m$resid()` is WEIGHTED. This needs clear documentation so users can get the answers
-intended.
-
-SHORT EXAMPLE??
+The function `resid()` (an alias for `residuals()`) `nlsModel()` is WEIGHTED, as are those in the
+structured object `m` returned by `nls()` or `minpack.lm::nlsLM`,
+e.g., `ans$m$resid()`. 
 
 ```{r nlswtx, echo=TRUE}
 weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
@@ -639,33 +638,16 @@ weeddf <- data.frame(tt, weed)
 wts <- 0.5^tt # simple weights
 frmlogis <- weed ~ Asym/(1 + exp((xmid - tt)/scal))
 Asym<-1; xmid<-1; scal<-1
-nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal))
+nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal)) # UNWEIGHTED
 nowt
-nowt$m$resid()
-inpar<-getInitial(weed ~ SSlogis(tt, Asym, xmid, scal), data=weeddf)
-print(inpar)
-library(nlsr2)
-nowtx<-nlxb(frmlogis, start=c(Asym=1, xmid=1, scal=1), trace=TRUE)
-nowtx
-# nowtSSx0<-nlxb(weed ~ SSlogis(tt, Asym=1, xmid=1, scal=1), start=c(Asym=1, xmid=1, scal=1), trace=TRUE)
-# nowtSsx0
-# nowtSSx<-nlxb(weed ~ SSlogis(tt, Asym=1, xmid=1, scal=1), start=c(Asym=100, xmid=2, scal=1), trace=TRUE, 
-#               control=list(japprox="jand"))
-# nowtSSx
-nowtxi<-nlxb(frmlogis, start=inpar, trace=TRUE)
-nowtxi
+nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does NOT take coefficients.
 usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
 usewt
-usewt$m$resid()
-nmod <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
-usewtx<-nlxb(frmlogis,  start=c(Asym=1, xmid=1, scal=1), weights=wts, trace=TRUE)
-usewtx
-# NOTE jafwd and jaback fail!
-usewtxn<-nlxb(frmlogis,  start=c(Asym=1, xmid=1, scal=1), weights=wts, trace=TRUE, control=list(japprox="jacentral"))
-usewtxn
-usewtxi<-nlxb(frmlogis, start=inpar, weights=wts, trace=TRUE)
-usewtxi
-# usewtx$resid
+usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
+nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
+nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
+nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
+nmod$resid()
 ```
 
 ### Interim output from the "port" algorithm
@@ -973,7 +955,8 @@ Thus a linear model (which is valid input for nonlinear estimation) should
 be specified `y ~ a * x + b` rather than `y ~ x`. 
 Moreover, we want to avoid the partially linear parameters appearing 
 in the result object as `.lin1`, `.lin2`, etc., where the actual position 
-of parameters in the model is not explicit.
+of parameters in the model is not explicit. We are unclear why these parameters
+begin with a dot, that is, that they have the "hidden" indicator.
 
 A possible workaround to allow consistency would be to specify the 
 partially linear parameters when the `plinear` option is specified. For example, 
@@ -1012,7 +995,7 @@ Indexed models clearly have a place in some areas of research.
 We need to be able to process models such as 
 `Length ~ a[Strip] + b[Strip] * exp(-Conc / th)` where `Strip` is the index. Data
 `Length` and `Conc` are available for all observations and parameter `th` applies
-to every fitted point, but `a[Strip]` and `b[Strip]` depend on the index, which
+to every fitted point, but `a[Strip]` and `b[Strip]` apply only to data indexed, which
 could be an experimental run number, or some other categorization. 
 
 Given that `[ ]` are the R method to index arrays, their presence in a model
@@ -1023,12 +1006,11 @@ formula signals indexing. The question is how to perform the correct calculation
 <!-- variables to turn "on" or "off" the particular case, transforming the model -->
 <!-- parameters to simple, non-indexed ones (as does `nls()`). -->
 
-Our view is that inclusion of the indexing **within** `nls()` introduces 
+Our view is that inclusion of the indexing **within** `nls()` or similar tools introduces 
 complexity that could be avoided by a suitable wrapper function. The modeling
 formula must be expanded to encompass all the index cases, likely with indexed
 parameters renamed e.g., `a[2]` becomes `a2` as at present with `nls()`. However,
-we believe the wrapper should be able to process output to present the indexed
-parameters correctly. 
+a wrapper could process output to reconstitute the indexing of parameters. 
 
 ### Streamlining code
 
@@ -1047,8 +1029,7 @@ Maintainers of packages need suitable tests and use-case examples in order:
   results comparable to or better than the functions they are to replace;
 - to test individual solver functions to ensure they work across the range of calling 
   mechanisms, that is, different ways of supplying inputs to the solver(s);
-- to pose "silly" inputs to see if 
-  these bad inputs are caught by the programs.
+- to pose "silly" inputs to see if these bad inputs are caught by the programs.
   
 Such goals align with the aims of **unit testing** 
 (e.g., https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211, @HWtestthat11, @HWdevtools21
@@ -1257,11 +1238,11 @@ The aspects of `nls()` that have given us the most trouble:
 
 - The functions that compute the residuals and jacobians often presume
   the data and parameters needed are available in a particular environment. As long
-  as the correct environment is used, this provides a short syntax to invoke the
+  as the correct environment is used, this provides a compact syntax to invoke the
   calculations. The danger is that the wrong data is accessed if the internal search finds a
   valid name that is not the object we want.
   
-- Weights, subsets, and various contextual controls such as that for the `na.action` option
+- Weights, subsets, and various contextual controls (such as that for the `na.action` option)
   are similarly taken from the first available source. 
   Again, this makes for a very simple
   invocation of calculations, but the context is hidden from the user. Furthermore, it can be
@@ -1272,19 +1253,21 @@ The aspects of `nls()` that have given us the most trouble:
   Lacking decent developer documentation, programmers now face a lot of work to fix or improve code. 
   We believe in having at least a working reference version of code in a single programming language. 
   If necessary, by
-  measuring ("profiling") the code, we can find bottlenecks and, if necessary, substitute just those slower 
+  measuring ("profiling") the code, we can find bottlenecks and substitute for those slower 
   parts of the reference code.
 
 - A design that isolates the setup, solution, and post-solution parts of
   for complicated calculations reduces the number of objects that must be kept in 
-  alignment.
+  alignment. On the other hand, it may mean users have to add more commands to complete
+  their computations.
   
 - All iterative codes should return the best solution they have found so far, even if there
   are untoward conditions reached, such as a singular Jacobian. This modification could be
-  made to `nls()` in the short term. 
+  made to `nls()` in the short term, correcting the issue identified above under "Failure to
+  return best result achieved".
 
 - Given the existence of examples of good practices such as analytic derivatives, stabilized 
-  solution of Gauss-Newton equations and bounds constrained parameters, base R tools should 
+  solution of Gauss-Newton equations and bounds-constrained parameters, base R tools should 
   be moving to incorporate them. 
 
 
