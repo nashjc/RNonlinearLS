@@ -703,17 +703,23 @@ useful to R users.
 
 ## Feature: partially linear models and their specification
 
+The variable projection method (@Golub1973, @OlearyRust13) is generally much more 
+effective then general approaches in finding good solutions to nonlinear least squares 
+problems when some of the parameters appear linearly. However, setting up the 
+calculations, that is, identifying which parameters are linear, is not a trivial
+task. 
 
-Specifying a model to a solver should, ideally, use the same syntax across
+Moreover, specifying a model to a solver should, ideally, use the same syntax across
 solver tools. Unfortunately, R allows multiple approaches within different
-modelling tools, and within `nls()` itself.
+modelling tools, and within `nls()` itself. This is highlighted by the case of
+partially linear models.
 
 The nonlinear modeling model specifications are, of course, a development of linear ones.
 Unfortunately, the explicit model `y ~ a * x + b` does not work with the linear modeling 
 function `lm()`, which requires this model to be specified as `y ~ x`.
 
 Within `nls()`, consider the following FOUR different specifications for the same problem, plus 
-an intuitive choice, labelled fm2a, that does not work. In this failed
+an intuitive choice, labelled `fm2a`, that does NOT work. In this failed
 attempt, putting the `Asym` parameter in the model causes the `plinear` algorithm
 to try to add another term to the model. We believe this is unfortunate, and would
 like to see a consistent syntax. At the time of writing, we do
@@ -753,58 +759,58 @@ summary(fm2a)
 
 ## Feature: indexed parameters
 
+Indexed parameters -- those whose names have subscripts on some index variable -- 
+are a useful idea to simplify model specification in some cases. However, they
+are also a focus of trouble. 
+
 The **man** file for `nls()` includes the following example of a situation in which
 parameters are indexed. It also uses the "plinear" option as an added complication.
 
-<!-- Here we use a truncated version of the example to save display space. -->
+Here we use a truncated version of the example to save display space.
 
-<!-- ```{r nlsindx1} -->
-<!-- ## The muscle dataset in MASS is from an experiment on muscle -->
-<!-- ## contraction on 21 animals.  The observed variables are Strip -->
-<!-- ## (identifier of muscle), Conc (Cacl concentration) and Length -->
-<!-- ## (resulting length of muscle section). -->
-<!-- if(! requireNamespace("MASS", quietly = TRUE)) stop("Need MASS pkg") -->
-<!-- mm<- MASS::muscle[1:12,] # take only 1st few values of Strip -->
-<!-- str(mm) -->
-<!-- mm<-droplevels(mm) -->
-<!-- str(mm) -->
-<!-- nlev <- nlevels(mm) -->
-<!-- withAutoprint({ -->
-<!--   ## The non linear model considered is -->
-<!--   ##       Length = alpha + beta*exp(-Conc/theta) + error -->
-<!--   ## where theta is constant but alpha and beta may vary with Strip. -->
-<!--   with(mm, table(Strip)) # 2, 3 or 4 obs per strip -->
-<!--   nl <- nlevels(mm$Strip) -->
-<!--   ## We first use the plinear algorithm to fit an overall model, -->
-<!--   ## ignoring that alpha and beta might vary with Strip. -->
-<!--   musc.1 <- nls(Length ~ cbind(1, exp(-Conc/th)), mm, -->
-<!--                 start = list(th = 1), algorithm = "plinear") -->
-<!--   summary(musc.1) -->
+```{r nlsindx1}
+## The muscle dataset in MASS is from an experiment on muscle
+## contraction on 21 animals.  The observed variables are Strip
+## (identifier of muscle), Conc (Cacl concentration) and Length
+## (resulting length of muscle section).
+if(! requireNamespace("MASS", quietly = TRUE)) stop("Need MASS pkg")
+mm<- MASS::muscle[1:12,] # take only 1st few values of Strip (TRUNCATION OF EXAMPLE)
+mm<-droplevels(mm) # remove unused levels after truncation
+nlev <- nlevels(mm)
+withAutoprint({
+  ## The non linear model considered is
+  ##       Length = alpha + beta*exp(-Conc/theta) + error
+  ## where theta is constant. For now alpha and beta do NOT vary with Strip.
+  with(mm, table(Strip)) # 2, 3 or 4 obs per strip
+  nl <- nlevels(mm$Strip)
+  ## We first use the plinear algorithm to fit an overall model,
+  ## ignoring that alpha and beta might vary with Strip.
+  musc.1 <- nls(Length ~ cbind(1, exp(-Conc/th)), mm,
+                start = list(th = 1), algorithm = "plinear")
+  summary(musc.1)
 
-<!--   ## Then we use nls' indexing feature for parameters in non-linear -->
-<!--   ## models to use the conventional algorithm to fit a model in which -->
-<!--   ## alpha and beta vary with Strip.  The starting values are provided -->
-<!--   ## by the previously fitted model. -->
-<!--   ## Note that with indexed parameters, the starting values must be -->
-<!--   ## given in a list (with names): -->
-<!--   ## ?? but why use b here AND in the new formula?? -->
-<!--   b <- coef(musc.1) -->
-
-<!--   musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), data=mm, -->
-<!--                 start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1])) -->
-<!--   summary(musc.2) -->
-<!-- }) -->
-
-<!-- ``` -->
+  ## Then we use nls' indexing feature for parameters in non-linear
+  ## models to use the conventional algorithm to fit a model in which
+  ## alpha and beta vary with Strip.  The starting values are provided
+  ## by the previously fitted model.
+  ## Note that with indexed parameters, the starting values must be
+  ## given in a list (with names):
+  ## ?? but why use b here AND in the new formula??
+  b <- coef(musc.1)
+  musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), data=mm,
+                start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1]))
+  summary(musc.2)
+})
+```
 
 Running the example reveals that the answers for the parameters are NOT indexed. 
 <!-- e.g. `coef(musc.2)` is a single level vector of parameters.  -->
-We do not see `a[1], a[2], a[3]` but `a1, a2, a3`. 
+That is, we do not see `a[1], a[2], a[3]` but `a1, a2, a3`. 
 <!-- This is because the model -->
 <!-- must integrate all the parameters because `th` is a common parameter across the index `Strip`. -->
 This is no doubt because programming for indexed parameters is extremely challenging.
-However, we believe the current structure is could cause confusion and error, and 
-propose an alternative approach below.
+<!-- However, we believe the current structure could cause confusion and error, and  -->
+<!-- propose an alternative approach below. -->
 
 
 ## Issue: code structure and documentation for maintenance 
@@ -937,14 +943,16 @@ We want:
 
 - to provide a packaged version of `nls()` (call it `nlsalt`) coded entirely in R 
   that matches the features in base R or what is packaged in `nlspkg` as described 
-  in @PkgFromRbase22.
+  in @PkgFromRbase22. The R version can either serve as the operational code or
+  as a reference version to facilitate the maintenance of C, Fortran, or other 
+  versions of the software.
   
 - to streamline the overall `nls()` infrastructure. By this we
   mean a re-factoring of the routines so they are better suited to maintenance of both
   the existing `nls()` methods and features as well as new features we or others
   would like to add.
 
-- to explain what we do, either in comments or separate maintainer documentation.
+- to explain what we do, either in comments, examples, or separate maintainer documentation.
   Since we are complaining about the lack of explanatory material for the current
   code, we feel it is incumbent on us to provide such material for our own work, and if
   possible for the existing code.
@@ -959,10 +967,9 @@ We have seen that
 `plinear` algorithm is used. This is unfortunate, since the user cannot then simply
 add `algorithm="plinear"` to the call, making errors more likely. 
 
-While not consistent with the `lm()` specification of linear models, 
-nonlinear models need all parameters specified. 
+Nonlinear models, apart from those using the "plinear" algorithm, need all parameters specified.
 That is, the model formula should be written down as it would be computed.
-Thus a linear model (which is valid input for nonlinear estimatin) should
+Thus a linear model (which is valid input for nonlinear estimation) should
 be specified `y ~ a * x + b` rather than `y ~ x`. 
 Moreover, we want to avoid the partially linear parameters appearing 
 in the result object as `.lin1`, `.lin2`, etc., where the actual position 

@@ -279,12 +279,12 @@ tests}\label{more-general-termination-tests}}
 
 The convergence criterion above, the principal termination control of
 \texttt{nls()}, leaves out some possibilities that could be useful for
-some problems. The package \texttt{nlsr} (John C Nash and Duncan Murdoch
-(\protect\hyperlink{ref-nlsr-manual}{2019})) already offers both the
-safeguarded relative offset test (\textbf{roffset}) as well as a
-\textbf{small sum of squares} test (\textbf{smallsstest}) that compares
-the latest evaluated sum of squared (weighted) residuals to \texttt{e4}
-times the initial sum of squares, where
+some problems. The package \texttt{nlsr}
+((\protect\hyperlink{ref-nlsr-manual}{\textbf{nlsr-manual?}})) already
+offers both the safeguarded relative offset test (\textbf{roffset}) as
+well as a \textbf{small sum of squares} test (\textbf{smallsstest}) that
+compares the latest evaluated sum of squared (weighted) residuals to
+\texttt{e4} times the initial sum of squares, where
 \texttt{e4\ \textless{}-\ (100*.Machine\$double.eps)\^{}4} is
 approximately 2.43e-55.
 
@@ -1196,9 +1196,18 @@ could be useful to R users.
 \subsection{Feature: partially linear models and their
 specification}\label{feature-partially-linear-models-and-their-specification}}
 
-Specifying a model to a solver should, ideally, use the same syntax
-across solver tools. Unfortunately, R allows multiple approaches within
-different modelling tools, and within \texttt{nls()} itself.
+The variable projection method (Golub and Pereyra
+(\protect\hyperlink{ref-Golub1973}{1973}), O'Leary and Rust
+(\protect\hyperlink{ref-OlearyRust13}{2013})) is generally much more
+effective then general approaches in finding good solutions to nonlinear
+least squares problems when some of the parameters appear linearly.
+However, setting up the calculations, that is, identifying which
+parameters are linear, is not a trivial task.
+
+Moreover, specifying a model to a solver should, ideally, use the same
+syntax across solver tools. Unfortunately, R allows multiple approaches
+within different modelling tools, and within \texttt{nls()} itself. This
+is highlighted by the case of partially linear models.
 
 The nonlinear modeling model specifications are, of course, a
 development of linear ones. Unfortunately, the explicit model
@@ -1208,7 +1217,7 @@ specified as \texttt{y\ \textasciitilde{}\ x}.
 
 Within \texttt{nls()}, consider the following FOUR different
 specifications for the same problem, plus an intuitive choice, labelled
-fm2a, that does not work. In this failed attempt, putting the
+\texttt{fm2a}, that does NOT work. In this failed attempt, putting the
 \texttt{Asym} parameter in the model causes the \texttt{plinear}
 algorithm to try to add another term to the model. We believe this is
 unfortunate, and would like to see a consistent syntax. At the time of
@@ -1252,9 +1261,129 @@ we have NOT evaluated the commands to save space.
 \subsection{Feature: indexed
 parameters}\label{feature-indexed-parameters}}
 
+Indexed parameters -- those whose names have subscripts on some index
+variable -- are a useful idea to simplify model specification in some
+cases. However, they are also a focus of trouble.
+
 The \textbf{man} file for \texttt{nls()} includes the following example
 of a situation in which parameters are indexed. It also uses the
 ``plinear'' option as an added complication.
+
+Here we use a truncated version of the example to save display space.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# The muscle dataset in MASS is from an experiment on muscle}
+\DocumentationTok{\#\# contraction on 21 animals.  The observed variables are Strip}
+\DocumentationTok{\#\# (identifier of muscle), Conc (Cacl concentration) and Length}
+\DocumentationTok{\#\# (resulting length of muscle section).}
+\ControlFlowTok{if}\NormalTok{(}\SpecialCharTok{!} \FunctionTok{requireNamespace}\NormalTok{(}\StringTok{"MASS"}\NormalTok{, }\AttributeTok{quietly =} \ConstantTok{TRUE}\NormalTok{)) }\FunctionTok{stop}\NormalTok{(}\StringTok{"Need MASS pkg"}\NormalTok{)}
+\NormalTok{mm}\OtherTok{\textless{}{-}}\NormalTok{ MASS}\SpecialCharTok{::}\NormalTok{muscle[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{12}\NormalTok{,] }\CommentTok{\# take only 1st few values of Strip}
+\FunctionTok{str}\NormalTok{(mm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    12 obs. of  3 variables:
+##  $ Strip : Factor w/ 21 levels "S01","S02","S03",..: 1 1 1 1 2 2 2 2 3 3 ...
+##  $ Conc  : num  1 2 3 4 1 2 3 4 0.25 0.5 ...
+##  $ Length: num  15.8 20.8 22.6 23.8 20.6 26.8 28.4 27 7.2 15.4 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mm}\OtherTok{\textless{}{-}}\FunctionTok{droplevels}\NormalTok{(mm)}
+\FunctionTok{str}\NormalTok{(mm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    12 obs. of  3 variables:
+##  $ Strip : Factor w/ 3 levels "S01","S02","S03": 1 1 1 1 2 2 2 2 3 3 ...
+##  $ Conc  : num  1 2 3 4 1 2 3 4 0.25 0.5 ...
+##  $ Length: num  15.8 20.8 22.6 23.8 20.6 26.8 28.4 27 7.2 15.4 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nlev }\OtherTok{\textless{}{-}} \FunctionTok{nlevels}\NormalTok{(mm)}
+\FunctionTok{withAutoprint}\NormalTok{(\{}
+  \DocumentationTok{\#\# The non linear model considered is}
+  \DocumentationTok{\#\#       Length = alpha + beta*exp({-}Conc/theta) + error}
+  \DocumentationTok{\#\# where theta is constant but alpha and beta may vary with Strip.}
+  \FunctionTok{with}\NormalTok{(mm, }\FunctionTok{table}\NormalTok{(Strip)) }\CommentTok{\# 2, 3 or 4 obs per strip}
+\NormalTok{  nl }\OtherTok{\textless{}{-}} \FunctionTok{nlevels}\NormalTok{(mm}\SpecialCharTok{$}\NormalTok{Strip)}
+  \DocumentationTok{\#\# We first use the plinear algorithm to fit an overall model,}
+  \DocumentationTok{\#\# ignoring that alpha and beta might vary with Strip.}
+\NormalTok{  musc}\FloatTok{.1} \OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(Length }\SpecialCharTok{\textasciitilde{}} \FunctionTok{cbind}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FunctionTok{exp}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{Conc}\SpecialCharTok{/}\NormalTok{th)), mm,}
+                \AttributeTok{start =} \FunctionTok{list}\NormalTok{(}\AttributeTok{th =} \DecValTok{1}\NormalTok{), }\AttributeTok{algorithm =} \StringTok{"plinear"}\NormalTok{)}
+  \FunctionTok{summary}\NormalTok{(musc}\FloatTok{.1}\NormalTok{)}
+
+  \DocumentationTok{\#\# Then we use nls\textquotesingle{} indexing feature for parameters in non{-}linear}
+  \DocumentationTok{\#\# models to use the conventional algorithm to fit a model in which}
+  \DocumentationTok{\#\# alpha and beta vary with Strip.  The starting values are provided}
+  \DocumentationTok{\#\# by the previously fitted model.}
+  \DocumentationTok{\#\# Note that with indexed parameters, the starting values must be}
+  \DocumentationTok{\#\# given in a list (with names):}
+  \DocumentationTok{\#\# ?? but why use b here AND in the new formula??}
+\NormalTok{  b }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(musc}\FloatTok{.1}\NormalTok{)}
+
+\NormalTok{  musc}\FloatTok{.2} \OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(Length }\SpecialCharTok{\textasciitilde{}}\NormalTok{ a[Strip] }\SpecialCharTok{+}\NormalTok{ b[Strip]}\SpecialCharTok{*}\FunctionTok{exp}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{Conc}\SpecialCharTok{/}\NormalTok{th), }\AttributeTok{data=}\NormalTok{mm,}
+                \AttributeTok{start =} \FunctionTok{list}\NormalTok{(}\AttributeTok{a =} \FunctionTok{rep}\NormalTok{(b[}\DecValTok{2}\NormalTok{], nl), }\AttributeTok{b =} \FunctionTok{rep}\NormalTok{(b[}\DecValTok{3}\NormalTok{], nl), }\AttributeTok{th =}\NormalTok{ b[}\DecValTok{1}\NormalTok{]))}
+  \FunctionTok{summary}\NormalTok{(musc}\FloatTok{.2}\NormalTok{)}
+\NormalTok{\})}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## > with(mm, table(Strip))
+## Strip
+## S01 S02 S03 
+##   4   4   4 
+## > nl <- nlevels(mm$Strip)
+## > musc.1 <- nls(Length ~ cbind(1, exp(-Conc/th)), mm, start = list(th = 1), 
+## +     algorithm = "plinear")
+## > summary(musc.1)
+## 
+## Formula: Length ~ cbind(1, exp(-Conc/th))
+## 
+## Parameters:
+##       Estimate Std. Error t value Pr(>|t|)    
+## th       0.624      0.222    2.81   0.0203 *  
+## .lin1   25.684      1.441   17.82  2.5e-08 ***
+## .lin2  -26.631      6.147   -4.33   0.0019 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.96 on 9 degrees of freedom
+## 
+## Number of iterations to convergence: 5 
+## Achieved convergence tolerance: 4.71e-07
+## 
+## > b <- coef(musc.1)
+## > musc.2 <- nls(Length ~ a[Strip] + b[Strip] * exp(-Conc/th), data = mm, 
+## +     start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1]))
+## > summary(musc.2)
+## 
+## Formula: Length ~ a[Strip] + b[Strip] * exp(-Conc/th)
+## 
+## Parameters:
+##    Estimate Std. Error t value Pr(>|t|)    
+## a1  22.9277     0.5154   44.49  1.1e-07 ***
+## a2  27.8606     0.5150   54.09  4.1e-08 ***
+## a3  28.3426     1.0771   26.31  1.5e-06 ***
+## b1 -44.1558    12.3900   -3.56    0.016 *  
+## b2 -43.8084    12.3148   -3.56    0.016 *  
+## b3 -32.8421     2.1553  -15.24  2.2e-05 ***
+## th   0.5548     0.0808    6.86    0.001 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.798 on 5 degrees of freedom
+## 
+## Number of iterations to convergence: 6 
+## Achieved convergence tolerance: 1.94e-06
+\end{verbatim}
 
 Running the example reveals that the answers for the parameters are NOT
 indexed. We do not see \texttt{a{[}1{]},\ a{[}2{]},\ a{[}3{]}} but
@@ -1689,14 +1818,15 @@ Bates, Douglas M., and Watts, Donald G. 1981. {``A Relative Offset
 Orthogonality Convergence Criterion for Nonlinear Least Squares.''}
 \emph{Technometrics} 23 (2): 179--83.
 
+\leavevmode\vadjust pre{\hypertarget{ref-Golub1973}{}}%
+Golub, G. H., and V. Pereyra. 1973. {``The Differentiation of
+Pseudo-Inverses and Nonlinear Least Squares Problems Whose Variables
+Separate.''} \emph{SIAM Journal of Numerical Analysis} 10 (2): 413--32.
+
 \leavevmode\vadjust pre{\hypertarget{ref-Huet2004}{}}%
 Huet, S., A. Bouvier, M.-A. Poursat, and E. Jolivet. 2004.
 \emph{Statistical Tools for Nonlinear Regression: A Practical Guide with
 {S-PLUS} Examples, 2nd Edition}. Berlin \& New York: Springer-Verlag.
-
-\leavevmode\vadjust pre{\hypertarget{ref-nlsr-manual}{}}%
-John C Nash, and Duncan Murdoch. 2019. \emph{{nlsr: Functions for
-Nonlinear Least Squares Solutions}}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-Levenberg1944}{}}%
 Levenberg, Kenneth. 1944. {``A Method for the Solution of Certain
@@ -1723,8 +1853,8 @@ Its Applications} 19: 231--37.
 Algebra and Function Minimisation}. Bristol: Adam Hilger.
 
 \leavevmode\vadjust pre{\hypertarget{ref-NashWires22}{}}%
----------. 2022. {``Function Minimization and Nonlinear Least Squares in
-r.''} \emph{WIREs Computational Statistics}, no. e1580.
+---------. 2022. {``{Function minimization and nonlinear least squares
+in R}.''} \emph{WIREs Computational Statistics}, no. e1580.
 https://doi.org/\url{https://doi.org/10.1002/wics.1580}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-PkgFromRbase22}{}}%
@@ -1739,6 +1869,11 @@ Combining Visual Fitting with Optimization Methods.''} In
 the American Statistical Association}, 256--61. American Statistical
 Association.
 
+\leavevmode\vadjust pre{\hypertarget{ref-OlearyRust13}{}}%
+O'Leary, Dianne P., and Bert W. Rust. 2013. {``Variable Projection for
+Nonlinear Least Squares Problems.''} \emph{Computational Optimization
+and Applications} 54 (3): 579--93.
+
 \leavevmode\vadjust pre{\hypertarget{ref-Ratkowsky1983}{}}%
 Ratkowsky, David A. 1983. \emph{Nonlinear Regression Modeling: A Unified
 Practical Approach}. New York; Basel: Marcel Dekker Inc.
@@ -1749,13 +1884,13 @@ for Research}.''} \emph{{The R Journal}} 13 (2): 6--14.
 \url{https://doi.org/10.32614/RJ-2021-108}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-HWtestthat11}{}}%
-Wickham, Hadley. 2011. {``Testthat: Get Started with Testing.''}
+Wickham, Hadley. 2011. {``{testthat: Get Started with Testing}.''}
 \emph{The R Journal} 3: 5--10.
 \url{https://journal.r-project.org/archive/2011-1/RJournal_2011-1_Wickham.pdf}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-HWdevtools21}{}}%
 Wickham, Hadley, Jim Hester, Winston Chang, and Jennifer Bryan. 2021.
-\emph{Devtools: Tools to Make Developing r Packages Easier}.
+\emph{{devtools: Tools to Make Developing R Packages Easier}}.
 \url{https://CRAN.R-project.org/package=devtools}.
 
 \end{CSLReferences}
