@@ -1,51 +1,50 @@
 % Encoding: UTF-8
 
-@Manual{nlsr2019manual,
+@Manual{nlsr-manual,
   title  = {{nlsr: Functions for Nonlinear Least Squares Solutions}},
   author = {{John C Nash} and {Duncan Murdoch}},
-  month  = aug,
+  month  = {August},
   year   = {2019},
   note   = {R package version 2019.8.7},
 }
 
 @InBook{SGN83,
   pages     = {91--100},
-  title     = {{Truncated-Newton Methods for Large-Scale Minimization}},
+  title     = {Truncated-Newton Methods for Large-Scale Minimization},
   year      = {1983},
   author    = {Stephen G. Nash},
   editor    = {H. E. Rauch},
   booktitle = {Applications of Nonlinear Programming to Optimization and Control},
 }
 
-@Article{vanderLoo21,
-  author  = {MPJ {van der Loo}},
-  title   = {{A method for deriving information from running R code}},
-  journal = {The R Journal},
-  year    = {2021},
-  volume  = {13},
-  pages   = {42--52},
-  issn    = {2073-4859},
-  doi     = {10.32614/RJ-2021-056},
-  issue   = {1},
-}
+@Article{vanderLoo20,
+    title = {A method for deriving information from running R code},
+    author = {MPJ {van der Loo}},
+    year = {2020},
+    journal = {The R Journal},
+    url = {https://arxiv.org/abs/2002.07472},
+    pages = {Accepted for publication},
+  }
 
 @Article{HWtestthat11,
-  author  = {Hadley Wickham},
-  title   = {{testthat: Get Started with Testing}},
-  journal = {The R Journal},
-  year    = {2011},
-  volume  = {3},
-  pages   = {5--10},
-  url     = {https://journal.r-project.org/archive/2011-1/RJournal_2011-1_Wickham.pdf},
-}
+    author = {Hadley Wickham},
+    title = {testthat: Get Started with Testing},
+    journal = {The R Journal},
+    year = {2011},
+    volume = {3},
+    pages = {5--10},
+    url =
+{https://journal.r-project.org/archive/2011-1/RJournal_2011-1_Wickham.pdf},
+  }
 
 @Manual{HWdevtools21,
-  title  = {{devtools: Tools to Make Developing R Packages Easier}},
-  author = {Hadley Wickham and Jim Hester and Winston Chang and Jennifer Bryan},
-  year   = {2021},
-  note   = {R package version 2.4.3},
-  url    = {https://CRAN.R-project.org/package=devtools},
-}
+    title = {devtools: Tools to Make Developing R Packages Easier},
+    author = {Hadley Wickham and Jim Hester and Winston Chang and Jennifer
+Bryan},
+    year = {2021},
+    note = {R package version 2.4.3},
+    url = {https://CRAN.R-project.org/package=devtools},
+  }
 
 @article{Vidoni21,
   author = {Melina Vidoni},
@@ -59,24 +58,26 @@
   number = {2}
 }
 
-@Book{Dongarra79,
-  title     = {{LINPACK Users' Guide}},
-  publisher = {Society for Industrial and Applied Mathematics},
-  year      = {1979},
-  author    = {Dongarra, J. J. and Moler, C. B. and Bunch, J. R. and Stewart, G. W.},
-  doi       = {10.1137/1.9781611971811},
-  url       = {https://epubs.siam.org/doi/abs/10.1137/1.9781611971811},
+
+@book{Dongarra79,
+author = {Dongarra, J. J. and Moler, C. B. and Bunch, J. R. and Stewart, G. W.},
+title = {LINPACK Users' Guide},
+publisher = {Society for Industrial and Applied Mathematics},
+year = {1979},
+doi = {10.1137/1.9781611971811},
+URL = {https://epubs.siam.org/doi/abs/10.1137/1.9781611971811}
 }
 
-@Article{NashWires22,
-  author   = {Nash, John C.},
-  title    = {{Function minimization and nonlinear least squares in R}},
-  journal  = {WIREs Computational Statistics},
-  year     = {2022},
-  number   = {e1580},
-  doi      = {https://doi.org/10.1002/wics.1580},
-  keywords = {function minimization, optimization, R},
-  url      = {https://wires.onlinelibrary.wiley.com/doi/abs/10.1002/wics.1580},
+
+@article{NashWires22,
+author = {Nash, John C.},
+title = {Function minimization and nonlinear least squares in R},
+journal = {WIREs Computational Statistics},
+year = {2022},
+number = {e1580},
+keywords = {function minimization, optimization, R},
+doi = {https://doi.org/10.1002/wics.1580},
+url = {https://wires.onlinelibrary.wiley.com/doi/abs/10.1002/wics.1580}
 }
 
 
@@ -606,6 +607,15 @@ year = {1981}
   Year                     = {2008}
 }
 
+@Misc{bozemantalk03,
+  Title                    = {Weeds in the nonlinear garden II: Why there are still some difficulties in estimating and using nonlinear models},
+
+  Author                   = {Nash, John C.},
+  Month                    = {July},
+  Note                     = {Talk to Maths Department of Montana State University, Bozeman, Montana, May 2, 2003. JNfile: bozemantalk03.pdf},
+  Year                     = {2003}
+}
+
 @Misc{mopta01,
   Title                    = {Numerical optimization and surface estimation with imprecise function evaluations},
 
@@ -613,6 +623,15 @@ year = {1981}
   Month                    = {August},
   Note                     = {Slides for presentation at the 2001 MOPTA (McMaster Optimization Theory and Applications) Conference, Hamilton, Aug 2-4, 2001. JNfile: 01-MOPTAO1JoeNash-slides.pdf},
   Year                     = {2001}
+}
+
+@Misc{weeds99,
+  Title                    = {Weeds in the nonlinear garden: why there are still some difficulties in estimating and using nonlinear models},
+
+  Author                   = {Nash, John C.},
+  Month                    = {November},
+  Note                     = {Slides of lead-off presentation at the Conference on Nonlinear Statistical Models: Implementation and Application, Lexington KY, November 4-6, 1999. JNfile: w9911a.pdf},
+  Year                     = {1999}
 }
 
 @Misc{SSO950626,
@@ -1207,6 +1226,13 @@ pages="143--156"
   title  = {{Writing R Extensions}},
   year   = {2013},
   url    = {http://CRAN.R-project.org/doc/manuals/R-exts.html},
+}
+
+@Misc{R-extns,
+  Title                    = {{Writing R Extensions}},
+  Author                   = {{R Core Team}},
+  Year                     = {2013},
+  Url                      = {http://CRAN.R-project.org/doc/manuals/R-exts.html}
 }
 
 @Article{Grassmann12,
@@ -4476,7 +4502,7 @@ permutation-based problems},
   type          = {Book},
 }
 
-@Manual{jnnlmrt2012,
+@Manual{jnnlmrt12,
   title  = {nlmrt: Functions for nonlinear least squares solutions},
   author = {John C. Nash},
   month  = {August},
@@ -4644,6 +4670,22 @@ permutation-based problems},
   month  = {October},
   year   = {2008},
   note   = {Workshop presented at the Telfer School of Management, University of Ottawa. JNfile: 2008R-workshop-081022.pdf, 2008Poster-R-Workshop-22-10-2008.pdf},
+}
+
+@Misc{Nash2003a,
+  author = {Nash, John C.},
+  title  = {Weeds in the nonlinear garden II: Why there are still some difficulties in estimating and using nonlinear models},
+  month  = {July},
+  year   = {2003},
+  note   = {Talk to Maths Department of Montana State University, Bozeman, Montana, May 2, 2003. JNfile: bozemantalk03.pdf},
+}
+
+@Misc{Nash1999a,
+  author = {Nash, John C.},
+  title  = {Weeds in the nonlinear garden: why there are still some difficulties in estimating and using nonlinear models},
+  month  = {November},
+  year   = {1999},
+  note   = {Slides of lead-off presentation at the Conference on Nonlinear Statistical Models: Implementation and Application, Lexington KY, November 4-6, 1999. JNfile: w9911a.pdf},
 }
 
 @Misc{Nash1995a,

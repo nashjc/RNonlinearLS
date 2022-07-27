@@ -34,18 +34,6 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\hypersetup{
-  pdftitle={Refactoring the nls() function in R},
-  pdfauthor={John C. Nash ; Arkajyoti Bhattacharjee },
-  colorlinks=true,
-  linkcolor={red},
-  filecolor={Maroon},
-  citecolor={Blue},
-  urlcolor={blue},
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=1in]{geometry}
 \usepackage{color}
 \usepackage{fancyvrb}
@@ -130,6 +118,18 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Refactoring the nls() function in R},
+  pdfauthor={John C. Nash ; Arkajyoti Bhattacharjee },
+  colorlinks=true,
+  linkcolor={red},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
 
 \title{Refactoring the \texttt{nls()} function in R}
 \author{John C. Nash
@@ -168,8 +168,8 @@ shortcomings}{The nls() function: strengths and shortcomings}}\label{the-nls-fun
 \texttt{nls()} is the tool in base R, the primary software software
 distribution from the Comprehensive R Archive Network
 (\url{https://cran.r-project.org}) for estimating nonlinear statistical
-models. The function dates to the 1980s and the work related to D. M.
-Bates and Watts (\protect\hyperlink{ref-bateswatts}{1988}) in S (see
+models. The function dates to the 1980s and the work related to Bates
+and Watts (\protect\hyperlink{ref-bateswatts}{1988}) in S (see
 \url{https://en.wikipedia.org/wiki/S_\%28programming_language\%29}).
 
 The \texttt{nls()} function has a remarkable and comprehensive set of
@@ -254,7 +254,7 @@ data is polluted with errors.
 This issue can be easily resolved. The ``termination test'' for the
 \textbf{program} rather than for ``convergence'' of the underlying
 \textbf{algorithm} is the Relative Offset Convergence Criterion (see
-Douglas M. Bates and Watts
+Bates, Douglas M. and Watts, Donald G.
 (\protect\hyperlink{ref-BatesWatts81}{1981})). This projects the
 proposed step in the parameter vector on the gradient and estimates how
 much the sum of squares loss function should decrease. This estimate is
@@ -279,7 +279,7 @@ tests}\label{more-general-termination-tests}}
 
 The convergence criterion above, the principal termination control of
 \texttt{nls()}, leaves out some possibilities that could be useful for
-some problems. The package \texttt{nlsr} (John C. Nash and Murdoch
+some problems. The package \texttt{nlsr} (John C Nash and Duncan Murdoch
 (\protect\hyperlink{ref-nlsr-manual}{2019})) already offers both the
 safeguarded relative offset test (\textbf{roffset}) as well as a
 \textbf{small sum of squares} test (\textbf{smallsstest}) that compares
@@ -318,7 +318,7 @@ of the model parameters. In such cases, we need to find an alternative
 algorithm to the Gauss-Newton iteration of \texttt{nls()}. The most
 common work-around is the Levenberg-Marquardt stabilization (see
 Marquardt (\protect\hyperlink{ref-Marquardt1963}{1963}), Levenberg
-(\protect\hyperlink{ref-Levenberg1944}{1944}), John C. Nash
+(\protect\hyperlink{ref-Levenberg1944}{1944}), Nash
 (\protect\hyperlink{ref-jn77ima}{1977})), and versions of it have been
 implemented in packages \texttt{minpack.lm} and \texttt{nlsr}. In our
 work, we prepared experimental prototypes of \texttt{nls} that
@@ -596,7 +596,7 @@ creating such functions is a lot of work, and their documentation (file
 believe that the focus should be placed on getting good initial
 parameters, that is \texttt{getInitial()} function, though avoiding the
 current calls back to \texttt{nls()}. Interactive tools, such as
-``visual fitting'' (John C. Nash and Velleman
+``visual fitting'' (Nash and Velleman
 (\protect\hyperlink{ref-nash1996nonlinear}{1996})) might be worth
 considering.
 
@@ -1046,7 +1046,8 @@ SHORT EXAMPLE??
 \end{Shaded}
 
 \begin{verbatim}
-## Using approximation  jacentral   is.character(ctrl$japprox)= TRUE 
+## Using approximation  jacentral  
+##       is.character(ctrl$japprox)= TRUE 
 ## <<lamda: 1e-04  SS= 82.379 ( NA ) at  Asym = 1  xmid = 1  scal = 1 f/j  1 / 0
 ## <<lamda: 4e-05  SS= 27.961 ( 0.87591 ) at  Asym = 23.072  xmid = 24.605  scal = 33.424 f/j  2 / 1
 ## <<lamda: 0.0016  SS= 27.179 ( 0.10632 ) at  Asym = 27.088  xmid = 25.624  scal = 24.768 f/j  5 / 2
@@ -1199,20 +1200,20 @@ Specifying a model to a solver should, ideally, use the same syntax
 across solver tools. Unfortunately, R allows multiple approaches within
 different modelling tools, and within \texttt{nls()} itself.
 
-One obvious case is that nonlinear modeling tools are a superset of
-linear ones. Yet the explicit model
+The nonlinear modeling model specifications are, of course, a
+development of linear ones. Unfortunately, the explicit model
 \texttt{y\ \textasciitilde{}\ a\ *\ x\ +\ b} does not work with the
 linear modeling function \texttt{lm()}, which requires this model to be
 specified as \texttt{y\ \textasciitilde{}\ x}.
 
-Within \texttt{nls()}, consider the following FOUR different calling
-sequences for the same problem, though an intuitive choice, labelled
-fm2a, will not work. In this failed attempt, putting the \texttt{Asym}
-parameter in the model causes the \texttt{plinear} algorithm to try to
-add another term to the model. We believe this is unfortunate, and would
-like to see a consistent syntax. At the time of writing, we do not
-foresee a resolution for this issue. In the example, we have NOT
-evaluated the commands to save space.
+Within \texttt{nls()}, consider the following FOUR different
+specifications for the same problem, plus an intuitive choice, labelled
+fm2a, that does not work. In this failed attempt, putting the
+\texttt{Asym} parameter in the model causes the \texttt{plinear}
+algorithm to try to add another term to the model. We believe this is
+unfortunate, and would like to see a consistent syntax. At the time of
+writing, we do not foresee a resolution for this issue. In the example,
+we have NOT evaluated the commands to save space.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1247,77 +1248,6 @@ evaluated the commands to save space.
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{issue-code-structure-and-documentation-for-maintenance}{%
-\subsection{Issue: code structure and documentation for
-maintenance}\label{issue-code-structure-and-documentation-for-maintenance}}
-
-The \texttt{nls()} code is structured in a way that inhibits both
-maintenance and improvement. In particular, the iterative setup is such
-that introduction of Marquardt stabilization is not easily available. To
-obtain performance a lot of the code was in C with consequent calls and
-returns that complicate the code. Over time, R has become much more
-efficient on modern computers, and the need to use compiled C and
-Fortran is less critical. Moreover, the burden for maintenance could be
-reduced by moving code entirely to R.
-
-While R and its packages are generally very well documented for usage,
-that documentation rarely extends as far as it might in directions
-helpful for code maintenance. The paucity of such documentation is
-exacerbated by the mixed R/C/Fortran code base, where seemingly trivial
-differences in things like representation of numbers or base index for
-arrays lead to traps for unwary programmers.
-
-For \texttt{nls()} the concern is demonstrated by a short email query
-from John Nash to Doug Bates and his reply. This is NOT a criticism of
-Prof.~Bates' (or any other) work, but a reflection on how difficult it
-is to develop code in this subject area and to keep it maintainable. We
-have experienced similar loss of understanding for some of our own
-codes.
-
-\begin{verbatim}
-    ...
-    https://gitlab.com/nashjc/improvenls/-/blob/master/Croucher-expandednlsnoc.R
-    ... has the test problem and the expanded code. Around line 367 is where we are
-    scratching our heads. The function code (from nlsModel()) is in the commented 
-    lines below the call. This is
-
-          # > setPars
-          # function(newPars) {
-          #   setPars(newPars)
-          #   resid <<- .swts * (lhs - (rhs <<- getRHS())) # envir = thisEnv {2 x}
-          #   dev   <<- sum(resid^2) # envir = thisEnv
-          #   if(length(gr <- attr(rhs, "gradient")) == 1L) gr <- c(gr)
-          #   QR <<- qr(.swts * gr) # envir = thisEnv
-          #   (QR$rank < min(dim(QR$qr))) # to catch the singular gradient matrix
-          # }
-
-    I'm anticipating that we will be able to set up a (possibly inefficient) code
-    with documentation that will be easier to follow and test, then gradually figure
-    out how to make it more efficient.
-
-    The equivalent from minpack.lm is
-
-    setPars = function(newPars) {
-                setPars(newPars)
-                assign("resid", .swts * (lhs - assign("rhs", getRHS(),
-                    envir = thisEnv)), envir = thisEnv)
-                assign("dev", sum(resid^2), envir = thisEnv)
-                assign("QR", qr(.swts * attr(rhs, "gradient")), envir = thisEnv)
-                return(QR$rank < min(dim(QR$qr)))
-            }
-
-    In both there is the recursive call, which must have a purpose I don't understand.
-\end{verbatim}
-
-The reply was
-
-\begin{verbatim}
-    I'm afraid that I don't know the purpose of the recursive call either.  
-    I know that I wrote the code to use a closure for the response, covariates, etc., 
-    but I don't recall anything like a recursive call being necessary.
-    ...
-\end{verbatim}
-
 \hypertarget{feature-indexed-parameters}{%
 \subsection{Feature: indexed
 parameters}\label{feature-indexed-parameters}}
@@ -1332,6 +1262,29 @@ indexed. We do not see \texttt{a{[}1{]},\ a{[}2{]},\ a{[}3{]}} but
 parameters is extremely challenging. However, we believe the current
 structure is could cause confusion and error, and propose an alternative
 approach below.
+
+\hypertarget{issue-code-structure-and-documentation-for-maintenance}{%
+\subsection{Issue: code structure and documentation for
+maintenance}\label{issue-code-structure-and-documentation-for-maintenance}}
+
+The \texttt{nls()} code is structured in a way that inhibits both
+maintenance and improvement. In particular, the iterative setup is such
+that introduction of Marquardt stabilization is not easily available. To
+obtain performance when the code was written, a large portion was
+written in C with consequent calls and returns that severely complicate
+the code. Over time, R has become much more efficient on modern
+computers, and the need to use compiled C and Fortran is less critical.
+Moreover, the burden for maintenance could be reduced by moving code
+entirely to R.
+
+While R and its packages are generally very well documented for usage,
+that documentation rarely extends as far as it might for code
+maintenance. The paucity of such documentation is exacerbated by the
+mixed R/C/Fortran code base, where seemingly trivial differences in
+things like representation of numbers or base index for arrays lead to
+traps for unwary programmers.
+
+--\textgreater{} --\textgreater{} --\textgreater{} --\textgreater{}
 
 \hypertarget{feature-bounds-on-parameters}{%
 \subsection{Feature: bounds on
@@ -1492,8 +1445,8 @@ We want:
 \item
   to provide a packaged version of \texttt{nls()} (call it
   \texttt{nlsalt}) coded entirely in R that matches the features in base
-  R or what is packaged in \texttt{nlspkg} as described in John C. Nash
-  and Bhattacharjee (\protect\hyperlink{ref-PkgFromRbase22}{2022}).
+  R or what is packaged in \texttt{nlspkg} as described in Nash and
+  Bhattacharjee (\protect\hyperlink{ref-PkgFromRbase22}{2022}).
 \item
   to streamline the overall \texttt{nls()} infrastructure. By this we
   mean a re-factoring of the routines so they are better suited to
@@ -1636,14 +1589,13 @@ items are:
   platforms is given in at
   \url{https://github.com/nashjc/RNonlinearLS/tree/main/MachineSummary}
 \item
-  John C. Nash and Bhattacharjee
-  (\protect\hyperlink{ref-PkgFromRbase22}{2022}) is an explanation of
-  the construction of the \texttt{nlspkg} from the \texttt{nls()} code
-  in R-base.
+  Nash and Bhattacharjee (\protect\hyperlink{ref-PkgFromRbase22}{2022})
+  is an explanation of the construction of the \texttt{nlspkg} from the
+  \texttt{nls()} code in R-base.
 \item
   As the 2021 Summer of Code period was ending, one of us (JN) was
   invited to prepare a review of optimization in R. Ideas from the
-  present work have been instrumental in the creation of John C. Nash
+  present work have been instrumental in the creation of Nash
   (\protect\hyperlink{ref-NashWires22}{2022}).
 \end{itemize}
 
@@ -1664,9 +1616,9 @@ which the Gauss-Newton iteration can be executed and other statistical
 information such as profiles can be computed, while \texttt{nlxb()}
 returns quite limited information, and computes what is needed on an
 ``as and when'' basis. This follows a path that one of us (JN)
-established almost 50 years ago with the software that became John C.
-Nash (\protect\hyperlink{ref-cnm79}{1979}), separating setup, solver,
-and post-solution analysis phases of computations.
+established almost 50 years ago with the software that became Nash
+(\protect\hyperlink{ref-cnm79}{1979}), separating setup, solver, and
+post-solution analysis phases of computations.
 
 \hypertarget{opinions}{%
 \subsection{Opinions}\label{opinions}}
@@ -1733,7 +1685,7 @@ Bates, D. M., and D. G. Watts. 1988. \emph{Nonlinear Regression Analysis
 and Its Applications}. Wiley.
 
 \leavevmode\vadjust pre{\hypertarget{ref-BatesWatts81}{}}%
-Bates, Douglas M., and Donald G. Watts. 1981. {``A Relative Offset
+Bates, Douglas M., and Watts, Donald G. 1981. {``A Relative Offset
 Orthogonality Convergence Criterion for Nonlinear Least Squares.''}
 \emph{Technometrics} 23 (2): 179--83.
 
@@ -1741,6 +1693,10 @@ Orthogonality Convergence Criterion for Nonlinear Least Squares.''}
 Huet, S., A. Bouvier, M.-A. Poursat, and E. Jolivet. 2004.
 \emph{Statistical Tools for Nonlinear Regression: A Practical Guide with
 {S-PLUS} Examples, 2nd Edition}. Berlin \& New York: Springer-Verlag.
+
+\leavevmode\vadjust pre{\hypertarget{ref-nlsr-manual}{}}%
+John C Nash, and Duncan Murdoch. 2019. \emph{{nlsr: Functions for
+Nonlinear Least Squares Solutions}}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-Levenberg1944}{}}%
 Levenberg, Kenneth. 1944. {``A Method for the Solution of Certain
@@ -1775,10 +1731,6 @@ https://doi.org/\url{https://doi.org/10.1002/wics.1580}.
 Nash, John C., and Arkajyoti Bhattacharjee. 2022. {``Making a Package
 from Base {R} Files.''} \emph{R-Bloggers}, January.
 \url{https://www.r-bloggers.com/2022/01/making-a-package-from-base-r-files/}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-nlsr-manual}{}}%
-Nash, John C, and Duncan Murdoch. 2019. \emph{Nlsr: Functions for
-Nonlinear Least Squares Solutions}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-nash1996nonlinear}{}}%
 Nash, John C., and Paul Velleman. 1996. {``Nonlinear Estimation
