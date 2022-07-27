@@ -1146,8 +1146,6 @@ mixed R/C/Fortran code base, where seemingly trivial differences in
 things like representation of numbers or base index for arrays lead to
 traps for unwary programmers.
 
---\textgreater{} --\textgreater{} --\textgreater{} --\textgreater{}
-
 \hypertarget{feature-bounds-on-parameters}{%
 \subsection{Feature: bounds on
 parameters}\label{feature-bounds-on-parameters}}
@@ -1195,30 +1193,6 @@ solution for the scaled Hobbs test problem.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{require}\NormalTok{(nlsr)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Loading required package: nlsr
-\end{verbatim}
-
-\begin{verbatim}
-## 
-## Attaching package: 'nlsr'
-\end{verbatim}
-
-\begin{verbatim}
-## The following objects are masked from 'package:nlsr2':
-## 
-##     codeDeriv, findSubexprs, fnDeriv, isCALL, isMINUSONE, isONE,
-##     isZERO, model2rjfun, model2ssgrfun, modelexpr, newDeriv,
-##     newSimplification, nlfb, nlsDeriv, nlsSimplify, nlxb, resgr, resss,
-##     rjfundoc, sysDerivs, sysSimplifications, wrapnlsr
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \CommentTok{\# Hobbs scaled problem with bounds, formula specification}
 \NormalTok{anlxb1 }\OtherTok{\textless{}{-}} \FunctionTok{nlxb}\NormalTok{(wmods, }\AttributeTok{start =}\NormalTok{ st, }\AttributeTok{data =}\NormalTok{ wf, }\AttributeTok{lower =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{), }\AttributeTok{upper =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{6}\NormalTok{, }\DecValTok{3}\NormalTok{))}
 \FunctionTok{cat}\NormalTok{(}\StringTok{"Using nlsr::nlxb():"}\NormalTok{)}
@@ -1236,12 +1210,12 @@ solution for the scaled Hobbs test problem.
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr object: x 
+## nlsr2  object: anlxb1 
 ## residual sumsquares =  9.4726  on  12 observations
-##     after  16    Jacobian and  17 function evaluations
+##     after  12    Jacobian and  12 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
 ## b1                     2U           NA         NA         NA           0       23.35  
-## b2               4.43325            NA         NA         NA   1.832e-10           0  
+## b2               4.43325            NA         NA         NA   -2.16e-07           0  
 ## b3                     3U           NA         NA         NA           0           0
 \end{verbatim}
 

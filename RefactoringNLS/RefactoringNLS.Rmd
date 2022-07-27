@@ -816,14 +816,11 @@ base index for arrays lead to traps for unwary programmers.
 <!-- This is NOT a criticism of Prof. Bates' (or any other) work, but a reflection on  -->
 <!-- how difficult it is to develop code in this subject area and to keep it maintainable.  -->
 <!-- We have experienced similar loss of understanding for some of our own codes. -->
-
-<!-- ``` -->
 <!--     ... -->
 <!--     https://gitlab.com/nashjc/improvenls/-/blob/master/Croucher-expandednlsnoc.R -->
 <!--     ... has the test problem and the expanded code. Around line 367 is where we are -->
 <!--     scratching our heads. The function code (from nlsModel()) is in the commented  -->
 <!--     lines below the call. This is -->
-
 <!--           # > setPars -->
 <!--           # function(newPars) { -->
 <!--           #   setPars(newPars) -->
@@ -833,13 +830,10 @@ base index for arrays lead to traps for unwary programmers.
 <!--           #   QR <<- qr(.swts * gr) # envir = thisEnv -->
 <!--           #   (QR$rank < min(dim(QR$qr))) # to catch the singular gradient matrix -->
 <!--           # } -->
-
 <!--     I'm anticipating that we will be able to set up a (possibly inefficient) code -->
 <!--     with documentation that will be easier to follow and test, then gradually figure -->
 <!--     out how to make it more efficient. -->
-
 <!--     The equivalent from minpack.lm is -->
-
 <!--     setPars = function(newPars) { -->
 <!--                 setPars(newPars) -->
 <!--                 assign("resid", .swts * (lhs - assign("rhs", getRHS(), -->
@@ -848,21 +842,15 @@ base index for arrays lead to traps for unwary programmers.
 <!--                 assign("QR", qr(.swts * attr(rhs, "gradient")), envir = thisEnv) -->
 <!--                 return(QR$rank < min(dim(QR$qr))) -->
 <!--             } -->
-
 <!--     In both there is the recursive call, which must have a purpose I don't understand. -->
-<!-- ``` -->
 <!-- The reply was -->
-
-<!-- ``` -->
 <!--     I'm afraid that I don't know the purpose of the recursive call either.   -->
 <!--     I know that I wrote the code to use a closure for the response, covariates, etc.,  -->
 <!--     but I don't recall anything like a recursive call being necessary. -->
-<!--     ... -->
-<!-- ``` -->
-<!-- <!--     I don't think I will be of much help.  My R skills have atrophied to the point  --> -->
-<!-- <!--     where I wouldn't even know how to start exploring what is happening in the first  --> -->
-<!-- <!--     call as opposed to the recursive call. --> -->
-<!-- <!-- ``` --> -->
+<!--      I don't think I will be of much help.  My R skills have atrophied to the point  --> 
+<!--      where I wouldn't even know how to start exploring what is happening in the first  -->
+<!--      call as opposed to the recursive call. --> 
+<!--  ``` --> 
 
 ## Feature: bounds on parameters
 
@@ -894,7 +882,6 @@ wf <- data.frame(y = weed, tt = tt)
 st <- c(b1 = 1, b2 = 1, b3 = 1) # a default starting vector (named!)
 wmods <- y ~ 100 * b1 / (1 + 10 * b2 * exp(-0.1 * b3 * tt)) ## Scaled model
 require(minpack.lm)
-require(nlsr)
 # Hobbs scaled problem with bounds, formula specification
 anlxb1 <- nlxb(wmods, start = st, data = wf, lower = c(0, 0, 0), upper = c(2, 6, 3))
 cat("Using nlsr::nlxb():")
