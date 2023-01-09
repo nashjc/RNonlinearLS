@@ -167,10 +167,10 @@ shortcomings}{The nls() function: strengths and shortcomings}}\label{the-nls-fun
 
 \texttt{nls()} is the tool in base R, the primary software software
 distribution from the Comprehensive R Archive Network
-(\url{https://cran.r-project.org}) for estimating nonlinear statistical
-models. The function dates to the 1980s and the work related to Bates
-and Watts (\protect\hyperlink{ref-bateswatts}{1988}) in S (see
-\url{https://en.wikipedia.org/wiki/S_\%28programming_language\%29}).
+(\emph{\url{https://cran.r-project.org}}), for estimating nonlinear
+statistical models. The function dates to the 1980s and the work related
+to Bates and Watts (\protect\hyperlink{ref-bateswatts}{1988}) in S (see
+\emph{\url{https://en.wikipedia.org/wiki/S_\%28programming_language\%29}}).
 
 The \texttt{nls()} function has a remarkable and comprehensive set of
 capabilities for estimating nonlinear models that are expressed as
@@ -353,7 +353,7 @@ is not helpful in obtaining a solution.
 ## b                      5            NA         NA         NA           0       9.615  
 ## c                    0.5            NA         NA         NA           0       2.466  
 ## r                    0.7            NA         NA         NA           0      0.1098  
-## m                      1            NA         NA         NA           0   9.798e-17
+## m                      1            NA         NA         NA           0   1.311e-16
 \end{verbatim}
 
 \begin{Shaded}
@@ -382,7 +382,7 @@ computation}\label{feature-jacobian-computation}}
 Jacobian as the ``gradient'' attribute of the residual vector. This is
 implemented as a mix of R and C code, but we have created a rather more
 compact version entirely in R. See
-\url{https://github.com/nashjc/RNonlinearLS/DerivsNLS} .
+\emph{\url{https://github.com/nashjc/RNonlinearLS/tree/main/DerivsNLS}}.
 
 As far as we can understand the logic in \texttt{nls()}, the Jacobian
 computation during parameter estimation is carried out entirely within
@@ -390,7 +390,7 @@ the called C-language program, and the R code function
 \texttt{numericDeriv()}, part of \texttt{./src/library/stats/R/nls.R} in
 the R distribution source code. This is used to provide Jacobian
 information in the \texttt{nlsModel()} and \texttt{nlsModel.plinear()}
-functions, which are not exported for general use.
+functions, which are \textbf{not} exported for general use.
 
 The Jacobian used by \texttt{nlsr::nlxb()} is, by default, computed from
 analytic expressions, while that of \texttt{nls()} mostly uses a
@@ -426,25 +426,29 @@ experience differences are usually minor.
 \end{itemize}
 
 Note that the selfStart models in the base R
-\texttt{./src/library/stats/R/zzModels.R} file may provide the Jacobian
-in the ``gradient'' attribute of the ``one-sided'' formula that defines
-each model, and these Jacobians may be the analytic forms. The
-\texttt{nls()} function, after computing the ``right hand side'' or
-\texttt{rhs} of the residual, then checks to see if the ``gradient''
-attribute is defined, and, if not, uses \texttt{numericDeriv} to compute
-a Jacobian into that attribute. This code is within the
-\texttt{nlsModel()} or \texttt{nlsModel.plinear()} functions. The use of
-analytic Jacobians almost certainly contributes to the good performance
-of \texttt{nls()} on selfStart models.
+\texttt{./src/library/stats/R/zzModels.R} file and in package
+\texttt{nlraa} (Miguez (\protect\hyperlink{ref-MiguezNLRAA2021}{2021}))
+may provide the Jacobian in the ``gradient'' attribute of the
+``one-sided'' formula that defines each model, and these Jacobians may
+be the analytic forms. The \texttt{nls()} function, after computing the
+``right hand side'' or \texttt{rhs} of the residual, then checks to see
+if the ``gradient'' attribute is defined, and, if not, uses
+\texttt{numericDeriv} to compute a Jacobian into that attribute. This
+code is within the \texttt{nlsModel()} or \texttt{nlsModel.plinear()}
+functions. The use of analytic Jacobians almost certainly contributes to
+the good performance of \texttt{nls()} on selfStart models.
 
 \hypertarget{feature-weights-on-observations}{%
 \subsection{Feature: Weights on
 observations}\label{feature-weights-on-observations}}
 
-?? does resid return weighted or unweighted residuals
-
-?? do we want unweighted (raw) residuals? or are predictions / fits just
-as good?
+\texttt{nls()}, \texttt{nlsr::nlxb()} and \texttt{minpack.lm::nlsLM()}
+all have a \texttt{weights} argument that specifies a vector of weights
+the same length as the number of residuals. Each residual is multiplied
+by the square root of the corresponding weight. The values returned by
+the \texttt{residuals()} function are weighted, and the
+\texttt{fitted()} or \texttt{predict()} function are used to compute raw
+residuals.
 
 \hypertarget{feature-subsetting}{%
 \subsection{Feature: Subsetting}\label{feature-subsetting}}
@@ -457,11 +461,11 @@ source code files \texttt{/src/library/stats/R/nls.R} and
 While the implementation of subset at the level of the call to
 \texttt{nls()} has a certain attractiveness, it does mean that the
 programmer of the solver needs to be aware of the source (and value) of
-objects such as the data, residuals and Jacobian. By preference, we
-would implement subsetting by means of zero-value weights, with
-observation counts (and degrees of freedom) computed via the numbers of
-non-zero weights. Alternatively, we would extract a working dataframe
-from the relevant elements in the original.
+objects such as the data, residuals and Jacobian. This is overly
+complicated. By preference, we would implement subsetting by means of
+zero-value weights, with observation counts (and degrees of freedom)
+computed via the numbers of non-zero weights. Alternatively, we would
+extract a working dataframe from the relevant elements in the original.
 
 \hypertarget{feature-na.action}{%
 \subsection{Feature: na.action}\label{feature-na.action}}
@@ -470,7 +474,7 @@ from the relevant elements in the original.
 does not appear obviously in the source code, often being handled behind
 the scenes after referencing the option \texttt{na.action}. A useful,
 but possibly dated, description is given in:
-\url{https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/}.
+\emph{\url{https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/}}.
 
 The typical default action, which can be seen by using the command
 \texttt{getOption("na.action")} is \texttt{na.omit}. This option
@@ -483,6 +487,7 @@ behaviour is as wanted.
 
 A succinct description of the issue is given in:
 \emph{\url{https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r}}
+where the ``Answer'' states
 
 \begin{quote}
 The only benefit of \texttt{na.exclude} over \texttt{na.omit} is that
@@ -525,12 +530,12 @@ from more extensive documentation and examples of its use.
 argument. In this case, it will search in the available environments
 (i.e., workspaces) for suitable data objects. We do NOT like this
 approach, but it is ``the R way''. R allows users to leave many objects
-in the default (.GlobalEnv) workspace. Moreover, users have to actively
-suppress saving this workspace (\texttt{.RData}) on exit; otherwise, any
-such file in the path, when R is launched, will be loaded. The
-overwhelming proportion of R users in our acquaintance avoid saving the
-workspace because of the danger of lurking data and functions which may
-cause unwanted results.
+in the default (\texttt{.GlobalEnv}) workspace. Moreover, users have to
+actively suppress saving this workspace (\texttt{.RData}) on exit;
+otherwise, any such file in the path, when R is launched, will be
+loaded. The overwhelming proportion of R users in our acquaintance avoid
+saving the workspace because of the danger of lurking data and functions
+which may cause unwanted results.
 
 Nevertheless, to provide compatible behaviour with \texttt{nls()},
 competing programs need to ensure equivalent behaviour, but users should
@@ -553,8 +558,8 @@ is a \texttt{getInitial()} function, this is not easy to use to simply
 compute the initial parameter estimates outside of \texttt{nls()}, in
 part because it may call that function. Such circular references are, in
 our view, dangerous. Moreover, we believe that it would be helpful to
-have selfStart models that allow users to explicitly provide the
-starting parameters.
+have selfStart models that allow users to explicitly provide values
+other than those suggested for the starting parameters.
 
 Other concerns are revealed by the example below. Here, the
 \texttt{SSlogis} selfStart function is used to generate a set of initial
@@ -586,9 +591,9 @@ provided quite simply instead of all 1's.
 \subsubsection{Strategic issues in selfStart
 models}\label{strategic-issues-in-selfstart-models}}
 
-Because the Gauss-Newton algorithm is unreliable from many sets of
-starting of parameters, selfStart models are a part of the
-\texttt{nls()} infrastructure rather than an accessory. However,
+By providing starting values that are likely to be reasonable and by
+including Jacobian code in the selfStart model code, some of the
+deficiencies of the Gauss-Newton algorithm are mitigated. However,
 creating such functions is a lot of work, and their documentation (file
 \texttt{./src/library/stats/man/selfStart.Rd}) is quite complicated. We
 believe that the focus should be placed on getting good initial
@@ -757,18 +762,21 @@ the one \texttt{nls()} returns. Moreover, \texttt{nlxb} explicitly
 returns the sum of squares as well as the residual vector and Jacobian.
 The counts of evaluations are also returned. (Note that the singular
 values of the Jacobian are actually computed in the \texttt{print} and
-\texttt{summary} methods for the result.) We noted several potential
-updates to the \texttt{nlsr} documentation as well as that for
-\texttt{nls()} as we made our comparisons.
+\texttt{summary} methods for the result.) As we made our comparisons, We
+noted several potential updates to the \texttt{nlsr} documentation as
+well as that for \texttt{nls()}.
 
 \hypertarget{weights-in-returned-functions-from-nls}{%
 \subsubsection{Weights in returned functions from
 nls()}\label{weights-in-returned-functions-from-nls}}
 
-The function \texttt{resid()} (an alias for \texttt{residuals()})
-\texttt{nlsModel()} is WEIGHTED, as are those in the structured object
+As already noted, the function \texttt{resid()} (an alias for
+\texttt{residuals()}) is WEIGHTED, as are those in the structured object
 \texttt{m} returned by \texttt{nls()} or \texttt{minpack.lm::nlsLM},
-e.g., \texttt{ans\$m\$resid()}.
+e.g., \texttt{ans\$m\$resid()}. The function \texttt{nlsModel()}, which
+we have had to extract from the base R code and explicitly
+\texttt{source()} because it is not exported to the working namespace,
+allows us to compute residuals for particular coefficient sets.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -899,8 +907,8 @@ algorithm is used with the \texttt{trace} argument TRUE, the iterations
 display the objective function value which is 1/2 the sum of squares (or
 deviance). It is likely that the trace display is embedded in the
 Fortran of the \texttt{nlminb} routine that is called to execute the
-``port'' algorithm, but the discrepancy is nonetheless unfortunate for
-users.
+``port'' algorithm, but the factor of 2 discrepancy is nonetheless
+unfortunate for users.
 
 \hypertarget{failure-to-return-best-result-achieved}{%
 \subsubsection{Failure to return best result
@@ -965,7 +973,7 @@ parameters are linear, is not a trivial task.
 
 Moreover, specifying a model to a solver should, ideally, use the same
 syntax across solver tools. Unfortunately, R allows multiple approaches
-within different modelling tools, and within \texttt{nls()} itself. This
+within different modeling tools, and within \texttt{nls()} itself. This
 is highlighted by the case of partially linear models.
 
 The nonlinear modeling model specifications are, of course, a
@@ -1020,9 +1028,10 @@ we have NOT evaluated the commands to save space.
 \subsection{Feature: indexed
 parameters}\label{feature-indexed-parameters}}
 
-Indexed parameters -- those whose names have subscripts on some index
-variable -- are a useful idea to simplify model specification in some
-cases. However, they are also a focus of trouble.
+Indexed parameters -- those whose names have subscripts on some element
+that is part of the coefficient list -- are a useful idea to simplify
+model specification in some cases. However, they are also a focus of
+trouble.
 
 The \textbf{man} file for \texttt{nls()} includes the following example
 of a situation in which parameters are indexed. It also uses the
@@ -1114,34 +1123,13 @@ Here we use a truncated version of the example to save display space.
 ## Residual standard error: 0.798 on 5 degrees of freedom
 ## 
 ## Number of iterations to convergence: 6 
-## Achieved convergence tolerance: 2.03e-06
+## Achieved convergence tolerance: 1.95e-06
 \end{verbatim}
 
 Running the example reveals that the answers for the parameters are NOT
 indexed. That is, we do not see \texttt{a{[}1{]},\ a{[}2{]},\ a{[}3{]}}
 but \texttt{a1,\ a2,\ a3}. This is no doubt because programming for
 indexed parameters is extremely challenging.
-
-\hypertarget{issue-code-structure-and-documentation-for-maintenance}{%
-\subsection{Issue: code structure and documentation for
-maintenance}\label{issue-code-structure-and-documentation-for-maintenance}}
-
-The \texttt{nls()} code is structured in a way that inhibits both
-maintenance and improvement. In particular, the iterative setup is such
-that introduction of Marquardt stabilization is not easily available. To
-obtain performance when the code was written, a large portion was
-written in C with consequent calls and returns that severely complicate
-the code. Over time, R has become much more efficient on modern
-computers, and the need to use compiled C and Fortran is less critical.
-Moreover, the burden for maintenance could be reduced by moving code
-entirely to R.
-
-While R and its packages are generally very well documented for usage,
-that documentation rarely extends as far as it might for code
-maintenance. The paucity of such documentation is exacerbated by the
-mixed R/C/Fortran code base, where seemingly trivial differences in
-things like representation of numbers or base index for arrays lead to
-traps for unwary programmers.
 
 \hypertarget{feature-bounds-on-parameters}{%
 \subsection{Feature: bounds on
@@ -1286,6 +1274,27 @@ certain assumptions. Bounds change those assumptions. Hence,
 \texttt{nlsr::nlxb()} does not compute standard errors nor their derived
 statistics when bounds are active.
 
+\hypertarget{issue-code-structure-and-documentation-for-maintenance}{%
+\subsection{Issue: code structure and documentation for
+maintenance}\label{issue-code-structure-and-documentation-for-maintenance}}
+
+The \texttt{nls()} code is structured in a way that inhibits both
+maintenance and improvement. In particular, the iterative setup is such
+that introduction of Marquardt stabilization is not easily available. To
+obtain performance when the code was written, a large portion was
+written in C with consequent calls and returns that severely complicate
+the code. Over time, R has become much more efficient on modern
+computers, and the need to use compiled C and Fortran is less critical.
+Moreover, the burden for maintenance could be reduced by moving code
+entirely to R.
+
+While R and its packages are generally very well documented for usage,
+that documentation rarely extends as far as it might for code
+maintenance. The paucity of such documentation is exacerbated by the
+mixed R/C/Fortran code base, where seemingly trivial differences in
+things like representation of numbers or base index for arrays lead to
+traps for unwary programmers.
+
 \hypertarget{goals-and-progress-of-our-effort-to-improve-nls}{%
 \section{\texorpdfstring{Goals and progress of our effort to improve
 \texttt{nls()}}{Goals and progress of our effort to improve nls()}}\label{goals-and-progress-of-our-effort-to-improve-nls}}
@@ -1294,7 +1303,8 @@ statistics when bounds are active.
 \subsection{Code rationalization and
 documentation}\label{code-rationalization-and-documentation}}
 
-We want:
+When we started \emph{Improvements to nls()} for the 2021 Google Summer
+of Code we wanted:
 
 \begin{itemize}
 \item
@@ -1318,22 +1328,23 @@ We want:
   existing code.
 \end{itemize}
 
-These goals echo themes in the recent discussion Vidoni
+These goals echo themes in the recent discussion by Vidoni
 (\protect\hyperlink{ref-Vidoni21}{2021}) and accompanying commentary.
 
 \hypertarget{rationalization-of-formula-specifications}{%
-\subsubsection{Rationalization of formula
+\subsection{Rationalization of formula
 specifications}\label{rationalization-of-formula-specifications}}
 
 We have seen that \texttt{nls()} uses a different formula specification
 from the default if the \texttt{plinear} algorithm is used. This is
 unfortunate, since the user cannot then simply add
-\texttt{algorithm="plinear"} to the call, making errors more likely.
+\texttt{algorithm="plinear"} to the standard call, making errors more
+likely.
 
 Nonlinear models, apart from those using the ``plinear'' algorithm, need
-all parameters specified. That is, the model formula should be written
-down as it would be computed. Thus a linear model (which is valid input
-for nonlinear estimation) should be specified
+all the parameters specified. That is, the model formula should be
+written down as it would be computed. Thus a linear model (which is
+valid input for nonlinear estimation) should be specified
 \texttt{y\ \textasciitilde{}\ a\ *\ x\ +\ b} rather than
 \texttt{y\ \textasciitilde{}\ x}. Moreover, we want to avoid the
 partially linear parameters appearing in the result object as
@@ -1357,7 +1368,7 @@ interpretation of arithmetic operators. We would prefer that formulas be
 usable without this complication.
 
 \hypertarget{rationalization-of-indexed-models}{%
-\subsubsection{Rationalization of indexed
+\subsection{Rationalization of indexed
 models}\label{rationalization-of-indexed-models}}
 
 Indexed models clearly have a place in some areas of research. We need
@@ -1382,7 +1393,7 @@ present with \texttt{nls()}. However, a wrapper could process output to
 reconstitute the indexing of parameters.
 
 \hypertarget{streamlining-code}{%
-\subsubsection{Streamlining code}\label{streamlining-code}}
+\subsection{Streamlining code}\label{streamlining-code}}
 
 We are pessimistic that the overall structure of \texttt{nls()} can be
 streamlined due to the entanglement of so many features with the
@@ -1414,17 +1425,17 @@ order:
 \end{itemize}
 
 Such goals align with the aims of \textbf{unit testing} (e.g.,
-\url{https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211},
+\emph{\url{https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211}},
 Wickham (\protect\hyperlink{ref-HWtestthat11}{2011}), Wickham et al.
 (\protect\hyperlink{ref-HWdevtools21}{2021}) and the conventional R
 package testing tools).
 
 \hypertarget{a-testing-package-nlscompare}{%
-\subsubsection{A testing package:
+\subsection{A testing package:
 NLSCompare}\label{a-testing-package-nlscompare}}
 
 One of us has developed a working prototype package at
-\url{https://github.com/ArkaB-DS/nlsCompare} . A primary design
+\emph{\url{https://github.com/ArkaB-DS/nlsCompare}} . A primary design
 objective of this is to allow the summarisation of multiple tests in a
 compact output. The prototype has a vignette to illustrate its use.
 
@@ -1433,21 +1444,21 @@ compact output. The prototype has a vignette to illustrate its use.
 resources}\label{documentation-and-resources}}
 
 In our investigation, we built several resources, which are now part of
-the repository \url{https://github.com/nashjc/RNonlinearLS/}. Particular
-items are:
+the repository \emph{\url{https://github.com/nashjc/RNonlinearLS/}}.
+Particular items are:
 
 \begin{itemize}
 \item
   A BibTex bibliography for use with all documents in this project, but
   which has wider application to nonlinear least squares projects in
   general
-  (\url{https://github.com/nashjc/RNonlinearLS/blob/main/BibSupport/ImproveNLS.bib})
+  (\emph{\url{https://github.com/nashjc/RNonlinearLS/blob/main/BibSupport/ImproveNLS.bib}}).
 \item
   \texttt{MachID.R} offers a suggested concise summary function to
   identify a particular computational system used for tests. A
   discussion of how it was built and the resources needed across
   platforms is given in at
-  \url{https://github.com/nashjc/RNonlinearLS/tree/main/MachineSummary}
+  \emph{\url{https://github.com/nashjc/RNonlinearLS/tree/main/MachineSummary}}.
 \item
   Nash and Bhattacharjee (\protect\hyperlink{ref-PkgFromRbase22}{2022})
   is an explanation of the construction of the \texttt{nlspkg} from the
@@ -1464,28 +1475,14 @@ items are:
 estimation}\label{strategic-choices-in-nonlinear-model-estimation}}
 
 It is possible that \texttt{nls()} will remain more or less as it has
-been for the past two decades. Given its importance to R, a focus of
-discussion should be what needs fixing and how that should be
-approached, and we welcome an opportunity to participate in such
-conversations.
-
-From a design point of view, a key difference in approach between
-\texttt{nls()} and \texttt{nlsr::nlxb()} is that \texttt{nls()} builds a
-large infrastructure, especially the \texttt{nlsModel()} function, from
-which the Gauss-Newton iteration can be executed and other statistical
-information such as profiles can be computed, while \texttt{nlxb()}
-returns quite limited information, and computes what is needed on an
-``as and when'' basis. This follows a path that one of us (JN)
-established almost 50 years ago with the software that became Nash
-(\protect\hyperlink{ref-cnm79}{1979}), separating setup, solver, and
-post-solution analysis phases of computations.
-
-\hypertarget{opinions}{%
-\subsection{Opinions}\label{opinions}}
+been for the past two decades. Given its importance to R, the focus of
+discussion should be the measures needed to secure its continued
+operation for legacy purposes and how that may be approached. We welcome
+an opportunity to participate in such conversations.
 
 To advance the stability and maintainability of R, we believe the
 program objects (R functions) that are created by tools such as
-\texttt{nls()} should have minimal interactions and side-effects. The
+\texttt{nls()} should have minimal cross-linkages and side-effects. The
 aspects of \texttt{nls()} that have given us the most trouble:
 
 \begin{itemize}
@@ -1499,10 +1496,10 @@ aspects of \texttt{nls()} that have given us the most trouble:
 \item
   Weights, subsets, and various contextual controls (such as that for
   the \texttt{na.action} option) are similarly taken from the first
-  available source. Again, this makes for a very simple invocation of
-  calculations, but the context is hidden from the user. Furthermore, it
-  can be difficult for those of us trying to maintain or improve the
-  code to be certain we have the context correct.
+  available source, making for a very simple invocation of calculations,
+  but the context is hidden from the user. Furthermore, it can be
+  difficult for those of us trying to maintain or improve the code to be
+  certain we have the context correct.
 \item
   The mixing of R, C and Fortran code was necessary for computational
   performance in the past. Lacking decent developer documentation,
@@ -1529,12 +1526,28 @@ aspects of \texttt{nls()} that have given us the most trouble:
   incorporate them.
 \end{itemize}
 
+We anticipate that tools like \texttt{nlsr} will become more attractive
+as users discover the increased robustness and general capabilities,
+along with the more recent documentation. From a design point of view, a
+key difference in approach between \texttt{nls()} and
+\texttt{nlsr::nlxb()} is that \texttt{nls()} builds a large
+infrastructure, especially the \texttt{nlsModel()} function, from which
+the Gauss-Newton iteration can be executed and other statistical
+information such as profiles can be computed, while \texttt{nlxb()}
+returns quite limited information, and computes what is needed on an
+``as and when'' basis. This follows a path that one of us (JN)
+established almost 50 years ago with the software that became Nash
+(\protect\hyperlink{ref-cnm79}{1979}), separating setup, solver, and
+post-solution analysis phases of computations.
+
 \hypertarget{acknowledgement}{%
 \section{Acknowledgement}\label{acknowledgement}}
 
 Hans Werner Borchers has been helpful in developing the proposal for
 this project and in comments on this and related work. Heather Turner
 co-mentored the project and helped guide the progress of the work.
+Exchanges with Fernando Miguez helped to clarify aspects of selfStart
+models and improve package \texttt{nlsr} in that respect.
 
 \hypertarget{references}{%
 \section*{References}\label{references}}
