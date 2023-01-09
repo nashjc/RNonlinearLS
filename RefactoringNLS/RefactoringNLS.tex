@@ -286,9 +286,7 @@ safeguarded relative offset test (\textbf{roffset}) as well as a
 the latest evaluated sum of squared (weighted) residuals to \texttt{e4}
 times the initial sum of squares, where
 \texttt{e4\ \textless{}-\ (100*.Machine\$double.eps)\^{}4} is
-approximately 2.43e-55. (NOTE: For the purposes of this article, we use
-a developmental version of package \texttt{nlsr} labelled
-\texttt{nlsr2}.)
+approximately 2.43e-55.
 
 We note that \texttt{nls()} uses a termination test to stop after
 \texttt{maxiter} ``iterations''. Unfortunately, the meaning of
@@ -341,14 +339,13 @@ is not helpful in obtaining a solution.
 \NormalTok{testdat }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(x, y) }\CommentTok{\# save in a data frame}
 \NormalTok{strt }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{a =} \SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\AttributeTok{b =} \DecValTok{5}\NormalTok{, }\AttributeTok{c =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{r =} \FloatTok{0.7}\NormalTok{, }\AttributeTok{m =} \DecValTok{1}\NormalTok{) }\CommentTok{\# give programs a good start}
 \NormalTok{jform }\OtherTok{\textless{}{-}}\NormalTok{ y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ a }\SpecialCharTok{+}\NormalTok{ b }\SpecialCharTok{*}\NormalTok{ r}\SpecialCharTok{\^{}}\NormalTok{(x }\SpecialCharTok{{-}}\NormalTok{ m) }\SpecialCharTok{+}\NormalTok{ c }\SpecialCharTok{*}\NormalTok{ x }\CommentTok{\# Formula}
-\FunctionTok{library}\NormalTok{(nlsr2)}
+\FunctionTok{library}\NormalTok{(nlsr)}
 \NormalTok{linexp2 }\OtherTok{\textless{}{-}} \FunctionTok{try}\NormalTok{(}\FunctionTok{nlxb}\NormalTok{(jform, }\AttributeTok{data =}\NormalTok{ testdat, }\AttributeTok{start =}\NormalTok{ strt, }\AttributeTok{trace =} \ConstantTok{FALSE}\NormalTok{))}
 \NormalTok{linexp2 }\CommentTok{\# Note singular values of Jacobian in rightmost column}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr2  object: x 
 ## residual sumsquares =  0  on  11 observations
 ##     after  1    Jacobian and  1 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   
@@ -356,7 +353,7 @@ is not helpful in obtaining a solution.
 ## b                      5            NA         NA         NA           0       9.615  
 ## c                    0.5            NA         NA         NA           0       2.466  
 ## r                    0.7            NA         NA         NA           0      0.1098  
-## m                      1            NA         NA         NA           0   1.398e-16
+## m                      1            NA         NA         NA           0   9.798e-17
 \end{verbatim}
 
 \begin{Shaded}
@@ -389,11 +386,11 @@ compact version entirely in R. See
 
 As far as we can understand the logic in \texttt{nls()}, the Jacobian
 computation during parameter estimation is carried out entirely within
-the called C-language program, and the R code
-\texttt{function\ numericDeriv()}, part of
-\texttt{./src/library/stats/R/nls.R} in the R distribution source code,
-is used to provide Jacobian information in the \texttt{nlsModel()} and
-\texttt{nlsModel.plinear()} functions.
+the called C-language program, and the R code function
+\texttt{numericDeriv()}, part of \texttt{./src/library/stats/R/nls.R} in
+the R distribution source code. This is used to provide Jacobian
+information in the \texttt{nlsModel()} and \texttt{nlsModel.plinear()}
+functions, which are not exported for general use.
 
 The Jacobian used by \texttt{nlsr::nlxb()} is, by default, computed from
 analytic expressions, while that of \texttt{nls()} mostly uses a
@@ -403,8 +400,7 @@ information. \texttt{minpack.lm::nlsLM()} invokes
 it appears to use an internal approximate Jacobian code from the
 original Fortran \texttt{minpack} code, namely, \texttt{lmdif.f}. Such
 differences in approach can lead to different behaviour, though in our
-experience, one has to look for the differences, as they are generally
-minor.
+experience differences are usually minor.
 
 \begin{itemize}
 \item
@@ -797,7 +793,7 @@ e.g., \texttt{ans\$m\$resid()}.
 ##  residual sum-of-squares: 2.59
 ## 
 ## Number of iterations to convergence: 0 
-## Achieved convergence tolerance: 1.13e-06
+## Achieved convergence tolerance: 1.12e-06
 \end{verbatim}
 
 \begin{Shaded}
@@ -871,6 +867,7 @@ e.g., \texttt{ans\$m\$resid()}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{source}\NormalTok{(}\StringTok{"nlsModel.R"}\NormalTok{)}
 \NormalTok{nmod0 }\OtherTok{\textless{}{-}} \FunctionTok{nlsModel}\NormalTok{(frmlogis, }\AttributeTok{data=}\NormalTok{weeddf, }\AttributeTok{start=}\FunctionTok{c}\NormalTok{(}\AttributeTok{Asym=}\DecValTok{1}\NormalTok{, }\AttributeTok{xmid=}\DecValTok{1}\NormalTok{, }\AttributeTok{scal=}\DecValTok{1}\NormalTok{), }\AttributeTok{wts=}\NormalTok{wts)}
 \NormalTok{nmod0}\SpecialCharTok{$}\FunctionTok{resid}\NormalTok{() }\CommentTok{\# Parameters are supplied in nlsModel() \textasciigrave{}start\textasciigrave{} above.}
 \end{Highlighting}
@@ -1117,7 +1114,7 @@ Here we use a truncated version of the example to save display space.
 ## Residual standard error: 0.798 on 5 degrees of freedom
 ## 
 ## Number of iterations to convergence: 6 
-## Achieved convergence tolerance: 1.94e-06
+## Achieved convergence tolerance: 2.03e-06
 \end{verbatim}
 
 Running the example reveals that the answers for the parameters are NOT
@@ -1210,7 +1207,6 @@ solution for the scaled Hobbs test problem.
 \end{Shaded}
 
 \begin{verbatim}
-## nlsr2  object: anlxb1 
 ## residual sumsquares =  9.4726  on  12 observations
 ##     after  12    Jacobian and  12 function evaluations
 ##   name            coeff          SE       tstat      pval      gradient    JSingval   

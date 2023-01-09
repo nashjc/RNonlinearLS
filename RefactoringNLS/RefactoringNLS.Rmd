@@ -189,8 +189,6 @@ the safeguarded relative offset test (**roffset**) as well as a **small sum of
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
 (weighted) residuals to `e4` times the initial sum of squares, where
 `e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
-(NOTE: For the purposes of this article, we use a developmental version of package
-`nlsr` labelled `nlsr2`.)
 
 We note that `nls()` uses a termination test to stop after `maxiter` "iterations". 
 Unfortunately, the meaning of "iteration" varies among programs and requires 
@@ -232,7 +230,7 @@ y <- reala + realb * realr^(x - realm) + realc * x # linear + exponential functi
 testdat <- data.frame(x, y) # save in a data frame
 strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1) # give programs a good start
 jform <- y ~ a + b * r^(x - m) + c * x # Formula
-library(nlsr2)
+library(nlsr)
 linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = FALSE))
 linexp2 # Note singular values of Jacobian in rightmost column
 # We get an error with nls()
@@ -256,17 +254,18 @@ See https://github.com/nashjc/RNonlinearLS/DerivsNLS .
 
 As far as we can understand the logic in `nls()`, the Jacobian computation during
 parameter estimation is carried out entirely within the called C-language program,
-and the R code `function numericDeriv()`, part of `./src/library/stats/R/nls.R`
-in the R distribution source code, is used to provide Jacobian information in 
-the `nlsModel()` and `nlsModel.plinear()` functions.
+and the R code function `numericDeriv()`, part of `./src/library/stats/R/nls.R`
+in the R distribution source code. This is used to provide Jacobian information in 
+the `nlsModel()` and `nlsModel.plinear()` functions, which are not exported for 
+general use.
 
-The Jacobian used by `nlsr::nlxb()` is, by default, computed from analytic expressions, while that
+The Jacobian used by `nlsr::nlxb()` is, by default, computed from analytic expressions, 
+while that
 of `nls()` mostly uses a numerical approximation. Some selfStart models do provide
 "gradient" information. `minpack.lm::nlsLM()` invokes `numericDeriv()` in its local 
-version of `nlsModel()`, but it appears to use an internal approximate Jacobian code from the 
-original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
-can lead to different behaviour, though in our experience, one has to look for the
-differences, as they are generally minor.
+version of `nlsModel()`, but it appears to use an internal approximate Jacobian code from 
+the original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
+can lead to different behaviour, though in our experience differences are usually minor.
 
 - A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a poorly
   conditioned Jacobian and `nls()` fails with "singular gradient". 
@@ -283,11 +282,12 @@ differences, as they are generally minor.
   taken as an advantage.
 
 Note that the selfStart models in the base R `./src/library/stats/R/zzModels.R` file may
-provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines each
-model, and these Jacobians may be the analytic forms. The `nls()` function, after computing the
-"right hand side" or `rhs` of the residual, then checks to see if the "gradient" attribute is
-defined, and, if not, uses `numericDeriv` to compute a Jacobian into that attribute. This code
-is within the `nlsModel()` or `nlsModel.plinear()` functions. The use of analytic Jacobians
+provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines
+each model, and these Jacobians may be the analytic forms. The `nls()` function, after
+computing the "right hand side" or `rhs` of the residual, then checks to see if the
+"gradient" attribute is defined, and, if not, uses `numericDeriv` to compute a Jacobian
+into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()`
+functions. The use of analytic Jacobians
 almost certainly contributes to the good performance of `nls()` on selfStart models.
 
 ## Feature: Weights on observations
@@ -622,7 +622,6 @@ actually computed in the `print` and `summary` methods for the result.)
 We noted several potential updates to the `nlsr` documentation as well as that
 for `nls()` as we made our comparisons.
 
-<!-- nlsr2 has some extra info ?? -->
 
 ### Weights in returned functions from nls()
 
@@ -644,6 +643,7 @@ nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does NOT take coeffi
 usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
 usewt
 usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
+source("nlsModel.R")
 nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
 nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
 nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
