@@ -1248,7 +1248,10 @@ iteration can be executed and other statistical information such as profiles can
 computed, while `nlxb()` returns quite limited information, and 
 computes what is needed on an "as and when" basis. This follows a path that one of us
 (JN) established almost 50 years ago with the software that became @cnm79, separating
-setup, solver, and post-solution analysis phases of computations. 
+setup, solver, and post-solution analysis phases of computations. There is, however,
+the wrapper `wrapnlsr()` that solves the nonlinear estimation problem with the solver
+of `nlsr` then calls `nls()` to build the object of class `nls` for which profile log-likelihood
+information can be computed.
 <!-- Here, that last  -->
 <!-- phase is not part of `nlxb()`, but is the domain of other functions in the `nlsr` -->
 <!-- package. -->

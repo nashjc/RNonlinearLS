@@ -1538,7 +1538,11 @@ returns quite limited information, and computes what is needed on an
 ``as and when'' basis. This follows a path that one of us (JN)
 established almost 50 years ago with the software that became Nash
 (\protect\hyperlink{ref-cnm79}{1979}), separating setup, solver, and
-post-solution analysis phases of computations.
+post-solution analysis phases of computations. There is, however, the
+wrapper \texttt{wrapnlsr()} that solves the nonlinear estimation problem
+with the solver of \texttt{nlsr} then calls \texttt{nls()} to build the
+object of class \texttt{nls} for which profile log-likelihood
+information can be computed.
 
 \hypertarget{acknowledgement}{%
 \section{Acknowledgement}\label{acknowledgement}}
