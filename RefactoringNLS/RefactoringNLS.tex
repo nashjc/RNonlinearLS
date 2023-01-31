@@ -122,7 +122,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
-  pdftitle={Refactoring the nls() function in R},
+  pdftitle={Refactoring nls(): a constructive critique},
   pdfauthor={John C. Nash ; Arkajyoti Bhattacharjee },
   colorlinks=true,
   linkcolor={red},
@@ -131,7 +131,7 @@
   urlcolor={blue},
   pdfcreator={LaTeX via pandoc}}
 
-\title{Refactoring the \texttt{nls()} function in R}
+\title{Refactoring \texttt{nls()}: a constructive critique}
 \author{John C. Nash
 \thanks{ retired professor, Telfer School of Management, University of Ottawa} \and Arkajyoti
 Bhattacharjee
@@ -159,7 +159,7 @@ code base that provides the functionality \texttt{nls()} claims to
 offer. Our work suggests that the existing code makes maintenance and
 improvement very difficult, with legacy applications and examples
 blocking some important updates. Discussion of these matters is relevant
-to improving R generally, as well as its nonlinear estimation tools.
+to improving R generally as well as its nonlinear estimation tools.
 
 \hypertarget{the-nls-function-strengths-and-shortcomings}{%
 \section{\texorpdfstring{The \texttt{nls()} function: strengths and
@@ -196,7 +196,7 @@ capabilities for estimating nonlinear models that are expressed as
   has related profiling capabilities for exploring the likelihood
   surface as parameters are changed
 \item
-  links to a number of pre-coded (``selfStart'') models
+  links to a number of pre-coded (\texttt{selfStart}) models
 \end{itemize}
 
 With such a range of features and long history, the code has become
@@ -271,7 +271,7 @@ reasonable choice -- allows small-residual problems (i.e., near-exact
 fits) to be dealt with easily. We call this the \textbf{safeguarded
 relative offset convergence criterion}. The default value gives the
 legacy behaviour. We are pleased to note that this improvement is now in
-the R distributed code as of version 4.1.0.
+the R distributed code since version 4.1.0.
 
 \hypertarget{more-general-termination-tests}{%
 \subsubsection{More general termination
@@ -394,8 +394,8 @@ functions, which are \textbf{not} exported for general use.
 
 The Jacobian used by \texttt{nlsr::nlxb()} is, by default, computed from
 analytic expressions, while that of \texttt{nls()} mostly uses a
-numerical approximation. Some selfStart models do provide ``gradient''
-information. \texttt{minpack.lm::nlsLM()} invokes
+numerical approximation. Some \texttt{selfStart} models do provide
+``gradient'' information. \texttt{minpack.lm::nlsLM()} invokes
 \texttt{numericDeriv()} in its local version of \texttt{nlsModel()}, but
 it appears to use an internal approximate Jacobian code from the
 original Fortran \texttt{minpack} code, namely, \texttt{lmdif.f}. Such
@@ -425,7 +425,7 @@ experience differences are usually minor.
   an advantage.
 \end{itemize}
 
-Note that the selfStart models in the base R
+Note that the \texttt{selfStart} models in the base R
 \texttt{./src/library/stats/R/zzModels.R} file and in package
 \texttt{nlraa} (Miguez (\protect\hyperlink{ref-MiguezNLRAA2021}{2021}))
 may provide the Jacobian in the ``gradient'' attribute of the
@@ -436,7 +436,7 @@ if the ``gradient'' attribute is defined, and, if not, uses
 \texttt{numericDeriv} to compute a Jacobian into that attribute. This
 code is within the \texttt{nlsModel()} or \texttt{nlsModel.plinear()}
 functions. The use of analytic Jacobians almost certainly contributes to
-the good performance of \texttt{nls()} on selfStart models.
+the good performance of \texttt{nls()} on \texttt{selfStart} models.
 
 \hypertarget{feature-weights-on-observations}{%
 \subsection{Feature: Weights on
@@ -502,8 +502,8 @@ so you won't as easily be able to compare.
 will essentially stop if any missing values are present.
 
 Our concern with \texttt{na.action} is that users may be unaware of the
-effects of an option setting they may not even be aware has been set. Is
-\texttt{na.fail} a safer default?
+effects of an option setting they may not even be aware has been set.
+Should \texttt{na.fail} be the default?
 
 \hypertarget{feature-model-frame}{%
 \subsection{Feature: model frame}\label{feature-model-frame}}
@@ -547,23 +547,24 @@ models}\label{feature-missing-start-vector-and-self-starting-models}}
 
 Nonlinear estimation algorithms are almost all iterative and need a set
 of starting parameters. \texttt{nls()} offers a special class of
-modeling functions called \textbf{selfStart} models. There are a number
-of these in base R (\texttt{./src/library/stats/R/zzModels.R}) and
-others in R packages such as CRAN package \texttt{nlraa} (Miguez
+modeling functions called \textbf{\texttt{selfStart}} models. There are
+a number of these in base R (\texttt{./src/library/stats/R/zzModels.R})
+and others in R packages such as CRAN package \texttt{nlraa} (Miguez
 (\protect\hyperlink{ref-MiguezNLRAA2021}{2021})), as well as the
 now-archived package \texttt{NRAIA}. Unfortunately, some
-\textbf{selfStart} codes entangle the calculation of starting values for
-parameters with the particulars of the \texttt{nls()} code. Though there
-is a \texttt{getInitial()} function, this is not easy to use to simply
-compute the initial parameter estimates outside of \texttt{nls()}, in
-part because it may call that function. Such circular references are, in
-our view, dangerous. Moreover, we believe that it would be helpful to
-have selfStart models that allow users to explicitly provide values
-other than those suggested for the starting parameters.
+\textbf{\texttt{selfStart}} codes entangle the calculation of starting
+values for parameters with the particulars of the \texttt{nls()} code.
+Though there is a \texttt{getInitial()} function, this is not easy to
+use to simply compute the initial parameter estimates outside of
+\texttt{nls()}, in part because it may call that function. Such circular
+references are, in our view, dangerous. Moreover, we believe that it
+would be helpful to have \texttt{selfStart} models that allow users to
+explicitly provide values other than those suggested for the starting
+parameters.
 
 Other concerns are revealed by the example below. Here, the
-\texttt{SSlogis} selfStart function is used to generate a set of initial
-parameters for a 3-parameter logistic curve. The form used by
+\texttt{SSlogis} \texttt{selfStart} function is used to generate a set
+of initial parameters for a 3-parameter logistic curve. The form used by
 \texttt{SSlogis} is
 \(y \,\sim\, Asym\,/\, (1 \,+\, exp((xmid\,-\,tt)\,/\,scal))\), but we
 show how the starting parameters for this model can be transformed to
@@ -578,22 +579,22 @@ programmers have chosen to save so many quantities in ``hidden''
 variables, i.e., with names preceded by ``.''. These are then not
 displayed by the \texttt{ls()} command, making them difficult to access.
 
-In the event that a selfStart model is not available, \texttt{nls()}
-sets all the starting parameters to 1. This is, in our view, tolerable,
-but could be improved by using a set of values that are all slightly
-different, which, in the case of the example model
+In the event that a \texttt{selfStart} model is not available,
+\texttt{nls()} sets all the starting parameters to 1. This is, in our
+view, tolerable, but could be improved by using a set of values that are
+all slightly different, which, in the case of the example model
 \(y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)\) would
 avoid a singular Jacobian because \(b\) and \(d\) were equal in value. A
 sequence like 1.0, 1.1, 1.2, 1.3 for the four parameters could be
 provided quite simply instead of all 1's.
 
 \hypertarget{strategic-issues-in-selfstart-models}{%
-\subsubsection{Strategic issues in selfStart
-models}\label{strategic-issues-in-selfstart-models}}
+\subsubsection{\texorpdfstring{Strategic issues in \texttt{selfStart}
+models}{Strategic issues in selfStart models}}\label{strategic-issues-in-selfstart-models}}
 
 By providing starting values that are likely to be reasonable and by
-including Jacobian code in the selfStart model code, some of the
-deficiencies of the Gauss-Newton algorithm are mitigated. However,
+including Jacobian code in the \texttt{selfStart} model code, some of
+the deficiencies of the Gauss-Newton algorithm are mitigated. However,
 creating such functions is a lot of work, and their documentation (file
 \texttt{./src/library/stats/man/selfStart.Rd}) is quite complicated. We
 believe that the focus should be placed on getting good initial
@@ -712,7 +713,7 @@ and if there is an element called \texttt{xdata}, it can be accessed as
 \texttt{result\$model\$xdata}.
 
 Let us compare the \texttt{nls()} result with that from
-\texttt{nlsr::nlxb()}, with ostensibly solves the same problem:
+\texttt{nlsr::nlxb()}, which ostensibly solves the same problem:
 
 \begin{quote}
 \texttt{coefficients} A named vector giving the parameter values at the
@@ -762,7 +763,7 @@ the one \texttt{nls()} returns. Moreover, \texttt{nlxb} explicitly
 returns the sum of squares as well as the residual vector and Jacobian.
 The counts of evaluations are also returned. (Note that the singular
 values of the Jacobian are actually computed in the \texttt{print} and
-\texttt{summary} methods for the result.) As we made our comparisons, We
+\texttt{summary} methods for the result.) As we made our comparisons, we
 noted several potential updates to the \texttt{nlsr} documentation as
 well as that for \texttt{nls()}.
 
@@ -966,7 +967,7 @@ specification}\label{feature-partially-linear-models-and-their-specification}}
 The variable projection method (Golub and Pereyra
 (\protect\hyperlink{ref-Golub1973}{1973}), O'Leary and Rust
 (\protect\hyperlink{ref-OlearyRust13}{2013})) is generally much more
-effective then general approaches in finding good solutions to nonlinear
+effective than general approaches in finding good solutions to nonlinear
 least squares problems when some of the parameters appear linearly.
 However, setting up the calculations, that is, identifying which
 parameters are linear, is not a trivial task.
@@ -976,8 +977,8 @@ syntax across solver tools. Unfortunately, R allows multiple approaches
 within different modeling tools, and within \texttt{nls()} itself. This
 is highlighted by the case of partially linear models.
 
-The nonlinear modeling model specifications are, of course, a
-development of linear ones. Unfortunately, the explicit model
+The nonlinear modeling specifications are, of course, a development of
+linear ones. Unfortunately, the explicit model
 \texttt{y\ \textasciitilde{}\ a\ *\ x\ +\ b} does not work with the
 linear modeling function \texttt{lm()}, which requires this model to be
 specified as \texttt{y\ \textasciitilde{}\ x}.
@@ -1067,7 +1068,6 @@ Here we use a truncated version of the example to save display space.
   \DocumentationTok{\#\# by the previously fitted model.}
   \DocumentationTok{\#\# Note that with indexed parameters, the starting values must be}
   \DocumentationTok{\#\# given in a list (with names):}
-  \DocumentationTok{\#\# ?? but why use b here AND in the new formula??}
 \NormalTok{  b }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(musc}\FloatTok{.1}\NormalTok{)}
 \NormalTok{  musc}\FloatTok{.2} \OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(Length }\SpecialCharTok{\textasciitilde{}}\NormalTok{ a[Strip] }\SpecialCharTok{+}\NormalTok{ b[Strip]}\SpecialCharTok{*}\FunctionTok{exp}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{Conc}\SpecialCharTok{/}\NormalTok{th), }\AttributeTok{data=}\NormalTok{mm,}
                 \AttributeTok{start =} \FunctionTok{list}\NormalTok{(}\AttributeTok{a =} \FunctionTok{rep}\NormalTok{(b[}\DecValTok{2}\NormalTok{], nl), }\AttributeTok{b =} \FunctionTok{rep}\NormalTok{(b[}\DecValTok{3}\NormalTok{], nl), }\AttributeTok{th =}\NormalTok{ b[}\DecValTok{1}\NormalTok{]))}
@@ -1235,7 +1235,8 @@ solution for the scaled Hobbs test problem.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{anlsb}\OtherTok{\textless{}{-}}\FunctionTok{nls}\NormalTok{(wmods, }\AttributeTok{start =}\NormalTok{ st, }\AttributeTok{data =}\NormalTok{ wf, }\AttributeTok{algorithm =} \StringTok{"port"}\NormalTok{, }\AttributeTok{lower =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{), }\AttributeTok{upper =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{6}\NormalTok{, }\DecValTok{3}\NormalTok{))}
+\NormalTok{anlsb}\OtherTok{\textless{}{-}}\FunctionTok{nls}\NormalTok{(wmods, }\AttributeTok{start =}\NormalTok{ st, }\AttributeTok{data =}\NormalTok{ wf, }\AttributeTok{algorithm =} \StringTok{"port"}\NormalTok{, }
+           \AttributeTok{lower =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{), }\AttributeTok{upper =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{6}\NormalTok{, }\DecValTok{3}\NormalTok{))}
 \FunctionTok{cat}\NormalTok{(}\StringTok{"Using nls with \textquotesingle{}port\textquotesingle{}:"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -1373,16 +1374,16 @@ models}\label{rationalization-of-indexed-models}}
 
 Indexed models clearly have a place in some areas of research. We need
 to be able to process models such as
-\texttt{Length\ \textasciitilde{}\ a{[}Strip{]}\ +\ b{[}Strip{]}\ *\ exp(-Conc\ /\ th)}
+\texttt{Length\ \textasciitilde{}\ a{[}Strip{]}\ +\ b{[}Strip{]}\ *\ exp(-Conc\ /\ th)},
 where \texttt{Strip} is the index. Data \texttt{Length} and
 \texttt{Conc} are available for all observations and parameter
 \texttt{th} applies to every fitted point, but \texttt{a{[}Strip{]}} and
 \texttt{b{[}Strip{]}} apply only to data indexed, which could be an
 experimental run number, or some other categorization.
 
-Given that \texttt{{[}\ {]}} are the R method to index arrays, their
-presence in a model formula signals indexing. The question is how to
-perform the correct calculations.
+Given that \texttt{{[}\ {]}} provides the R method to index arrays, the
+presence of square brackets in a model formula signals indexing. The
+question is how to perform the correct calculations.
 
 Our view is that inclusion of the indexing \textbf{within}
 \texttt{nls()} or similar tools introduces complexity that could be
@@ -1538,7 +1539,11 @@ returns quite limited information, and computes what is needed on an
 ``as and when'' basis. This follows a path that one of us (JN)
 established almost 50 years ago with the software that became Nash
 (\protect\hyperlink{ref-cnm79}{1979}), separating setup, solver, and
-post-solution analysis phases of computations.
+post-solution analysis phases of computations. There is, however, the
+wrapper \texttt{wrapnlsr()} that solves the nonlinear estimation problem
+with the solver of \texttt{nlsr} then calls \texttt{nls()} to build the
+object of class \texttt{nls} for which profile log-likelihood
+information can be computed.
 
 \hypertarget{acknowledgement}{%
 \section{Acknowledgement}\label{acknowledgement}}
@@ -1546,8 +1551,9 @@ post-solution analysis phases of computations.
 Hans Werner Borchers has been helpful in developing the proposal for
 this project and in comments on this and related work. Heather Turner
 co-mentored the project and helped guide the progress of the work.
-Exchanges with Fernando Miguez helped to clarify aspects of selfStart
-models and improve package \texttt{nlsr} in that respect.
+Exchanges with Fernando Miguez helped to clarify aspects of
+\texttt{selfStart} models and improve package \texttt{nlsr} in that
+respect.
 
 \hypertarget{references}{%
 \section*{References}\label{references}}
