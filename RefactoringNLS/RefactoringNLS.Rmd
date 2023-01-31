@@ -1,5 +1,5 @@
 ---
-title: "Refactoring the `nls()` function in R"
+title: "Refactoring `nls()`: a constructive critique"
 author: 
    - John C. Nash \thanks{ retired professor, Telfer School of Management, University of Ottawa}
    - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian Institute of Technology, Kanpur}
@@ -33,7 +33,7 @@ the code base that provides the functionality `nls()` claims to offer.
 Our work suggests that the
 existing code makes maintenance and improvement very difficult,
 with legacy applications and examples blocking some important updates.
-Discussion of these matters is relevant to improving R generally, as
+Discussion of these matters is relevant to improving R generally as
 well as its nonlinear estimation tools.
 
 # The `nls()` function: strengths and shortcomings
@@ -54,7 +54,7 @@ nonlinear models that are expressed as **formulas**. In particular, we note that
 - permits parameters to be indexed over a set of related data
 - produces measures of variability (i.e., standard error estimates) for the estimated parameters
 - has related profiling capabilities for exploring the likelihood surface as parameters are changed
-- links to a number of pre-coded ("selfStart") models 
+- links to a number of pre-coded (`selfStart`) models 
 
 With such a range of features and long history, the code has become untidy 
 and overly patched. It is, to
@@ -106,7 +106,7 @@ with a default value of zero. Setting it to a small number -- 1.0 is
 a reasonable choice --
 allows small-residual problems (i.e., near-exact fits) to be dealt with easily. We call this the
 **safeguarded relative offset convergence criterion**. The default value gives the legacy behaviour.
-We are pleased to note that this improvement is now in the R distributed code as of version 4.1.0.
+We are pleased to note that this improvement is now in the R distributed code since version 4.1.0.
 
 <!-- ### Example of a small-residual problem -->
 
@@ -261,7 +261,7 @@ general use.
 
 The Jacobian used by `nlsr::nlxb()` is, by default, computed from analytic expressions, 
 while that
-of `nls()` mostly uses a numerical approximation. Some selfStart models do provide
+of `nls()` mostly uses a numerical approximation. Some `selfStart` models do provide
 "gradient" information. `minpack.lm::nlsLM()` invokes `numericDeriv()` in its local 
 version of `nlsModel()`, but it appears to use an internal approximate Jacobian code from 
 the original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
@@ -281,7 +281,7 @@ can lead to different behaviour, though in our experience differences are usuall
   found a solution, though it can be debated whether such lucky accidents can be
   taken as an advantage.
 
-Note that the selfStart models in the base R `./src/library/stats/R/zzModels.R` file 
+Note that the `selfStart` models in the base R `./src/library/stats/R/zzModels.R` file 
 and in package `nlraa` (@MiguezNLRAA2021) may
 provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines
 each model, and these Jacobians may be the analytic forms. The `nls()` function, after
@@ -289,7 +289,7 @@ computing the "right hand side" or `rhs` of the residual, then checks to see if 
 "gradient" attribute is defined, and, if not, uses `numericDeriv` to compute a Jacobian
 into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()`
 functions. The use of analytic Jacobians
-almost certainly contributes to the good performance of `nls()` on selfStart models.
+almost certainly contributes to the good performance of `nls()` on `selfStart` models.
 
 ## Feature: Weights on observations
 
@@ -340,7 +340,7 @@ rows so you won't as easily be able to compare.
 values are present.
 
 Our concern with `na.action` is that users may be unaware of the effects of an option
-setting they may not even be aware has been set. Is `na.fail` a safer default?
+setting they may not even be aware has been set. Should `na.fail` be the default?
 
 ## Feature: model frame
 
@@ -371,19 +371,19 @@ operation is as they intend.
 ## Feature: missing start vector and self-starting models
 
 Nonlinear estimation algorithms are almost all iterative and need a set of starting
-parameters. `nls()` offers a special class of modeling functions called **selfStart** 
+parameters. `nls()` offers a special class of modeling functions called **`selfStart`** 
 models. There are a number of these in base R (`./src/library/stats/R/zzModels.R`)
 and others in R packages such as CRAN package `nlraa` (@MiguezNLRAA2021), as well as 
-the now-archived package `NRAIA`. Unfortunately, some **selfStart** codes
+the now-archived package `NRAIA`. Unfortunately, some **`selfStart`** codes
 entangle the calculation of starting values for parameters
 with the particulars of the `nls()` code. Though there is a `getInitial()` function,
 this is not easy to use to simply compute the initial parameter estimates outside of
 `nls()`, in part 
 because it may call that function. Such circular references are, in our view, dangerous.
-Moreover, we believe that it would be helpful to have selfStart models that allow
+Moreover, we believe that it would be helpful to have `selfStart` models that allow
 users to explicitly provide values other than those suggested for the starting parameters.
 
-Other concerns are revealed by the example below. Here, the `SSlogis` selfStart function 
+Other concerns are revealed by the example below. Here, the `SSlogis` `selfStart` function 
 is used to generate a set
 of initial parameters for a 3-parameter logistic curve. The form used by `SSlogis`
 is $y \,\sim\, Asym\,/\, (1 \,+\, exp((xmid\,-\,tt)\,/\,scal))$, but we show how the starting parameters
@@ -439,7 +439,7 @@ wonder why the programmers have chosen to save so many quantities in "hidden"
 variables, i.e., with names preceded by ".". These are then not displayed by the `ls()`
 command, making them difficult to access.
 
-In the event that a selfStart model is not available, `nls()` sets all the starting parameters 
+In the event that a `selfStart` model is not available, `nls()` sets all the starting parameters 
 to 1. This is, in our view, tolerable, but could be improved by using a set of values
 that are all slightly different, which, in the case of the example model $y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)$
 would avoid a singular Jacobian because $b$ and $d$ were equal in value. 
@@ -491,10 +491,10 @@ could be provided quite simply instead of all 1's.
 <!-- SSweibull       - Weibull model for growth curve data -->
 <!-- ``` -->
 
-### Strategic issues in selfStart models
+### Strategic issues in `selfStart` models
 
 By providing starting values that are likely to be reasonable and by including 
-Jacobian code in the selfStart model code, some of the deficiencies of the 
+Jacobian code in the `selfStart` model code, some of the deficiencies of the 
 Gauss-Newton algorithm are mitigated. However, creating such functions is a lot 
 of work, and their
 documentation (file `./src/library/stats/man/selfStart.Rd`) is quite complicated.
@@ -588,7 +588,7 @@ ls(result$model)
 and if there is an element called `xdata`, it can be accessed as `result$model$xdata`.
 
 Let us compare the `nls()` result with that from 
-`nlsr::nlxb()`, with ostensibly solves the same problem:
+`nlsr::nlxb()`, which ostensibly solves the same problem:
 
 
 >`coefficients`    A named vector giving the parameter values at the supposed solution.
@@ -624,7 +624,7 @@ explicitly returns the sum of squares as well as the residual vector and Jacobia
 The counts of evaluations are also returned.
 (Note that the singular values of the Jacobian are
 actually computed in the `print` and `summary` methods for the result.) 
-As we made our comparisons, We noted several potential updates to the `nlsr` documentation
+As we made our comparisons, we noted several potential updates to the `nlsr` documentation
 as well as that for `nls()`.
 
 
@@ -693,7 +693,7 @@ useful to R users.
 ## Feature: partially linear models and their specification
 
 The variable projection method (@Golub1973, @OlearyRust13) is generally much more 
-effective then general approaches in finding good solutions to nonlinear least squares 
+effective than general approaches in finding good solutions to nonlinear least squares 
 problems when some of the parameters appear linearly. However, setting up the 
 calculations, that is, identifying which parameters are linear, is not a trivial
 task. 
@@ -703,7 +703,7 @@ solver tools. Unfortunately, R allows multiple approaches within different
 modeling tools, and within `nls()` itself. This is highlighted by the case of
 partially linear models.
 
-The nonlinear modeling model specifications are, of course, a development of linear ones.
+The nonlinear modeling specifications are, of course, a development of linear ones.
 Unfortunately, the explicit model `y ~ a * x + b` does not work with the linear modeling 
 function `lm()`, which requires this model to be specified as `y ~ x`.
 
@@ -785,7 +785,6 @@ withAutoprint({
   ## by the previously fitted model.
   ## Note that with indexed parameters, the starting values must be
   ## given in a list (with names):
-  ## ?? but why use b here AND in the new formula??
   b <- coef(musc.1)
   musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), data=mm,
                 start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1]))
@@ -841,7 +840,8 @@ print(anlxb1)
 anlsLM1b <- nlsLM(wmods, start = st, data = wf, lower = c(0, 0, 0), upper = c(2, 6, 3))
 cat("\n"); cat("using minpack.lm::nlsLM():")
 print(anlsLM1b)
-anlsb<-nls(wmods, start = st, data = wf, algorithm = "port", lower = c(0, 0, 0), upper = c(2, 6, 3))
+anlsb<-nls(wmods, start = st, data = wf, algorithm = "port", 
+           lower = c(0, 0, 0), upper = c(2, 6, 3))
 cat("Using nls with 'port':")
 print(anlsb)
 ```
@@ -988,12 +988,13 @@ Indexed models clearly have a place in some areas of research.
 <!-- We need to be able to process models, as the example above, where the -->
 <!-- model formula is  -->
 We need to be able to process models such as 
-`Length ~ a[Strip] + b[Strip] * exp(-Conc / th)` where `Strip` is the index. Data
+`Length ~ a[Strip] + b[Strip] * exp(-Conc / th)`, where `Strip` is the index. Data
 `Length` and `Conc` are available for all observations and parameter `th` applies
 to every fitted point, but `a[Strip]` and `b[Strip]` apply only to data indexed, which
 could be an experimental run number, or some other categorization. 
 
-Given that `[ ]` are the R method to index arrays, their presence in a model
+Given that `[ ]` provides the R method to index arrays, the presence of square
+brackets in a model
 formula signals indexing. The question is how to perform the correct calculations.
 
 <!-- While tedious (??maybe dummies or fastdummies packages make it less so?),  -->
@@ -1248,7 +1249,10 @@ iteration can be executed and other statistical information such as profiles can
 computed, while `nlxb()` returns quite limited information, and 
 computes what is needed on an "as and when" basis. This follows a path that one of us
 (JN) established almost 50 years ago with the software that became @cnm79, separating
-setup, solver, and post-solution analysis phases of computations. 
+setup, solver, and post-solution analysis phases of computations. There is, however,
+the wrapper `wrapnlsr()` that solves the nonlinear estimation problem with the solver
+of `nlsr` then calls `nls()` to build the object of class `nls` for which profile log-likelihood
+information can be computed.
 <!-- Here, that last  -->
 <!-- phase is not part of `nlxb()`, but is the domain of other functions in the `nlsr` -->
 <!-- package. -->
@@ -1283,6 +1287,9 @@ setup, solver, and post-solution analysis phases of computations.
 Hans Werner Borchers has been helpful in developing the proposal for this project
 and in comments on this and related work. Heather Turner co-mentored the project 
 and helped guide the progress of the work. Exchanges with Fernando Miguez helped to
-clarify aspects of selfStart models and improve package `nlsr` in that respect.
+clarify aspects of `selfStart` models and improve package `nlsr` in that respect.
+Colin Gillespie (package `benchmarkme`) has been helpful in guiding our attempts
+to succinctly summarize computing environments.
+
 
 # References
