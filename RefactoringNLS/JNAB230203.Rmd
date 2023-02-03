@@ -35,7 +35,6 @@ output:
     self_contained: yes
     toc: no
 bibliography: ../BibSupport/ImproveNLS.bib
-
 ---
 
 ```{r setup, include=FALSE}
@@ -134,7 +133,7 @@ are reached. Generally we prefer larger limits than the default `maxiter = 50` o
 but that may reflect the more difficult problems we have encountered because 
 users consult us when standard tools have given unsatisfactory results. 
 
-<<<<<<< HEAD
+
 ## Feature: Failure when Jacobian is computationally singular
 
 This refers to the infamous "singular gradient" termination message of `nls()`. 
@@ -227,8 +226,15 @@ into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()
 functions. The use of analytic Jacobians
 almost certainly contributes to the good performance of `nls()` on `selfStart` models.
 
-=======
->>>>>>> be5ecbd75b81b226ad5f1885d89d4cfba5047b54
+
+
+## Feature: Weights on observations
+
+`nls()`, `nlsr::nlxb()` and `minpack.lm::nlsLM()` all have a `weights` argument that
+specifies a vector of weights the same length as the number of residuals. Each residual
+is multiplied by the square root of the corresponding weight. The values returned by the
+`residuals()` function are weighted, and the `fitted()` or `predict()` function are 
+used to compute raw residuals.
 
 
 # References
