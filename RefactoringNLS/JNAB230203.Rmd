@@ -595,6 +595,39 @@ nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
 nmod$resid()
 ```
 
+### Interim output from the "port" algorithm
+
+As the `nls()` **man** page states, when the "port" algorithm is used with the `trace` argument
+TRUE, the iterations display the objective function value which is 1/2 the sum of squares (or 
+deviance). It is likely that the trace display is embedded in the Fortran of the `nlminb`
+routine that is called to execute the "port" algorithm, but the factor of 2 discrepancy is nonetheless
+unfortunate for users. 
+
+### Failure to return best result achieved
+
+If `nls()` reaches a point where it cannot continue but has not found a point where the
+relative offset convergence criterion is met, it may simply exit, especially if a 
+"singular gradient" (singular Jacobian) is found. However, this may occur AFTER the 
+function has made considerable progress in reducing the sum of squared residuals. 
+<!-- An example is to be found in the `Tetra_1.R` example from the `nlsCompare` package. -->
+<!-- ?? AB: Are we far enough along to include reference? -->
+Here is an abbreviated example:
+
+```{r tetrarun}
+time <- c( 1,  2,  3,  4,  6 , 8, 10, 12, 16)
+conc <- c( 0.7, 1.2, 1.4, 1.4, 1.1, 0.8, 0.6, 0.5, 0.3)
+NLSdata <- data.frame(time,conc)
+NLSstart <- c(lrc1 = -2, lrc2 = 0.25, A1 = 150, A2 = 50) # a starting vector (named!)
+NLSformula <- conc ~ A1 * exp(-exp(lrc1) * time) + A2 * exp(-exp(lrc2) * time)
+tryit <- try(nls(NLSformula, data = NLSdata, start = NLSstart, trace = TRUE))
+print(tryit)
+```
+
+Note that the sum of squares has been reduced from 61216 to 1.6211, but 
+unless `trace` is invoked, the user will not get any information about this.
+This almost trivial change to the `nls()` function could be 
+useful to R users.
+
 
 
 
