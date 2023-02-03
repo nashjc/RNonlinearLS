@@ -1,0 +1,125 @@
+---
+title: "Refactoring `nls()`: a constructive critique"
+date: "2023-02-03"
+abstract: >
+   Based on work for a Google Summer of Code project "Improvements to `nls()`",
+   we consider the features and limitations of the R function `nls()`
+   in the context of improving and rationalizing R tools for nonlinear regression.
+   Important considerations are the usability and  maintainability of
+   the code base that provides the functionality `nls()` claims to offer.
+   Our work suggests that the
+   existing code makes maintenance and improvement very difficult,
+   with legacy applications and examples blocking some important updates.
+   Discussion of these matters is relevant to improving R generally as
+   well as its nonlinear estimation tools.
+
+draft: true
+author:  
+  # see ?rjournal_article for more information
+    - name: John C. Nash
+      affiliation: retired professor, University of Ottawa
+      address:
+      - Telfer School of Management
+      - Ottawa ON Canada K1N 6N5
+      orcid: 0000-0002-2762-8039
+      email: profjcnash@gmail.com
+    - name: Arkajyoti Bhattacharjee
+      affiliation: Indian Institute of Technology
+      address:
+      - Department of Mathematics and Statistics
+      - Kanpur
+      email: arkastat98@gmail.com
+type: package
+output: 
+  rjtools::rjournal_web_article:
+    self_contained: yes
+    toc: no
+bibliography: ../BibSupport/ImproveNLS.bib
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+<<<<<<< HEAD
+# The `nls()` function: strengths and shortcomings
+
+`nls()` is the tool in base R, the primary software software distribution
+from the Comprehensive R Archive Network (*https://cran.r-project.org*),
+for estimating nonlinear statistical models. The function dates to the 1980s and the work
+related to @bateswatts in S (see *https://en.wikipedia.org/wiki/S_%28programming_language%29*). 
+
+The `nls()` function has a remarkable and comprehensive set of capabilities for estimating
+nonlinear models that are expressed as **formulas**. In particular, we note that it
+
+- handles formulas that include R functions, even ones which call calculations in
+  other programming languages
+- allows data to be weighted or subset
+- can estimate bound constrained parameters
+- provides a mechanism for handling partially linear models
+- permits parameters to be indexed over a set of related data
+- produces measures of variability (i.e., standard error estimates) for the estimated parameters
+- has related profiling capabilities for exploring the likelihood surface as parameters are changed
+- links to a number of pre-coded (`selfStart`) models 
+
+With such a range of features and long history, the code has become untidy 
+and overly patched. It is, to
+our mind, essentially unmaintainable. Moreover, its underlying methods can and should be improved, 
+as we suggest below. 
+
+## Feature: Convergence and termination tests (FIXED)
+
+A previous issue with `nls()` that prevented it from providing parameter estimates for zero-residual
+(i.e., perfect fit) data was corrected thanks to suggestions by one of us. 
+
+In the manual page for `nls()` in R 4.0.0 there is the warning:
+
+>  **Do not use `nls` on artificial "zero-residual" data.**
+
+>  The `nls` function uses a relative-offset convergence criterion
+  that compares the numerical imprecision at the current parameter
+  estimates to the residual sum-of-squares.  This performs well on data of
+  the form 
+  
+>  $$  y = f(x, \theta) + eps $$
+  
+>  (with `var(eps) > 0`).  It fails to indicate convergence on data of the form
+
+>  $$  y = f(x, \theta)  $$ 
+  
+>  because the criterion amounts to comparing two components of the round-off 
+  error.
+
+>  If you wish to test `nls` on artificial data please add a noise component, 
+  as shown in the example below.
+
+This amounted to admitting R cannot solve well-posed problems unless data is polluted
+with errors. 
+
+This issue can be easily resolved. The "termination test" for the **program** rather than for 
+"convergence" of the underlying **algorithm** is the Relative Offset Convergence Criterion 
+(see @BatesWatts81). This projects the proposed step in the parameter vector on the gradient 
+and estimates how much the sum of squares loss function should decrease. This estimate is divided 
+by the current size of the loss function to avoid scale issues.
+When we have "converged", the estimated
+decrease is very small. However, with small residuals,
+the sum of squares loss function is (almost) zero and we get the possibility of a 
+zero-divide failure. 
+
+Adding a small quantity to the loss function before dividing avoids trouble. 
+In 2021, one of us (J. Nash) proposed that `nls.control()` have an additional parameter `scaleOffset` 
+with a default value of zero. Setting it to a small number -- 1.0 is 
+a reasonable choice --
+allows small-residual problems (i.e., near-exact fits) to be dealt with easily. We call this the
+**safeguarded relative offset convergence criterion**. The default value gives the legacy behaviour.
+We are pleased to note that this improvement is now in the R distributed code since version 4.1.0.
+
+# References
+=======
+>>>>>>> 1cf5a33b02ac762334dbc361314d6697eb07cbb2
+
+
+?? to sort out
+- note that AB now at Ohio State
+- ORCID for AB?
