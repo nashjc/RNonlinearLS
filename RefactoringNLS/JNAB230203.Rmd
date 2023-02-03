@@ -684,6 +684,62 @@ fm2a <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
 summary(fm2a)
 ```
 
+## Feature: indexed parameters
+
+Indexed parameters -- those whose names have subscripts on some element that
+is part of the coefficient list -- 
+are a useful idea to simplify model specification in some cases. However, they
+are also a focus of trouble. 
+
+The **man** file for `nls()` includes the following example of a situation in which
+parameters are indexed. It also uses the "plinear" option as an added complication.
+
+Here we use a truncated version of the example to save display space.
+
+```{r nlsindx1}
+## The muscle dataset in MASS is from an experiment on muscle
+## contraction on 21 animals.  The observed variables are Strip
+## (identifier of muscle), Conc (Cacl concentration) and Length
+## (resulting length of muscle section).
+if(! requireNamespace("MASS", quietly = TRUE)) stop("Need MASS pkg")
+mm<- MASS::muscle[1:12,] # take only 1st few values of Strip (TRUNCATION OF EXAMPLE)
+mm<-droplevels(mm) # remove unused levels after truncation
+nlev <- nlevels(mm)
+withAutoprint({
+  ## The non linear model considered is
+  ##       Length = alpha + beta*exp(-Conc/theta) + error
+  ## where theta is constant. For now alpha and beta do NOT vary with Strip.
+  with(mm, table(Strip)) # 2, 3 or 4 obs per strip
+  nl <- nlevels(mm$Strip)
+  ## We first use the plinear algorithm to fit an overall model,
+  ## ignoring that alpha and beta might vary with Strip.
+  musc.1 <- nls(Length ~ cbind(1, exp(-Conc/th)), mm,
+                start = list(th = 1), algorithm = "plinear")
+  summary(musc.1)
+
+  ## Then we use nls' indexing feature for parameters in non-linear
+  ## models to use the conventional algorithm to fit a model in which
+  ## alpha and beta vary with Strip.  The starting values are provided
+  ## by the previously fitted model.
+  ## Note that with indexed parameters, the starting values must be
+  ## given in a list (with names):
+  b <- coef(musc.1)
+  musc.2 <- nls(Length ~ a[Strip] + b[Strip]*exp(-Conc/th), data=mm,
+                start = list(a = rep(b[2], nl), b = rep(b[3], nl), th = b[1]))
+  summary(musc.2)
+})
+```
+
+Running the example reveals that the answers for the parameters are NOT indexed. 
+<!-- e.g. `coef(musc.2)` is a single level vector of parameters.  -->
+That is, we do not see `a[1], a[2], a[3]` but `a1, a2, a3`. 
+<!-- This is because the model -->
+<!-- must integrate all the parameters because `th` is a common parameter across the index `Strip`. -->
+This is no doubt because programming for indexed parameters is extremely challenging.
+<!-- However, we believe the current structure could cause confusion and error, and  -->
+<!-- propose an alternative approach below. -->
+
+
 
 
 
