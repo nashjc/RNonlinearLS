@@ -430,6 +430,25 @@ could be provided quite simply instead of all 1's.
 <!-- ``` -->
 
 
+### Strategic issues in `selfStart` models
+
+By providing starting values that are likely to be reasonable and by including 
+Jacobian code in the `selfStart` model code, some of the deficiencies of the 
+Gauss-Newton algorithm are mitigated. However, creating such functions is a lot 
+of work, and their
+documentation (file `./src/library/stats/man/selfStart.Rd`) is quite complicated.
+We believe that the focus should be placed on getting good initial parameters,
+that is `getInitial()` function, though avoiding the current calls back to `nls()`.
+Interactive tools, such as "visual fitting" (@nash1996nonlinear) might be
+worth considering.
+
+We also note that the introduction of `scaleOffset` in R 4.1.1 to deal with the 
+convergence test for small residual problems now requires that the `getInitial()`
+function have dot-arguments (`...`) in its argument list. This illustrates the
+entanglement of many features in `nls()`.
+
+
+
 # References
 
 ?? to sort out
