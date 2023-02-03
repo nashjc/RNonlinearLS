@@ -566,6 +566,35 @@ actually computed in the `print` and `summary` methods for the result.)
 As we made our comparisons, we noted several potential updates to the `nlsr` documentation
 as well as that for `nls()`.
 
+### Weights in returned functions from nls()
+
+As already noted, the function `resid()` (an alias for `residuals()`) is WEIGHTED, as are those in the
+structured object `m` returned by `nls()` or `minpack.lm::nlsLM`,
+e.g., `ans$m$resid()`. The function `nlsModel()`, which we have had to extract from the 
+base R code and explicitly `source()` because it is not exported to the working namespace,
+allows us to compute residuals for particular coefficient sets.
+
+```{r nlswtx, echo=TRUE}
+weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
+          38.558, 50.156, 62.948, 75.995, 91.972)
+tt <- 1:12
+weeddf <- data.frame(tt, weed)
+wts <- 0.5^tt # simple weights
+frmlogis <- weed ~ Asym/(1 + exp((xmid - tt)/scal))
+Asym<-1; xmid<-1; scal<-1
+nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal)) # UNWEIGHTED
+nowt
+nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does NOT take coefficients.
+usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
+usewt
+usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
+source("nlsModel.R")
+nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
+nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
+nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
+nmod$resid()
+```
+
 
 
 
