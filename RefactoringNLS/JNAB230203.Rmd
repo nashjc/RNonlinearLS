@@ -226,8 +226,6 @@ into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()
 functions. The use of analytic Jacobians
 almost certainly contributes to the good performance of `nls()` on `selfStart` models.
 
-
-
 ## Feature: Weights on observations
 
 `nls()`, `nlsr::nlxb()` and `minpack.lm::nlsLM()` all have a `weights` argument that
@@ -235,6 +233,22 @@ specifies a vector of weights the same length as the number of residuals. Each r
 is multiplied by the square root of the corresponding weight. The values returned by the
 `residuals()` function are weighted, and the `fitted()` or `predict()` function are 
 used to compute raw residuals.
+
+
+## Feature: Subsetting
+
+`nls()` accepts an argument `subset`. This acts through the mediation of
+`model.frame` and is not clearly obvious in the source code files `/src/library/stats/R/nls.R` and 
+`/src/library/stats/src/nls.C`. 
+
+While the implementation of subset at the level of the call to `nls()` has a certain
+attractiveness, it does mean that the programmer of the solver needs to be aware of the
+source (and value) of objects such as the data, residuals and Jacobian. This is overly
+complicated. By preference, 
+we would implement subsetting by means of zero-value weights, with observation counts
+(and degrees of freedom) computed via the numbers of non-zero weights. Alternatively,
+we would extract a working dataframe from the relevant elements in the original.
+
 
 
 # References
