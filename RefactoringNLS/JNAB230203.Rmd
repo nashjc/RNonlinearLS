@@ -740,6 +740,59 @@ This is no doubt because programming for indexed parameters is extremely challen
 <!-- propose an alternative approach below. -->
 
 
+## Feature: bounds on parameters
+
+There are many situations where the context of a problem constrains the values of parameters.
+For example, one of us was asked many years ago to estimate a model where one parameter estimate
+was negative. The client complained "But that is supposed to be the number of grain elevators
+in Saskatchewan". The number should have been a positive integer, and likely less
+than a few thousand.
+
+`nls()` can impose bounds on parameters, but only if the `port` algorithm is used. Unfortunately,
+the manual states 
+
+> The `algorithm = "port"` code appears unfinished, and does not even check that the starting 
+  value is within the bounds. Use with caution, especially where bounds are supplied.
+
+This is clearly unsatisfactory for general use, but does find bounded solutions. 
+Inclusion of bounds on parameters in nonlinear least squares computations is relatively 
+straightforward, and it is part of the default method
+for package `nlsr`. Package `minpack.lm` also includes provision for bounds, but the following
+script, which we do not run here for reasons of space, shows that it does not find a
+good solution for the scaled Hobbs test problem.
+
+```{r chkbound}
+# bhobbsX.R ## bounded formula specification of problem using Hobbs Weed problem
+weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
+          38.558, 50.156, 62.948, 75.995, 91.972)
+tt <- 1:12
+wf <- data.frame(y = weed, tt = tt)
+st <- c(b1 = 1, b2 = 1, b3 = 1) # a default starting vector (named!)
+wmods <- y ~ 100 * b1 / (1 + 10 * b2 * exp(-0.1 * b3 * tt)) ## Scaled model
+require(minpack.lm)
+# Hobbs scaled problem with bounds, formula specification
+anlxb1 <- nlxb(wmods, start = st, data = wf, lower = c(0, 0, 0), upper = c(2, 6, 3))
+cat("Using nlsr::nlxb():")
+print(anlxb1)
+## nlsLM seems NOT to work properly with bounds
+anlsLM1b <- nlsLM(wmods, start = st, data = wf, lower = c(0, 0, 0), upper = c(2, 6, 3))
+cat("\n"); cat("using minpack.lm::nlsLM():")
+print(anlsLM1b)
+anlsb<-nls(wmods, start = st, data = wf, algorithm = "port", 
+           lower = c(0, 0, 0), upper = c(2, 6, 3))
+cat("Using nls with 'port':")
+print(anlsb)
+```
+
+### Philosophical considerations
+
+Bounds on parameters raise some interesting and difficult questions about how uncertainty
+in parameter estimates should be computed or reported. That is, the traditional "standard
+errors" are generally taken to imply symmetric intervals about the point estimate in which
+the parameter may be expected to be found with some probability under certain assumptions.
+Bounds change those assumptions. Hence, `nlsr::nlxb()` does not compute standard
+errors nor their derived statistics when bounds are active.
+
 
 
 
