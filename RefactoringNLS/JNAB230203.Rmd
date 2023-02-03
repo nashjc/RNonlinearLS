@@ -793,6 +793,65 @@ the parameter may be expected to be found with some probability under certain as
 Bounds change those assumptions. Hence, `nlsr::nlxb()` does not compute standard
 errors nor their derived statistics when bounds are active.
 
+## Issue: code structure and documentation for maintenance 
+
+The `nls()` code is structured in a way that inhibits both maintenance and improvement.
+In particular, the iterative setup is such that introduction of Marquardt stabilization
+is not easily available. To obtain performance when the code was written, a large portion
+was written in C with consequent calls and returns that
+severely complicate the code. Over time, R has become much more efficient on modern computers, and
+the need to use compiled C and Fortran is less critical. Moreover, the burden for maintenance
+could be reduced by moving code entirely to R. 
+
+While R and its packages are generally very well documented for usage, that documentation
+rarely extends as far as it might for code maintenance. 
+The paucity of such documentation is exacerbated by the mixed R/C/Fortran code base,
+where seemingly trivial differences in things like representation of numbers or
+base index for arrays lead to traps for unwary programmers.
+
+<!-- For `nls()` the concern is demonstrated by a short email query from John Nash -->
+<!-- to Doug Bates and his reply. -->
+<!-- This is NOT a criticism of Prof. Bates' (or any other) work, but a reflection on  -->
+<!-- how difficult it is to develop code in this subject area and to keep it maintainable.  -->
+<!-- We have experienced similar loss of understanding for some of our own codes. -->
+<!--     ... -->
+<!--     https://gitlab.com/nashjc/improvenls/-/blob/master/Croucher-expandednlsnoc.R -->
+<!--     ... has the test problem and the expanded code. Around line 367 is where we are -->
+<!--     scratching our heads. The function code (from nlsModel()) is in the commented  -->
+<!--     lines below the call. This is -->
+<!--           # > setPars -->
+<!--           # function(newPars) { -->
+<!--           #   setPars(newPars) -->
+<!--           #   resid <<- .swts * (lhs - (rhs <<- getRHS())) # envir = thisEnv {2 x} -->
+<!--           #   dev   <<- sum(resid^2) # envir = thisEnv -->
+<!--           #   if(length(gr <- attr(rhs, "gradient")) == 1L) gr <- c(gr) -->
+<!--           #   QR <<- qr(.swts * gr) # envir = thisEnv -->
+<!--           #   (QR$rank < min(dim(QR$qr))) # to catch the singular gradient matrix -->
+<!--           # } -->
+<!--     I'm anticipating that we will be able to set up a (possibly inefficient) code -->
+<!--     with documentation that will be easier to follow and test, then gradually figure -->
+<!--     out how to make it more efficient. -->
+<!--     The equivalent from minpack.lm is -->
+<!--     setPars = function(newPars) { -->
+<!--                 setPars(newPars) -->
+<!--                 assign("resid", .swts * (lhs - assign("rhs", getRHS(), -->
+<!--                     envir = thisEnv)), envir = thisEnv) -->
+<!--                 assign("dev", sum(resid^2), envir = thisEnv) -->
+<!--                 assign("QR", qr(.swts * attr(rhs, "gradient")), envir = thisEnv) -->
+<!--                 return(QR$rank < min(dim(QR$qr))) -->
+<!--             } -->
+<!--     In both there is the recursive call, which must have a purpose I don't understand. -->
+<!-- The reply was -->
+<!--     I'm afraid that I don't know the purpose of the recursive call either.   -->
+<!--     I know that I wrote the code to use a closure for the response, covariates, etc.,  -->
+<!--     but I don't recall anything like a recursive call being necessary. -->
+<!--      I don't think I will be of much help.  My R skills have atrophied to the point  --> 
+<!--      where I wouldn't even know how to start exploring what is happening in the first  -->
+<!--      call as opposed to the recursive call. --> 
+<!--  ``` --> 
+
+# Goals and progress of our effort to improve `nls()`
+
 
 
 
