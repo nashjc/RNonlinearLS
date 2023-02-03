@@ -1,0 +1,49 @@
+---
+title: "Refactoring `nls()`: a constructive critique"
+date: "2023-02-03"
+abstract: >
+   Based on work for a Google Summer of Code project "Improvements to `nls()`",
+   we consider the features and limitations of the R function `nls()`
+   in the context of improving and rationalizing R tools for nonlinear regression.
+   Important considerations are the usability and  maintainability of
+   the code base that provides the functionality `nls()` claims to offer.
+   Our work suggests that the
+   existing code makes maintenance and improvement very difficult,
+   with legacy applications and examples blocking some important updates.
+   Discussion of these matters is relevant to improving R generally as
+   well as its nonlinear estimation tools.
+
+draft: true
+author:  
+  # see ?rjournal_article for more information
+    - name: John C. Nash
+      affiliation: retired professor, University of Ottawa
+      address:
+      - Telfer School of Management
+      - Ottawa ON Canada K1N 6N5
+      orcid: 0000-0002-2762-8039
+      email: profjcnash@gmail.com
+    - name: Arkajyoti Bhattacharjee
+      affiliation: Indian Institute of Technology
+      address:
+      - Department of Mathematics and Statistics
+      - Kanpur
+      email: arkastat98@gmail.com
+type: package
+output: 
+  rjtools::rjournal_web_article:
+    self_contained: yes
+    toc: no
+bibliography: ../BibSupport/ImproveNLS.bib
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+
+
+?? to sort out
+- note that AB now at Ohio State
+- ORCID for AB?
