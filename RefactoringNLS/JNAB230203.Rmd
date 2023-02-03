@@ -250,6 +250,35 @@ we would implement subsetting by means of zero-value weights, with observation c
 we would extract a working dataframe from the relevant elements in the original.
 
 
+## Feature: na.action
+
+`na.action` is an argument to the `nls()` function, but it does not appear obviously in the
+source code, often being handled behind the scenes after referencing the option `na.action`.
+A useful, but possibly dated, description is given in:
+*https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/*.
+
+The typical default action, which can be seen by using the command `getOption("na.action")`
+is `na.omit`. This option essentially omits from computations any observations
+containing missing values (i.e. any row of a data frame containing an NA). 
+`na.exclude` does much of the same for computations, but keeps the rows with NA elements so 
+that predictions are in the correct row position. We recommend that workers actually test 
+output to verify the behaviour is as wanted.
+
+A succinct description of the issue is given in: *https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r*
+where the "Answer" states
+
+> The only benefit of `na.exclude` over `na.omit` is that the former will retain the 
+original number of rows in the data. This may be useful where you need to retain the 
+original size of the dataset - for example it is useful when you want to compare 
+predicted values to original values. With `na.omit` you will end up with fewer 
+rows so you won't as easily be able to compare.
+
+`na.pass` simply passes on data "as is", while `na.fail` will essentially stop if any missing
+values are present.
+
+Our concern with `na.action` is that users may be unaware of the effects of an option
+setting they may not even be aware has been set. Should `na.fail` be the default?
+
 
 # References
 
