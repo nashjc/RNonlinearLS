@@ -42,7 +42,6 @@ bibliography: ../BibSupport/ImproveNLS.bib
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-<<<<<<< HEAD
 # The `nls()` function: strengths and shortcomings
 
 `nls()` is the tool in base R, the primary software software distribution
@@ -115,11 +114,122 @@ allows small-residual problems (i.e., near-exact fits) to be dealt with easily. 
 **safeguarded relative offset convergence criterion**. The default value gives the legacy behaviour.
 We are pleased to note that this improvement is now in the R distributed code since version 4.1.0.
 
-# References
-=======
->>>>>>> 1cf5a33b02ac762334dbc361314d6697eb07cbb2
 
+### More general termination tests
+
+The convergence criterion above, the principal termination control of `nls()`, leaves out 
+some possibilities that could
+be useful for some problems. The package `nlsr` (@nlsr2019manual) already offers both 
+the safeguarded relative offset test (**roffset**) as well as a **small sum of 
+squares** test (**smallsstest**) that compares the latest evaluated sum of squared
+(weighted) residuals to `e4` times the initial sum of squares, where
+`e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
+
+We note that `nls()` uses a termination test to stop after `maxiter` "iterations". 
+Unfortunately, the meaning of "iteration" varies among programs and requires 
+careful examination of the
+code. We prefer to use the number of times the residuals or the jacobian have
+been computed and put upper limits on these. Our codes exit (terminate) when these limits
+are reached. Generally we prefer larger limits than the default `maxiter = 50` of `nls()`,
+but that may reflect the more difficult problems we have encountered because 
+users consult us when standard tools have given unsatisfactory results. 
+
+## Feature: Failure when Jacobian is computationally singular
+
+This refers to the infamous "singular gradient" termination message of `nls()`. 
+A Google search of 
+
+```
+R nls "singular gradient"
+```
+
+gets over 4000 hits that are spread over some years. This could be because the 
+Jacobian is poorly approximated (see **Jacobian computation** below). However,
+it is common in nonlinear least squares computations that the Jacobian is very close
+to singular for some values of the model parameters. In such cases, we need to find
+an alternative algorithm to the Gauss-Newton iteration of `nls()`. The most common
+work-around is the Levenberg-Marquardt stabilization (see @Marquardt1963, @Levenberg1944, 
+@jn77ima), and versions of it have been implemented in packages `minpack.lm` and `nlsr`.
+In our work, we prepared experimental prototypes of `nls` that incorporate
+stabilization, but integration with all the features of `nls()` has proved difficult.
+
+Let us consider a 'singular gradient' example 
+*https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*.
+`nlsr::nlxb()` displays the singular values of the Jacobian, which confirm that the `nls()` error message is correct,
+but this is not helpful in obtaining a solution.
+
+```{r SESingGrad}
+reala <- -3; realb <- 5; realc <- 0.5; realr <- 0.7; realm <- 1 # underlying parameters
+x <- 1:11 # x values; 11 data points
+y <- reala + realb * realr^(x - realm) + realc * x # linear + exponential function
+testdat <- data.frame(x, y) # save in a data frame
+strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1) # give programs a good start
+jform <- y ~ a + b * r^(x - m) + c * x # Formula
+library(nlsr)
+linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = FALSE))
+linexp2 # Note singular values of Jacobian in rightmost column
+# We get an error with nls()
+linexp <- try(nls(jform, data = testdat, start = strt, trace = FALSE))
+```
+
+The Jacobian is essentially singular as shown by its singular
+values. Note that these are **displayed** by package `nlsr` in a single column in
+the output to provide a compact layout, but the values do **NOT** correspond to 
+the individual parameters in 
+whose row they appear; they are a property of the whole problem.
+
+## Feature: Jacobian computation
+
+`nls()`, with the `numericDeriv()` function, computes the Jacobian as the "gradient"
+attribute of the residual vector. This is implemented as a mix of R and C code, but
+we have created a rather more compact version entirely in R. 
+See *https://github.com/nashjc/RNonlinearLS/tree/main/DerivsNLS*.
+<!-- Code project. See the companion document **Jacobian Calculations for nls()** -->
+<!-- (?? need citation -- currently **DerivsNLS.pdf**). -->
+
+As far as we can understand the logic in `nls()`, the Jacobian computation during
+parameter estimation is carried out entirely within the called C-language program,
+and the R code function `numericDeriv()`, part of `./src/library/stats/R/nls.R`
+in the R distribution source code. This is used to provide Jacobian information in 
+the `nlsModel()` and `nlsModel.plinear()` functions, which are **not** exported for 
+general use.
+
+The Jacobian used by `nlsr::nlxb()` is, by default, computed from analytic expressions, 
+while that
+of `nls()` mostly uses a numerical approximation. Some `selfStart` models do provide
+"gradient" information. `minpack.lm::nlsLM()` invokes `numericDeriv()` in its local 
+version of `nlsModel()`, but it appears to use an internal approximate Jacobian code from 
+the original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
+can lead to different behaviour, though in our experience differences are usually minor.
+
+- A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a poorly
+  conditioned Jacobian and `nls()` fails with "singular gradient". 
+  Worse, numerical approximation to the Jacobian give the error
+  "singular gradient matrix at initial parameter estimates" for `minpack.lm::nlsLM`
+  so that the Marquardt stabilization is unable to take effect, while the analytic
+  derivatives of `nlsr::nlxb` give a solution. 
+
+- Karl Schilling (private communication) provided an example where a model specified
+  with the formula `y ~ a * (x ˆ b)` causes `nlsr::nlxb` to fail because the partial
+  derivative w.r.t. `b` is `a * (x^b * log(x))`. If there is data for which `x = 0`,
+  this is undefined. In such cases, we observed that `nls()` and `minpack.lm::nlsLM`
+  found a solution, though it can be debated whether such lucky accidents can be
+  taken as an advantage.
+
+Note that the `selfStart` models in the base R `./src/library/stats/R/zzModels.R` file 
+and in package `nlraa` (@MiguezNLRAA2021) may
+provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines
+each model, and these Jacobians may be the analytic forms. The `nls()` function, after
+computing the "right hand side" or `rhs` of the residual, then checks to see if the
+"gradient" attribute is defined, and, if not, uses `numericDeriv` to compute a Jacobian
+into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()`
+functions. The use of analytic Jacobians
+almost certainly contributes to the good performance of `nls()` on `selfStart` models.
+
+
+
+# References
 
 ?? to sort out
-- note that AB now at Ohio State
+- note that AB now at Ohio State?
 - ORCID for AB?
