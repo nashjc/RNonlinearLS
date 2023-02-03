@@ -447,6 +447,126 @@ convergence test for small residual problems now requires that the `getInitial()
 function have dot-arguments (`...`) in its argument list. This illustrates the
 entanglement of many features in `nls()`.
 
+## Issue: returned output of nls() and its documentation
+
+The output of `nls()` is an object of class "nls" which has the following structure:
+
+>A list of
+
+>`m` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  an `nlsModel` object incorporating the model.
+
+>`data`	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;the expression that was passed to `nls` as the data argument. The actual \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$  data values are present in the environment of the `m` components, e.g., \newline $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ `environment(m$conv)`.
+
+>`call` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the matched call with several components, notably `algorithm`.
+
+>`na.action` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the `"na.action"` attribute (if any) of the model frame.
+
+>`dataClasses` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $~$the `"dataClasses"` attribute (if any) of the "`terms`" attribute of the \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ model frame.
+
+>`model` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;if `model = TRUE`, the model frame.
+
+>`weights` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if `weights` is supplied, the weights.
+
+>`convInfo` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; a list with convergence information.
+
+>`control` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the control `list` used, see the `control` argument.
+
+>`convergence, message` &nbsp;for an `algorithm = "port"` fit only, a convergence code (`0` for  \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$convergence) and message.
+
+> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To use these is *deprecated*, as they are available from `convInfo` now.
+
+                  -----------------------------------------------------------
+
+<!-- ### Example output -->
+
+<!-- To illustrate, let us run the Croucher example. -->
+
+<!-- ```{r nlsoutx} -->
+<!-- # Croucher example -->
+<!-- xdata <- c(-2,-1.64,-1.33,-0.7,0,0.45,1.2,1.64,2.32,2.9) -->
+<!-- ydata <- c(0.699369,0.700462,0.695354,1.03905,1.97389,2.41143,1.91091,0.919576,-0.730975,-1.42001) -->
+<!-- p1<- 1; p2<-0.2; NLSstart<-list(p1=p1,p2=p2) -->
+<!-- NLSformula <- ydata ~ p1*cos(p2*xdata) + p2*sin(p1*xdata) -->
+<!-- NLSdata<-data.frame(xdata, ydata) -->
+<!-- # Try full output version of nls -->
+<!-- library(nlspkg) # use the packaged version of nls() -->
+<!-- result<-nls(NLSformula, data=NLSdata, start=NLSstart, model=TRUE) -->
+<!-- # We can display the result with several commands -->
+<!-- # str(result) -- displays large amount of material - suppressed here -->
+<!-- #    as it is too wide for the page -->
+<!-- # result # displays the object -->
+<!-- # ls(result) # to list the elements of the output -->
+<!-- # ls(result$m) # and in particular the "m" object -->
+<!-- ``` -->
+
+<!-- ### Concerns with content of the nls result object -->
+
+The `nls` object contains some elements that are awkward to produce by other algorithms,
+but some information that would be useful is not presented in a clear manner. Moreover, the
+complexity of the object is a challenge to users.
+
+In the following, we use `result` as the returned object from `nls()`.
+
+The `data` return element is an R symbol. To actually access the data from this 
+element, we need to use the syntax:
+
+```
+eval(parse(text=result$data))
+```
+
+However, if the call is made with `model=TRUE`, then there is a returned element
+`model` which contains the data, and we can list its contents using:
+
+```
+ls(result$model)
+```
+
+and if there is an element called `xdata`, it can be accessed as `result$model$xdata`.
+
+Let us compare the `nls()` result with that from 
+`nlsr::nlxb()`, which ostensibly solves the same problem:
+
+
+>`coefficients`    A named vector giving the parameter values at the supposed solution.
+
+>`ssquares` $~~~~~$ The sum of squared residuals at this set of parameters.
+
+>`resid` $~~~~~~~~~~$ The residual vector at the returned parameters.
+
+>`jacobian` $~~~~~$ The jacobian matrix (partial derivatives of residuals w.r.t. the 
+                parameters) at the \newline
+$~~~~~~~~~~~~~~~~~~~~$ returned parameters.
+
+>`feval` $~~~~~~~~~~$ The number of residual evaluations (sum of squares computations) used.
+
+>`jeval` $~~~~~~~~~~$ The number of Jacobian evaluations used.
+
+
+However, actually looking at the structure of a returned result gives a list of 11
+items. The extra 5 are:
+
+```
+ $ lower       : num [1:3] -Inf -Inf -Inf
+ $ upper       : num [1:3] Inf Inf Inf
+ $ maskidx     : int(0) 
+ $ weights     : NULL
+ $ formula     :Class 'formula'  language y ~ Asym/(1 + exp((xmid - tt)/scal))
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ - attr(*, "class")= chr "nlsr"
+```
+The result object from `nlsr::nlxb()` is still much smaller than the one `nls()` returns. 
+Moreover, `nlxb`
+explicitly returns the sum of squares as well as the residual vector and Jacobian. 
+The counts of evaluations are also returned.
+(Note that the singular values of the Jacobian are
+actually computed in the `print` and `summary` methods for the result.) 
+As we made our comparisons, we noted several potential updates to the `nlsr` documentation
+as well as that for `nls()`.
+
+
 
 
 # References
