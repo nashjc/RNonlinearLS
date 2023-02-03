@@ -852,6 +852,383 @@ base index for arrays lead to traps for unwary programmers.
 
 # Goals and progress of our effort to improve `nls()`
 
+## Code rationalization and documentation
+
+When we started *Improvements to nls()* for the 2021 Google Summer of Code we wanted:
+
+- to provide a packaged version of `nls()` (call it `nlsalt`) coded entirely in R 
+  that matches the features in base R or what is packaged in `nlspkg` as described 
+  in @PkgFromRbase22. The R version can either serve as the operational code or
+  as a reference version to facilitate the maintenance of C, Fortran, or other 
+  versions of the software.
+  
+- to streamline the overall `nls()` infrastructure. By this we
+  mean a re-factoring of the routines so they are better suited to maintenance of both
+  the existing `nls()` methods and features as well as new features we or others
+  would like to add.
+
+- to explain what we do, either in comments, examples, or separate maintainer documentation.
+  Since we are complaining about the lack of explanatory material for the current
+  code, we feel it is incumbent on us to provide such material for our own work, and if
+  possible for the existing code.
+  
+These goals echo themes in the recent discussion by @Vidoni21 and accompanying 
+commentary.
+
+## Rationalization of formula specifications
+
+We have seen that
+`nls()` uses a different formula specification from the default if the 
+`plinear` algorithm is used. This is unfortunate, since the user cannot then simply
+add `algorithm="plinear"` to the standard call, making errors more likely. 
+
+Nonlinear models, apart from those using the "plinear" algorithm, need all the parameters specified.
+That is, the model formula should be written down as it would be computed.
+Thus a linear model (which is valid input for nonlinear estimation) should
+be specified `y ~ a * x + b` rather than `y ~ x`. 
+Moreover, we want to avoid the partially linear parameters appearing 
+in the result object as `.lin1`, `.lin2`, etc., where the actual position 
+of parameters in the model is not explicit. We are unclear why these parameters
+begin with a dot, that is, that they have the "hidden" indicator.
+
+A possible workaround to allow consistency would be to specify the 
+partially linear parameters when the `plinear` option is specified. For example, 
+we could use `algorithm="plinear(Asym)"` while keeping the general model formula 
+from the default specification. This would allow 
+for the output of different `algorithm` options to be consistent. However, we have not
+yet tried to code such a change, and welcome discussion from those working with
+other packages using model formulas.
+
+A further complication of model specification in R is that some formulas require
+the user to surround a term with `I()` to inhibit interpretation of arithmetic 
+operators. We would prefer that formulas be usable without this complication.
+
+<!-- It is also of interest to consider code that will detect partial linearity,  -->
+<!-- rather than expecting the user to provide the special structure and settings. Work in this -->
+<!-- area appears to be quite limited, with @Birkisson2013 seemingly a sole contribution -->
+<!-- we can find. -->
+<!-- Unfortunately, the mention of a "Linear and Nonlinear Discoverer" in @Zhang2011LinNonlin  -->
+<!-- is about a class of models that have almost nothing in common -->
+<!-- with the present issue. The algorithm in @Birkisson2013 will need investigating further, -->
+<!-- but we suspect that it is complicated enough that it will not easily be adapted to  -->
+<!-- a program like `nls()`. Possibly a simpler algorithm may be found. -->
+
+<!-- ``` -->
+<!-- y ~ x + z + x*z -->
+<!-- y ~ a + b*x +c*z + d * (x*z)  # <-- fully specified -->
+<!-- y ~ a*Fn1(b, c, x, z)/Fn2() -->
+
+<!-- ``` -->
+
+## Rationalization of indexed models
+
+Indexed models clearly have a place in some areas of research. 
+<!-- We need to be able to process models, as the example above, where the -->
+<!-- model formula is  -->
+We need to be able to process models such as 
+`Length ~ a[Strip] + b[Strip] * exp(-Conc / th)`, where `Strip` is the index. Data
+`Length` and `Conc` are available for all observations and parameter `th` applies
+to every fitted point, but `a[Strip]` and `b[Strip]` apply only to data indexed, which
+could be an experimental run number, or some other categorization. 
+
+Given that `[ ]` provides the R method to index arrays, the presence of square
+brackets in a model
+formula signals indexing. The question is how to perform the correct calculations.
+
+<!-- While tedious (??maybe dummies or fastdummies packages make it less so?),  -->
+<!-- we could set up the model as a sum of similar models with dummy -->
+<!-- variables to turn "on" or "off" the particular case, transforming the model -->
+<!-- parameters to simple, non-indexed ones (as does `nls()`). -->
+
+Our view is that inclusion of the indexing **within** `nls()` or similar tools introduces 
+complexity that could be avoided by a suitable wrapper function. The modeling
+formula must be expanded to encompass all the index cases, likely with indexed
+parameters renamed e.g., `a[2]` becomes `a2` as at present with `nls()`. However,
+a wrapper could process output to reconstitute the indexing of parameters. 
+
+## Streamlining code
+
+We are pessimistic that the overall structure of `nls()` can be streamlined due
+to the entanglement of so many features with the complicated mix of R, C and
+Fortran. Indeed, despite digging into the code over some months, we do not feel
+confident that we sufficiently understand it nor that we could maintain it. On the other
+hand, we do believe equivalent functionality can be built, but with at least
+some differences in how the features will be accessed.
+
+## Tests and use-case examples
+
+Maintainers of packages need suitable tests and use-case examples in order:
+
+- to ensure packages work properly, in particular, giving
+  results comparable to or better than the functions they are to replace;
+- to test individual solver functions to ensure they work across the range of calling 
+  mechanisms, that is, different ways of supplying inputs to the solver(s);
+- to pose "silly" inputs to see if these bad inputs are caught by the programs.
+  
+Such goals align with the aims of **unit testing** 
+(e.g., *https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211*, @HWtestthat11, @HWdevtools21
+and the conventional R package testing tools).
+ 
+
+## A testing package: NLSCompare
+
+One of us has developed a working prototype package at *https://github.com/ArkaB-DS/nlsCompare* .
+A primary design objective of this is to allow the summarisation of multiple tests in
+a compact output. The prototype has a vignette to illustrate its use.
+
+<!-- Arkajyoti -- do you want to expand? -->
+<!-- No. I think it would be tangential to the goal of the paper. We can have a -->
+<!-- separate article for that, maybe? -->
+<!-- Trying to trim a lot of words, so am making reference to package. Is it ready -->
+<!-- for others to use? -->
+
+<!-- When we have a "new" or trial solver function, we would like to know if it gives  -->
+<!-- acceptable results on a range of sample problems of different types, starting -->
+<!-- parameters, input conditions, constraints, subsets, weights or other settings.  -->
+<!-- Ideally we want to be able to get a summary that is easy to read and assess. For -->
+<!-- example, one approach would be to list the names of a set of tests with a red, green -->
+<!-- or yellow dot beside the name for FAILURE, SUCCESS, or "NOT APPLICABLE". In the last -->
+<!-- category would be a problem with constraints that the solver is not designed to  -->
+<!-- handle.  -->
+
+<!-- To accomplish this, we need a suitable "runner" program that can be supplied with -->
+<!-- the name of a solver or solvers and a list of test problem cases. Problems generally -->
+<!-- have a base setup -- a specification of the function to fit as a formula, some data -->
+<!-- and a default starting set of parameters. Other cases can be created by imposing -->
+<!-- bounds or mask constraints, subsets of the data, and different starts.  -->
+
+<!-- How to set up this "runner" and its supporting infrastructure is non-trivial. While -->
+<!-- the pieces are not as complicated as the inter-related parts of the solvers, especially -->
+<!-- `nls()`, the categorization of tests, their documentation, and the structuring to make -->
+<!-- running them straightforward and easy requires much attention to detail. -->
+
+<!-- Some considerations for our test scripts: -->
+
+<!-- - Is it useful to have a "base" script for each family of test problem, with numbered particular -->
+<!--   cases? That is, if we run the scripts in order, we can avoid some duplication of code and -->
+<!--   data. -->
+
+<!-- - While we have developed some tags to document the test problem families and cases, we believe -->
+<!--   that such tags (essentially summary documentation) will continue to need revision as different -->
+<!--   tools and problems are included in scope of `nlsCompare`. -->
+
+<!-- - Similarly, we expect that there will be ongoing review of the structure of the result files. -->
+
+
+<!-- # Progress so far -->
+
+<!-- Much of our work is reported in https://github.com/nashjc/RNonlinearLS . -->
+
+<!-- ## Reports and articles -->
+
+<!-- - The present article is the central report of the Google Summer or Code 2021 project -->
+<!--   "Improvements to nls()". -->
+
+<!-- - VarietyInNonlinearLeastSquaresCodes.Rmd: a review of the different algorithms and -->
+<!--   the many choices in their implementation for nonlinear least squares. This is still -->
+<!--   a DRAFT at 2022-6-20. -->
+
+<!-- Response to query about TestsDoc -->
+<!-- 4. Testing infrastructure, I think, is a general topic and not -->
+<!-- particularly relevant to nls(); i.e., it is important for all packages. -->
+<!-- So, I don't think we need to include that in RefactoringNLS. Could be a -->
+<!-- separate blog maybe?   -->
+  
+<!-- Arkajyoti: I think TestsDoc is too preliminary to mention, though the links might be -->
+<!-- useful. Perhaps incorporate in the nlsCompare repo. -->
+<!-- - TestsDoc.Rmd (?citation) is a survey of testing tools in R. It has more  -->
+<!--   general possibilities  -->
+<!--   and fits into the subject of regression testing, in which case a  -->
+<!--   more extensive literature review will be needed.  Note that this -->
+<!--   document reflects the work in the the "Problem sets and test infrastructure" -->
+<!--   below. -->
+
+  <!-- need to incorporate MachID and -->
+  <!-- the many tests. Arkajyoti: should we think of working this up into a paper for -->
+  <!-- JSS or the R-Journal? My  -->
+  <!-- view is that this COULD be a long term side-interest for your academic work, but -->
+  <!-- that would depend on your own interests as well as opportunities. -->
+
+<!-- This needs more focus of where it may appear. I'm thinking of a blog post -- JN-->
+<!-- - DerivsNLS.Rmd ?citation: a document to explain different ways in which Jacobian information -->
+<!--   is supplied to nonlinear least squares computation in R. File `ExDerivs.R` is -->
+<!--   a DRAFT of a script to provide examples. -->
+
+## Documentation and resources
+
+In our investigation, we built several resources, which are now part of 
+the repository *https://github.com/nashjc/RNonlinearLS/*. Particular items
+are:
+
+- A BibTex bibliography for use with all documents in this project, but which 
+  has wider application to nonlinear least squares projects in general
+  (*https://github.com/nashjc/RNonlinearLS/blob/main/BibSupport/ImproveNLS.bib*).
+
+- `MachID.R` offers a suggested concise summary function
+  to identify a particular computational system used for tests. A discussion 
+  of how it was built and the resources needed across platforms is given in
+  at *https://github.com/nashjc/RNonlinearLS/tree/main/MachineSummary*.
+
+- @PkgFromRbase22 is an explanation of the construction of the `nlspkg` from the
+  `nls()` code in R-base. 
+
+- As the 2021 Summer of Code period was ending, one of us (JN) was invited to prepare
+  a review of optimization in R. Ideas from the present work have been instrumental
+  in the creation of @NashWires22.
+
+<!-- ?? probably don't need to include -->
+<!-- - WorkingDocument4ImproveNLS.Rmd: essentially a way to record what we have worked on. -->
+<!--   A project diary. -->
+
+<!-- ?? does not seem to add enough? -->
+<!-- ## Problem sets and test infrastructure -->  
+
+<!-- ?? need to clean up -->
+
+<!-- We have several test problems and variants thereof in the `inst/scripts/` directory of -->
+<!-- the `nlsCompare` package available on Github (https://github.com/ArkaB-DS/nlsCompare). -->
+<!-- We direct the reader to that package for documentation of the test infrastructure,  -->
+<!-- in particular the problems and methods files (`problems.csv` and `methods.csv`) and -->
+<!-- the various functions invoked by `run.R` to produce an output file in CSV form also. -->
+
+<!-- Towards the end of the project, we have focused our attention on the `nlsCompare` -->
+<!-- package, which looks at evaluating and comparing functions for nonlinear least -->
+<!-- squares problems. We use many of the same tests as checks that are or will be  -->
+<!-- built into our packages for such problems e.g., `nlsalt`. These use the `testthat` -->
+<!-- structure and may include verification of outputs that are specific to a package, -->
+<!-- such as the upper triangular matrix R of the QR decomposition that has been  -->
+<!-- computed for a Jacobian. Since such an object will not be computed by all methods,  -->
+<!-- testing it in `nlsCompare` makes no sense, and in that package we concentrate on -->
+<!-- the minimum sum of squares and the associated model parameters. -->
+
+<!-- ## Code development -->
+
+<!-- A summary of our main results: -->
+
+<!-- - nlspkg: a packaged version of the `nls() code from R-base. Thanks to Duncan Murdoch -->
+
+<!-- - nlsalt: attempt to mirror `nls() behaviour entirely in R. This is UNFINISHED.  -->
+<!--   The effort showed that the structure of the programs was difficult to follow,  -->
+<!--   undocumented, and unsuited to adding improvements like the Marquardt stabilization.  -->
+<!--   We were able to get a pure-R version of `numericDeriv()` and rework most of the functions  -->
+<!--   of `nlsModel` (but not `nlsModel.plinear`). This work may continue after the project -->
+<!--   formally ends, but collaboration is likely needed with workers who have a deep knowledge -->
+<!--   of R internals. `nls-flowchart.txt` was a start at documentation of the structure of `nls()`. -->
+
+<!-- <!-- - nls-changes-for-small-residuals-in-nls-R-4.0.2.zip: collected material for the  --> 
+<!-- <!--   fix by JN to the relative offset convergence criterion failure when there are small  --> 
+<!-- <!--   residuals in problems sent to ``nls()`. Now part of R. --> 
+
+<!-- - the safeguarded relative offset convergence criterion that allows small-residual problems -->
+<!--   to ba handled with `nls()` is now in the R base code. -->
+
+<!-- - `nlsj` is a refactoring of some `nls()` functionality. ?? What are key features?? -->
+<!--   This is an interim package for exploration of ideas and will NOT, as it currently -->
+<!--   is presented, become a distributed package. -->
+
+<!-- - nlsralt: this is intended to be a modified version of Nash and Murdoch package  -->
+<!--   `nlsr` to examine possible improvements discovered as a result of this project.  -->
+<!--   This is EXPERIMENTAL. -->
+
+<!-- For example,  -->
+<!-- `nlsr` does not currently use the `subset` argument correctly. We also need to document -->
+<!-- changes e.g., to numerical derivatives. However, these are tasks for JN rather than AB. -->
+
+# Strategic choices in nonlinear model estimation
+
+It is possible that `nls()` will remain more or less as it has been for the past
+two decades. Given its importance to R, the focus of discussion should be the measures
+needed to secure its continued operation for legacy purposes and how that may be approached.
+We welcome an opportunity to participate in such conversations. 
+
+To advance the stability and maintainability of R, we believe the program objects (R functions)
+that are created by tools such as `nls()` should have minimal cross-linkages and side-effects.
+The aspects of `nls()` that have given us the most trouble:
+
+- The functions that compute the residuals and jacobians often presume
+  the data and parameters needed are available in a particular environment. As long
+  as the correct environment is used, this provides a compact syntax to invoke the
+  calculations. The danger is that the wrong data is accessed if the internal search finds a
+  valid name that is not the object we want.
+  
+- Weights, subsets, and various contextual controls (such as that for the `na.action` option)
+  are similarly taken from the first available source, making for a very simple
+  invocation of calculations, but the context is hidden from the user. Furthermore, it can be
+  difficult for those of us trying to maintain or improve the code to be certain we have the
+  context correct.
+  
+- The mixing of R, C and Fortran code was necessary for computational performance in the past.
+  Lacking decent developer documentation, programmers now face a lot of work to fix or improve code. 
+  We believe in having at least a working reference version of code in a single programming language. 
+  If necessary, by
+  measuring ("profiling") the code, we can find bottlenecks and substitute for those slower 
+  parts of the reference code.
+
+- A design that isolates the setup, solution, and post-solution parts of
+  for complicated calculations reduces the number of objects that must be kept in 
+  alignment. On the other hand, it may mean users have to add more commands to complete
+  their computations.
+  
+- All iterative codes should return the best solution they have found so far, even if there
+  are untoward conditions reached, such as a singular Jacobian. This modification could be
+  made to `nls()` in the short term, correcting the issue identified above under "Failure to
+  return best result achieved".
+
+- Given the existence of examples of good practices such as analytic derivatives, stabilized 
+  solution of Gauss-Newton equations and bounds-constrained parameters, base R tools should 
+  be moving to incorporate them. 
+
+We anticipate that tools like `nlsr` will become more attractive as users discover
+the increased robustness and general capabilities, along with the more recent documentation.
+From a design point of view, a key difference in approach between `nls()` and 
+`nlsr::nlxb()` is that `nls()` 
+builds a large infrastructure, especially the `nlsModel()` function,  from which the Gauss-Newton
+iteration can be executed and other statistical information such as profiles can be
+computed, while `nlxb()` returns quite limited information, and 
+computes what is needed on an "as and when" basis. This follows a path that one of us
+(JN) established almost 50 years ago with the software that became @cnm79, separating
+setup, solver, and post-solution analysis phases of computations. There is, however,
+the wrapper `wrapnlsr()` that solves the nonlinear estimation problem with the solver
+of `nlsr` then calls `nls()` to build the object of class `nls` for which profile log-likelihood
+information can be computed.
+<!-- Here, that last  -->
+<!-- phase is not part of `nlxb()`, but is the domain of other functions in the `nlsr` -->
+<!-- package. -->
+
+
+<!-- The `nls()` approach, as implemented in the base R code and `nlspkg` leads to considerable -->
+<!-- entangling of the different functions and capabilities. Even after -->
+<!-- both the preparation for and carrying out of the present project, we do not feel confident -->
+<!-- to explain the code completely, nor to maintain it. However, we have made some  -->
+<!-- forays into render parts of the code in R, and to understand where difficulties -->
+<!-- lie. -->
+
+<!-- ??fix next bits -->
+<!-- - The different dialects of modeling expressions as detailed above should be rationalized. This -->
+<!--   would, however, be a painful and mainly political activity. -->
+
+<!-- - The tools for analytic derivatives that exist in parts of `nls()` for self-starting models and -->
+<!--   in `nlsr` for problems specified as models that use expressions for which derivatives exist  -->
+<!--   should be more generally available, but the task is one of tedium and limited reward to the -->
+<!--   persons who do it, while benefiting the R community substantially. -->
+
+<!-- - Similarly, default methods need stabilized solvers e.g., Marquardt methods, though to date -->
+<!--   a mechanism to incorporate such modifications in `nls()` has eluded us. -->
+
+<!-- - Bounds constraints are sufficiently important that they should be part of the default -->
+<!--   methods -->
+<!--   (rather than algorithm = "port" for `nls()`). `minpack.lm` should handle them correctly. -->
+
+
+# Acknowledgement
+
+Hans Werner Borchers has been helpful in developing the proposal for this project
+and in comments on this and related work. Heather Turner co-mentored the project 
+and helped guide the progress of the work. Exchanges with Fernando Miguez helped to
+clarify aspects of `selfStart` models and improve package `nlsr` in that respect.
+Colin Gillespie (package `benchmarkme`) has been helpful in guiding our attempts
+to succinctly summarize computing environments.
+
 
 
 
