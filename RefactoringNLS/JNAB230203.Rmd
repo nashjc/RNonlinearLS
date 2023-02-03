@@ -628,6 +628,62 @@ unless `trace` is invoked, the user will not get any information about this.
 This almost trivial change to the `nls()` function could be 
 useful to R users.
 
+## Feature: partially linear models and their specification
+
+The variable projection method (@Golub1973, @OlearyRust13) is generally much more 
+effective than general approaches in finding good solutions to nonlinear least squares 
+problems when some of the parameters appear linearly. However, setting up the 
+calculations, that is, identifying which parameters are linear, is not a trivial
+task. 
+
+Moreover, specifying a model to a solver should, ideally, use the same syntax across
+solver tools. Unfortunately, R allows multiple approaches within different
+modeling tools, and within `nls()` itself. This is highlighted by the case of
+partially linear models.
+
+The nonlinear modeling specifications are, of course, a development of linear ones.
+Unfortunately, the explicit model `y ~ a * x + b` does not work with the linear modeling 
+function `lm()`, which requires this model to be specified as `y ~ x`.
+
+Within `nls()`, consider the following FOUR different specifications for the same problem, plus 
+an intuitive choice, labelled `fm2a`, that does NOT work. In this failed
+attempt, putting the `Asym` parameter in the model causes the `plinear` algorithm
+to try to add another term to the model. We believe this is unfortunate, and would
+like to see a consistent syntax. At the time of writing, we do
+not foresee a resolution for this issue. In the example, we have NOT evaluated
+the commands to save space.
+
+```{r log4ways, echo=TRUE, eval=FALSE}
+DNase1 <- subset(DNase, Run == 1) # select the data
+## using a selfStart model - do not specify the starting parameters
+fm1 <- nls(density ~ SSlogis(log(conc), Asym, xmid, scal), DNase1)
+summary(fm1)
+
+## using conditional linearity - leave out the Asym parameter
+fm2 <- nls(density ~ 1 / (1 + exp((xmid - log(conc)) / scal)),
+                 data = DNase1, start = list(xmid = 0, scal = 1),
+                 algorithm = "plinear")
+summary(fm2)
+
+## without conditional linearity
+fm3 <- nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
+                 data = DNase1,
+                 start = list(Asym = 3, xmid = 0, scal = 1))
+summary(fm3)
+
+## using Port's nl2sol algorithm
+fm4 <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
+                 data = DNase1, start = list(Asym = 3, xmid = 0, scal = 1),
+                 algorithm = "port"))
+summary(fm4)
+
+## using conditional linearity AND Asym does NOT work
+fm2a <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)), 
+                 data = DNase1, start = list(Asym=3, xmid = 0, scal = 1),
+                 algorithm = "plinear", trace = TRUE))
+summary(fm2a)
+```
+
 
 
 
