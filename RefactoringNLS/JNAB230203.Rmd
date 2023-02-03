@@ -42,6 +42,7 @@ bibliography: ../BibSupport/ImproveNLS.bib
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
+<<<<<<< HEAD
 # The `nls()` function: strengths and shortcomings
 
 `nls()` is the tool in base R, the primary software software distribution
@@ -115,6 +116,8 @@ allows small-residual problems (i.e., near-exact fits) to be dealt with easily. 
 We are pleased to note that this improvement is now in the R distributed code since version 4.1.0.
 
 # References
+=======
+>>>>>>> 1cf5a33b02ac762334dbc361314d6697eb07cbb2
 
 
 ?? to sort out
