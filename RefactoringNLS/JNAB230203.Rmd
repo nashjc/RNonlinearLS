@@ -148,9 +148,10 @@ This refers to the infamous "singular gradient" termination message of `nls()`.
 A Google search of 
 
 ```
-R nls "singular gradient"
+    R nls "singular gradient"
 ```
 
+\noindent
 gets over 4000 hits that are spread over some years. This could be because the 
 Jacobian is poorly approximated (see **Jacobian computation** below). However,
 it is common in nonlinear least squares computations that the Jacobian is very close
