@@ -30,10 +30,10 @@ Regards,
     
     
     
-John Nash
-Telfer School of Management
-University of Ottawa
-Ottawa, ON K1N 6N5 Canada
-profjcnash@gmail.com
+John Nash  
+Telfer School of Management  
+University of Ottawa  
+Ottawa, ON K1N 6N5 Canada  
+profjcnash@gmail.com  
 \bigskip
 
