@@ -920,6 +920,3 @@ to succinctly summarize computing environments.
 
 # References
 
-?? to sort out
-- note that AB now at Ohio State?
-- ORCID for AB?
