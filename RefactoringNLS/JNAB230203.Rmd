@@ -1,5 +1,5 @@
 ---
-title: "Refactoring `nls()`: a constructive critique"
+title: "Refactoring 'nls()': a Constructive Critique"
 date: "2023-02-03"
 abstract: >
    Based on work for a Google Summer of Code project "Improvements to `nls()`",
