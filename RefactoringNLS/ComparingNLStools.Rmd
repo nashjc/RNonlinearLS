@@ -37,6 +37,132 @@ different tools for nonlinear least squares modeling in R. Discussion of
 these matters is relevant to improving R generally as well as its 
 nonlinear estimation tools.
 
+## Scope of our comparison
+
+The tools we will compare are the base-R `nls()` function 
+and a number of packages that are available on the CRAN repository.
+
+Important:
+
+nlsr
+minpack.lm
+gslnls
+nls2
+
+Worth commentary:
+
+crsnls
+NISTnls
+nlshelper
+nlsic
+nlsMicrobio
+nlsmsn
+nls.multstart
+nlstac
+nlstools
+onls
+
+Mention only:
+
+easynls
+
+
+
+
+## Comparison dimensions
+
+- solve nls problem vs modeling
+- programming language
+- stabilized solver
+- Jacobian calculation
+- output 
+- other notes
+
+?? DO WE WANT A COMPARISON TABLE
+
+**nlsr** has functions to find a set of parameters that minimizes the sum of 
+squares (or deviance) 
+of differences between a model specified either as a formula using function 
+`nlxb()` or as both residual
+and Jacobian R functions using function `nlfb()`. As described below, the 
+Jacobian may be approximated
+by particular control settings.
+
+Existing R tools that are similar to `nlxb()` are `nls()` and `minpack.lm::nlsLM()`;  
+`minpack.lm::nls.lm()` is similar to `nlfb()`.
+
+There are several important differences in approach and results, some of which 
+are detailed in this document.
+
+### Output object 
+
+The output object of `nlxb()` is smaller than that of `nls()` and is focused on 
+the solution and its properties
+rather than the **modeling** task. That is, package `nlsr` emphasizes the solution 
+of the nonlinear least squares problem rather than the estimation of a nonlinear 
+model that fits or explains the data. `nls()` and `nlsLM` return an object of 
+class `nls`, which allows for
+a number of specialized modeling and diagnostic extensions. For compatibility, 
+the `nlsr` package has function `wrapnlsr()`, for which `nlsr()` is an alias. 
+This uses `nlxb()` to find good parameters, then calls `nls()` to return the class 
+`nls` object. Unless particular modeling features are needed, the use of 
+`wrapnlsr()` is unnecessary and wasteful of resources.
+
+### Jacobian calculation
+
+Internally, `nlxb()` uses symbolic and automatic differentiation tools to create 
+the residual and Jacobian functions needed for `nlfb()` then uses it to solve 
+the relevant nonlinear least squares minimization problem. 
+
+As with other nonlinear least squares packages, we provide the Jacobian code as 
+the "gradient" attribute of the Jacobian function. This lets us embed the code 
+for the Jacobian as this attribute of the **residual** function so that the call 
+to `nlfb()` can be made with the same name used for 
+both residual and Jacobian function arguments. This programming trick saves a 
+lot of trouble for the package developer, but it can be a nuisance for users 
+trying to understand the code. 
+
+Generally `nls()` and `nlsLM()` use a fairly simple forward difference 
+approximation of derivatives for the Jacobian, though a central approximation 
+can be specified in control parameters. Package `nlsr` provides four approximation 
+options, with a further control `ndstep` for the size of the
+step used in the approximation.
+
+### Stabilization of Gauss-Newton computations
+
+The iteration in all the major tools mentioned is the solution of the Gauss-Newton 
+equations. `nls()` uses a variant of an approach suggested by @Hartley61, while 
+`nlsr` and `minpack.lm` use variants of the method published by @Marquardt1963, 
+though it was suggested earlier by @Levenberg1944. The details of the method in 
+`nlsr` are discussed in  @JNABRefactoringNLS22.
+Though it is unlikely to be useful in general, control settings for `nlxb()` or `nlfb()`
+allow for those routines to perform a variety of Hartley and Marquardt algorithms. This
+has been useful for learning about the algorithms, but tangential to simply finding
+parameters of nonlinear models.
+
+In general, the Levenberg-Marquardt stabilization is important in obtaining solutions.
+The default method of `nls()` terminates with `singular gradient` unnecessarily in 
+too many instances.
+
+### Programming language
+
+An important choice made in developing `nlsr` was to code entirely within the R 
+programming language. `nls()` uses a mix of R, C and Fortran, as does `minpack.lm`. 
+Generally, I believe that keeping to a single programming language allows for 
+easier maintenance and upgrades. On the other hand, R is usually somewhat slower 
+in performing computations because it keeps track of names and structures and 
+because it is usually interpreted rather than compiled. In recent years the 
+performance penalty for using code entirely in R has been much reduced
+with the just-in-time compiler and other improvements, so that using an all-R 
+package offers acceptable performance. Indeed, in `nlsr` the use of R may be 
+less of a performance cost than the attempt to ensure the solution has been found, 
+which forces more iterations to be used.
+
+
+
+---OLD VERSION BELOW ------------------------
+
+
 # The `nls()` function: strengths and shortcomings
 
 `nls()` is the tool in base R, the primary software software distribution
