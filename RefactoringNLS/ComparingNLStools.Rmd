@@ -47,31 +47,55 @@ gslnls (@gslnls23), and nls2 (@nls2-22).
 
 Other CRAN packages worth Commentary: ??
 
-onls
-crsnls
-NISTnls
-nlshelper
-nlsic
-nlsMicrobio
-nlsmsn
-nls.multstart
-nlstac
-nlstools
-easynls
-nlraa
-optimx ??
+??put in proper refs to each
+
+onls -- when there are errors in variables, this minimizes the orthogonal 
+residuals
+
+crsnls -- Controlled random search. No vignette!
+
+NISTnls -- NIST problems for testing nls methods
+
+nlshelper -- A few utilities for summarizing, testing, and plotting non-linear
+    regression models fit with nls(), nlsList() or nlme()
+
+nlsic -- We solve non linear least squares problems with optional
+    equality and/or inequality constraints.
+    
+nlsMicrobio -- Data sets and nonlinear regression models dedicated to predictive microbiology.
+
+nlsmsn -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) regression, details in Garay, Lachos and Abanto-Valle (2011)
+
+nls.multstart -- Non-linear least squares regression with the Levenberg-Marquardt algorithm using multiple starting values for increasing the chance that the minimum found is the global minimum.
+
+nlstac -- Set of functions implementing the algorithm described in Fernandez 
+    Torvisco et al. (2018) for fitting separable nonlinear regression curves.
+    ?? check ref and add to bib.??
+
+nlstools -- Several tools for assessing the quality of fit of a gaussian nonlinear model are provided.
+
+easynls -- Fit and plot some nonlinear models. ?? no vignette!
+
+nlraa -- a set of nonlinear *selfStart* models. Most include analytic Jacobian
+code. (@MiguezNLRAA2021)
+
+optimx -- not really a nonlinear least squares method, but has general optimizers
+that can be applied to minimize a nonlinear function e.g., a nonlinear sum of 
+squares.
 
 It is likely that there are a number of other tools that could be relevant to
 this comparison in the Bioconductor (??ref) collection and on repositories like
-Github (??ref) and Gitlab (??ref), but we will not pursue those possibilities 
-here.
+Github (https://github.com) and Gitlab (https://about.gitlab.com), but we will 
+not pursue those possibilities here.
 
 ## Comparison dimensions
 
 The tools for nonlinear estimation we consider have been built with different
 goals and contexts. We will make our comparison in a number of directions.
 We will make a number of specific notes, but our main commentary will consider
-the following categories.
+the following categories. These overlap, for example in that the emphasis on modeling
+versus solving the nonlinear least squares problem will result in different
+output.f
 
 ### Modeling versus minimizing a sum of squares
 
@@ -118,10 +142,120 @@ but there is the possibility of using symbolic or automatic differentiation,
 and there are particular models where workers have provided code for the
 Jacobian.
 
+### Constraints on parameters
+
+Reality often imposes conditions on parameters. While general constraints can
+be difficult to include, bounds on parameters can be accommodated by many 
+solvers. For some reason, fixed parameters (masks) are not often considered,
+but are very convenient when a parameter has a commonly accepted value that we
+later wish to allow to be estimated from the data.
+
 ### Output 
 
+While the aim of nonlinear estimation is to return a set of parameters for a
+particular model, there is a variety of additional information which may be
+provided. From the perspective of the nonlinear least squares problem, there
+are measures of work and information on the quality of the solution, while
+for statistical purposes measures of uncertainty in the parameters are helpful.
+
+Some tools allow constraints to be imposed on the solution, and it is helpful
+to know if these constraints are active at the proposed solution.
 
 ?? DO WE WANT A COMPARISON TABLE
+
+## An illustrative example
+
+The Hobbs weed infestation problem (@cnm79 [page 120]) is a growth curve modeling 
+task which is seemingly straightforward but turns out to be quite nasty. Because
+this problem has a very succinct statement, it often provides the "short 
+reproducible example" much beseeched of contributors to R mailing lists.
+
+The data and a graph of it is given below.
+
+```{r ex01, echo=TRUE}
+weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
+          38.558, 50.156, 62.948, 75.995, 91.972)
+tt <- 1:12
+weeddf <- data.frame(tt, weed)
+plot(weeddf, main="Hobbs weed infestation data")
+```
+
+Three suggested models for this data are (with names to allow for easy reference)
+
+**Logistic3U**:
+$$  y \approx  b_1 / (1 + b_2 * exp(- b_3 * t)) $$
+
+**Logistic3S**:
+$$ y \approx  100 * c_1 / (1 + 10 * c_2 * exp(- 0.1 * c_3 * t)) $$
+
+**Logistic3T**:
+$$ y \approx Asym / (1 + exp((xmid - t)/scal)) $$
+
+The functions above are equivalent, but the first is generally more awkward
+to solve numerically due to its poor scaling. The parameters of the three forms
+are related as follows:
+
+$$   Asym =  b_1 = 100 * c_1 $$
+$$ exp(xmid/scal)  =  b_2 = 10 * c_2 $$
+$$ 1/scal  =  b_3 $$
+To allow for simpler discussion, let us say that the parameters for a vector
+$p$ and the model function is called $model(p)$. The residuals can be written
+either as 
+
+$$ r_1 = y - model(p)$$
+
+or
+
+$$ r = model(p) - y $$
+
+since when squared the loss function has an identical value. In both cases, the
+residual vector is a function of $p$. The second form
+has a minor advantage in avoiding a potential sign error 
+if we need to differentiate to get gradients etc. 
+
+### Loss function
+
+The general approach of nonlinear optimizers, of which nonlinear least squares
+solvers are usually a subset, is to try to reduce the loss function (or objective
+function) defined by the sum of squares of the residuals ($y - model()$) by 
+altering the model parameters from some starting guess. In all general 
+methods of which we are aware, this is an iterative process. 
+
+We note several useful quantities
+
+Loss function:
+$$ S(p) = r' r$$
+Gradient of $S(p)$:
+$$ 2 * J' r$$
+where the Jacobian $J$ is given by elements
+$$ J_{i,j} = \partial r_i / \partial p_j $$
+and the Hessian is defined by elements
+$$ \partial ^2 S(p) / {\partial p_i \partial p_j} $$
+?? how to succinctly write the Hessian in terms of J' J
+
+`nlsr` tries to find solutions from very poor initial parameter values. While
+this is not always possible, `nslr` has generally been able to succeed in finding
+solutions, even when all parameters are started at 1. Let us compare its results
+with those of `nls()` and `nlsLM()`.
+
+### Problem setup
+  
+```{r ex02set, echo=TRUE}
+# model formulas
+frmu <- weed ~ b1/(1+b2*exp(-b3*tt))
+frms <- weed ~ 100*c1/(1+10*c2*exp(-0.1*c3*tt))
+frmt <- weed ~ Asym /(1 + exp((xmid-tt)/scal))
+#
+# Starting parameter sets
+stu1<-c(b1=1, b2=1, b3=1)
+sts1<-c(c1=1, c2=1, c3=1)
+stt1<-c(Asym=1, xmid=1, scal=1)
+```
+
+
+-------------------------------------------------
+
+
 
 **nlsr** has functions to find a set of parameters that minimizes the sum of 
 squares (or deviance) 
