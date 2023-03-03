@@ -41,16 +41,13 @@ nonlinear estimation tools.
 
 The tools we will compare are the base-R `nls()` function 
 and a number of packages that are available on the CRAN repository.
+Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
+**minpack.lm** (@minpacklm12), 
+gslnls (@gslnls23), and nls2 (@nls2-22).
 
-Important:
+Other CRAN packages worth Commentary: ??
 
-nlsr
-minpack.lm
-gslnls
-nls2
-
-Worth commentary:
-
+onls
 crsnls
 NISTnls
 nlshelper
@@ -60,23 +57,62 @@ nlsmsn
 nls.multstart
 nlstac
 nlstools
-onls
-
-Mention only:
-
 easynls
+nlraa
+optimx ??
 
-
-
+It is likely that there are a number of other tools that could be relevant to
+this comparison in the Bioconductor (??ref) collection and on repositories like
+Github (??ref) and Gitlab (??ref), but we will not pursue those possibilities 
+here.
 
 ## Comparison dimensions
 
-- solve nls problem vs modeling
-- programming language
-- stabilized solver
-- Jacobian calculation
-- output 
-- other notes
+The tools for nonlinear estimation we consider have been built with different
+goals and contexts. We will make our comparison in a number of directions.
+We will make a number of specific notes, but our main commentary will consider
+the following categories.
+
+### Modeling versus minimizing a sum of squares
+
+The goal of many statisticians and other workers is to estimate a model. The
+minimization of a sum of squared residuals -- the nonlinear least squares problem --
+is the mechanism to estimate the model. Some of the tools we review focus on the
+modeling, so attempt to provide measures of uncertainty and other information. 
+The interface to modeling tools will generally try to streamline that task. By
+contrast, nonlinear least squares tools are trying to solve the more limited
+numerical task.
+
+### Programming language(s)
+
+R tools are our interest, but the tools we consider often use other programming
+languages. There are advantages in using a well-established program that has
+been much used and tested. Early versions of R were relatively sluggish in 
+computational speed. The downside is that we must interface between two or more
+programming languages. Changes to one or the other language or its library support
+force maintenance issues. Moreover, the pool of expertise with languages like C
+and Fortran is diminishing.
+
+### Internal solver stabilization
+
+Early nonlinear least squares programs generally used the Gauss-Newton method 
+(?? ref). This is often very effective and efficient, but for a quite large 
+proportion of problems can fail to find the solution. Stabilization of the 
+computations is relatively straightforward in principle, and overcomes most
+of the failures, though sometimes at the cost of more calculations.
+
+### Jacobian calculation
+
+The necessarily iterative solution of a nonlinear least squares problem 
+to carry out nonlinear modeling requires that we can find smaller values
+of a sum of squared residuals. This implies there is a "downhill" direction.
+The gradient of the residual sum of squares is computed as the product
+of the Jacobian matrix: the partial derivatives of the residual vector 
+with respect to the modeling parameters.
+(?? do we need to present this, or give a ref)
+
+### Output 
+
 
 ?? DO WE WANT A COMPARISON TABLE
 
@@ -1416,9 +1452,9 @@ information can be computed.
 Hans Werner Borchers has been helpful in developing the proposal for this project
 and in comments on this and related work. Heather Turner co-mentored the project 
 and helped guide the progress of the work. Exchanges with Fernando Miguez helped to
-clarify aspects of `selfStart` models and improve package `nlsr` in that respect.
-Colin Gillespie (package `benchmarkme`) has been helpful in guiding our attempts
-to succinctly summarize computing environments.
+clarify aspects of `selfStart` models and instigated the "Introduction to nlsr" 
+vignette. Colin Gillespie (package `benchmarkme`) has been helpful in guiding our 
+attempts to succinctly summarize computing environments.
 
 
 # References
