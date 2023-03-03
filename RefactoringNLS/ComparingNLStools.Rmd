@@ -142,6 +142,7 @@ but there is the possibility of using symbolic or automatic differentiation,
 and there are particular models where workers have provided code for the
 Jacobian.
 
+<<<<<<< HEAD
 ### Constraints on parameters
 
 Reality often imposes conditions on parameters. While general constraints can
@@ -150,6 +151,8 @@ solvers. For some reason, fixed parameters (masks) are not often considered,
 but are very convenient when a parameter has a commonly accepted value that we
 later wish to allow to be estimated from the data.
 
+=======
+>>>>>>> 9663f54c56ad936fc4d18148ce44ee74fe5441e8
 ### Output 
 
 While the aim of nonlinear estimation is to return a set of parameters for a
