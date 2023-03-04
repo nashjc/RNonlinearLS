@@ -178,7 +178,9 @@ to know if these constraints are active at the proposed solution.
 The Hobbs weed infestation problem (@cnm79 [page 120]) is a growth curve modeling 
 task which is seemingly straightforward but turns out to be quite nasty. Because
 this problem has a very succinct statement, it often provides the "short 
-reproducible example" much beseeched of contributors to R mailing lists.
+reproducible example" much beseeched of contributors to R mailing lists. 
+Nevertheless, this is not an artificially created test problem, but one that
+came from a field researcher.
 
 The data and a graph of it is given below.
 
@@ -343,8 +345,10 @@ Using a formula specification was one of the principal advances made
 when `nls()` became available in S sometime in the 1980s. It uses a
 Gauss-Newton (i.e., unstabilized) iteration with step reduction line
 search. This works very efficiently as long as $J$ is not ill-conditioned.
-In a one-parameter problem, think of $J$ as a very small number so that
-we need to watch for a zero-divide or 0/0 situation in computing $\delta$.
+In a one-parameter problem with ill-conditioning, think of $J$ as a 
+very small number so that we need to watch for a zero-divide or 0/0 
+situation in computing $\delta$.
+The following show `nls()` does poorly on this example problem. 
 
 ```{r ex02nls}
 unls1<-try(nls(formula=frmu, start=stu1, data=weeddf))
@@ -356,16 +360,212 @@ summary(tnls1)
 cat("\n")
 ```
 
+Let us consider three alternatives to `nls()`: `nlsr::nlxb()`, `minpack.lm::nlsLM()`
+and `gslnls::gsl_nls()`. We use default methods and controls in these examples. 
+
+### Solution attempts with nlsr
+
+```{r ex02nlsr}
+library(nlsr)
+unlx1<-try(nlxb(formula=frmu, start=stu1, data=weeddf))
+print(unlx1) 
+pshort(unlx1) # A short form output
+snlx1<-try(nlxb(formula=frms, start=sts1, data=weeddf))
+# pshort(snlx1)
+print(snlx1)
+tnlx1<-try(nlxb(formula=frmt, start=stt1, data=weeddf))
+# pshort(tnlx1)
+print(tnlx1)
+```
+
+### Solution attempts with minpack.lm
+
+```{r ex02minpack}
+library(minpack.lm)
+unlm1<-try(nlsLM(formula=frmu, start=stu1, data=weeddf))
+summary(unlm1) # Use summary() to get display
+unlm1 # Note the difference. Use this form to get sum of squares
+# pnlm0(unlm1)  # Short form of output
+snlm1<-try(nlsLM(formula=frms, start=sts1, data=weeddf))
+# pnlm0(snlm1)
+summary(snlm1)
+## Following structure needed to deal with M1mac issue
+tnlm1<-try(nlsLM(formula=frmt, start=stt1, data=weeddf))
+if (inherits(tnlm1, "try-error")) {
+   cat("Failure to compute solution -- likely singular Jacobian\n")
+} else {  
+   pnlm0(tnlm1) # short form to give sum of squares
+   summary(tnlm1)
+}   
+```
+
+### Solution attempts with gslnls
+
+```{r ex02gslnls}
+library(gslnls)
+ugslnls1<-try(gsl_nls(fn = frmu, data = weeddf,  start = stu1))
+summary(ugslnls1) # Use summary() to get display
+sgslnls1<-try(gsl_nls(fn = frms, data = weeddf,  start = sts1))
+summary(sgslnls1) # Use summary() to get display
+tgslnls1<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1))
+summary(tgslnls1) # Use summary() to get display
+```
+
+### Comparison notes - formula setup
+
+`nlsr::nlxb()` is set up to use `print()` to output standard errors and 
+singular values of the Jacobian (for diagnostic purposes). By contrast, 
+`minpack.lm::nlsLM()` and `nls()`
+use `summary()`, which does NOT display the sum of squares, while `print()` 
+gives the sum of squares, but not the standard error of the residuals.
+
+The singular values displayed by `print.nlsr()` (the internal name for the 
+adaptation of the generic `print()`) are displayed in a column to the right 
+of the coefficient  and standard error display, but are NOT specific to the 
+parameters. Their position is purely for efficient use of page space. The 
+most common use of the singular values is to gauge how "nearly singular" the 
+Jacobian is at the solution, and the ratio of the largest to smallest of the 
+singular values is a simple but effective measure. In the above example, we note 
+that the scaled logistic has the smallest ratio. 
+
+The results from `nlsLM` and `gsl_nls` for the transformed model have a very 
+large sum of squares, which may suggest that these program have failed. 
+Since `nls()`, `nlsLM()`, and `gsl_nls()` do not 
+offer the singular values, we need to extract the Jacobian and compute its
+singular values. The following script shows how to do this, using what is called
+the `gradient` element in the returned solution for these solvers.
+
+```{r ex04singval, echo=TRUE, eval=TRUE}  
+# for nlsLM
+if (inherits(tnlm1, "try-error"))  {
+   print("Cannot compute solution -- likely singular Jacobian")
+ } else {  
+   JtnlsLM <- tnlm1$m$gradient() # actually the Jacobian
+   svd(JtnlsLM)$d # Singular values
+}   
+# for gsl_nls
+if (inherits(tgslnls1, "try-error")) {
+   cat("Cannot compute solution -- likely singular Jacobian")
+} else {  
+   JtnlsLM <- tgslnls1$m$gradient()
+   svd(JtnlsLM)$d # Singular values
+}   
+```
+
+We see that there are differences in detail, but the more important result is that
+two out of three singular values are essentially 0. Our Jacobian is singular, and no 
+method of the Gauss-Newton type should be able to continue. Indeed, from this set of
+parameters, `nlxb` also stops, even though the code in `nlsr` tries to find solutions
+from very poor initial parameter values. 
+
+```{r ex05, echo=TRUE}  
+stspecial<- c(Asym = 35.532,  xmid = 43376,  scal = -2935.4)
+badstart<-nlxb(formula=frmt, start=stspecial, data=weeddf)
+print(badstart)
+```
+
+## Functional specification of problems
+
+?? what do we want here??
+
+
+## Design goals, termination tests and output objects
+
+The output object of `nlxb()` is smaller than the class `nls` object returned
+by `nls()`, `nlsLM()` and `gsl_nls()`. Package `nlsr` emphasizes the solution 
+of the nonlinear least squares problem rather than the estimation of a nonlinear 
+model that fits or explains the data. `nls()` and `nlsLM` return an object of 
+class `nls`, which allows for a number of specialized modeling and diagnostic extensions. For compatibility, 
+the `nlsr` package has function `wrapnlsr()`, for which `nlsr()` is an alias. 
+This uses `nlxb()` to find good parameters, then calls `nls()` to return the class 
+`nls` object. Unless particular modeling features are needed, the use of 
+`wrapnlsr()` is unnecessary and wasteful of resources.
+
+The design goals of the different tools are also evident in the so-called
+"convergence tests" for the iterative solvers. In the manual page for `nls()` 
+in R 4.0.0 there was the warning:
+
+>  **Do not use `nls` on artificial "zero-residual" data.**
+
+and suggested adding small perturbations to the data. This amounted to 
+admitting `nls()` cannot solve well-posed problems unless data is polluted
+with errors. We dispute that zero-residual problems are always artificial,
+since problems in function approximation and nonlinear equations can be 
+approached with nonlinear least squares. Moreover, the matter can
+can be easily resolved. The "termination test" for the **program** rather than for 
+"convergence" of the underlying **algorithm** is the Relative Offset Convergence
+Criterion (see @BatesWatts81). This projects the proposed step in the parameter
+vector on the gradient and estimates how much the sum of squares loss function 
+should decrease. This estimate is divided 
+by the current size of the loss function to avoid scale issues.
+When we have "converged", the estimated
+decrease is very small. However, with small residuals,
+the sum of squares loss function is (almost) zero and we get the possibility of a 
+zero-divide failure. 
+
+Adding a small quantity to the loss function before dividing avoids trouble. 
+In 2021, one of us (J. Nash) proposed that `nls.control()` have an additional parameter `scaleOffset` with a default value of zero. Setting it to a small 
+number -- 1.0 is a reasonable choice -- allows small-residual problems 
+(i.e., near-exact fits) to be dealt with easily. We call this the
+**safeguarded relative offset convergence criterion**. The default value 
+gives the legacy behaviour.
+We are pleased to note that this improvement is now in the R distributed code 
+since version 4.1.0, and it has been a part of `nlsr` since it was introduced.
+
+More general termination tests can be used. `nlsr` a **small sum of 
+squares** test (**smallsstest**) that compares the latest evaluated sum of squared
+(weighted) residuals to `e4` times the initial sum of squares, where
+`e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
+
+Termination after what may be considered excessive computation is also important.
+`nls()` stops after `maxiter` "iterations".  
+Unfortunately, the meaning of "iteration" varies among programs and requires 
+careful examination of the
+code. We prefer to use the number of times the residuals or the jacobian have
+been computed and put upper limits on these. Our codes exit (terminate) 
+when these limits are reached. Generally we prefer larger limits than the 
+default `maxiter = 50` of `nls()`,
+but that may reflect the more difficult problems we have encountered because 
+users consult us when standard tools have given unsatisfactory results. 
+
+## Jacobian calculation
+
+Gauss-Newton/Marquardt methods all need a Jacobian matrix at each iteration. 
+By default, `nlsr::nlxb()` will try to evaluate this using analytic 
+expressions using symbolic and automatic differentiation tools. 
+When using formula specification of the model, `nls()`, `minpack.lm::nlsLM()`
+and `gslnls::gsl_nls()` use a finite difference approximation to compute the
+Jacobian, though `gsl_nls()` does have an option to attempt symbolic expressions.
+
+When The Jacobian code as 
+the "gradient" attribute of the output of the Jacobian function. This 
+lets us embed the code 
+for the Jacobian as this attribute of the **residual** function so that the call 
+to `nlfb()` can be made with the same name used for 
+both residual and Jacobian function arguments. This programming trick saves a 
+lot of trouble for the package developer, but it can be a nuisance for users 
+trying to understand the code. 
+
+Generally `nls()`, `nlsLM()` and `gsl_nls()` use a fairly 
+simple forward difference approximation of derivatives for the Jacobian
+from the base-R `stats` package called `numericDeriv()`. A central 
+approximation can be specified in control parameters. 
+Package `nlsr` provides, via appropriate calling syntax, four approximation 
+options, with a further control `ndstep` for the size of the
+step used in the approximation. 
+
+Analytic Jacobian code can be provided to `nls()`, `nlsLM()` and `gsl_nls()`,
+and most `selfStart` models that automatically provide starting parameters
+also include such code. There is documentation in R
+of `selfStart`, but the construction of them is non-trivial. Their use with
+`nlsr` is described in the "Introduction to nlsr" vignette. However, since `nlsr`
+generally can use very crude starting values, we have rarely needed them. 
+
 
 -------------------------------------------------
 
 
 
-
-`nlsr` tries to find solutions from very poor initial parameter values. While
-this is not always possible, `nslr` has generally been able to succeed in finding
-solutions, even when all parameters are started at 1. Let us compare its results
-with those of `nls()` and `nlsLM()`.
 
 
 **nlsr** has functions to find a set of parameters that minimizes the sum of 
@@ -381,40 +581,6 @@ Existing R tools that are similar to `nlxb()` are `nls()` and `minpack.lm::nlsLM
 
 There are several important differences in approach and results, some of which 
 are detailed in this document.
-
-### Output object 
-
-The output object of `nlxb()` is smaller than that of `nls()` and is focused on 
-the solution and its properties
-rather than the **modeling** task. That is, package `nlsr` emphasizes the solution 
-of the nonlinear least squares problem rather than the estimation of a nonlinear 
-model that fits or explains the data. `nls()` and `nlsLM` return an object of 
-class `nls`, which allows for
-a number of specialized modeling and diagnostic extensions. For compatibility, 
-the `nlsr` package has function `wrapnlsr()`, for which `nlsr()` is an alias. 
-This uses `nlxb()` to find good parameters, then calls `nls()` to return the class 
-`nls` object. Unless particular modeling features are needed, the use of 
-`wrapnlsr()` is unnecessary and wasteful of resources.
-
-### Jacobian calculation
-
-Internally, `nlxb()` uses symbolic and automatic differentiation tools to create 
-the residual and Jacobian functions needed for `nlfb()` then uses it to solve 
-the relevant nonlinear least squares minimization problem. 
-
-As with other nonlinear least squares packages, we provide the Jacobian code as 
-the "gradient" attribute of the Jacobian function. This lets us embed the code 
-for the Jacobian as this attribute of the **residual** function so that the call 
-to `nlfb()` can be made with the same name used for 
-both residual and Jacobian function arguments. This programming trick saves a 
-lot of trouble for the package developer, but it can be a nuisance for users 
-trying to understand the code. 
-
-Generally `nls()` and `nlsLM()` use a fairly simple forward difference 
-approximation of derivatives for the Jacobian, though a central approximation 
-can be specified in control parameters. Package `nlsr` provides four approximation 
-options, with a further control `ndstep` for the size of the
-step used in the approximation.
 
 ### Stabilization of Gauss-Newton computations
 
@@ -478,143 +644,6 @@ and overly patched, difficult to maintain, and its underlying methods could
 be improved. Various workers have developed packages to overcome these 
 concerns, and we will address some of these here.
 
-## Feature: Convergence and termination tests (FIXED)
-
-A previous issue with `nls()` that prevented it from providing parameter estimates for zero-residual
-(i.e., perfect fit) data was corrected thanks to suggestions by one of us. 
-
-In the manual page for `nls()` in R 4.0.0 there is the warning:
-
->  **Do not use `nls` on artificial "zero-residual" data.**
-
->  The `nls` function uses a relative-offset convergence criterion
-  that compares the numerical imprecision at the current parameter
-  estimates to the residual sum-of-squares.  This performs well on data of
-  the form 
-  
->  $$  y = f(x, \theta) + eps $$
-  
->  (with `var(eps) > 0`).  It fails to indicate convergence on data of the form
-
->  $$  y = f(x, \theta)  $$ 
-  
->  because the criterion amounts to comparing two components of the round-off 
-  error.
-
->  If you wish to test `nls` on artificial data please add a noise component, 
-  as shown in the example below.
-
-This amounted to admitting R cannot solve well-posed problems unless data is polluted
-with errors. 
-
-This issue can be easily resolved. The "termination test" for the **program** rather than for 
-"convergence" of the underlying **algorithm** is the Relative Offset Convergence Criterion 
-(see @BatesWatts81). This projects the proposed step in the parameter vector on the gradient 
-and estimates how much the sum of squares loss function should decrease. This estimate is divided 
-by the current size of the loss function to avoid scale issues.
-When we have "converged", the estimated
-decrease is very small. However, with small residuals,
-the sum of squares loss function is (almost) zero and we get the possibility of a 
-zero-divide failure. 
-
-Adding a small quantity to the loss function before dividing avoids trouble. 
-In 2021, one of us (J. Nash) proposed that `nls.control()` have an additional parameter `scaleOffset` 
-with a default value of zero. Setting it to a small number -- 1.0 is 
-a reasonable choice --
-allows small-residual problems (i.e., near-exact fits) to be dealt with easily. We call this the
-**safeguarded relative offset convergence criterion**. The default value gives the legacy behaviour.
-We are pleased to note that this improvement is now in the R distributed code since version 4.1.0.
-
-<!-- ### Example of a small-residual problem -->
-
-<!-- ``` -->
-<!-- t <- -10:10 -->
-<!-- y <- 100/(1 + .1 * exp(-0.51 * t)) -->
-<!-- lform <- y ~ a/(1 + b * exp(-c * t)) -->
-<!-- ldata <- data.frame(t = t, y = y) -->
-<!-- plot(t, y) -->
-<!-- lstartbad <- c(a = 1, b = 1, c = 1) -->
-<!-- lstart2 <- c(a = 100, b = 10, c = 1) -->
-<!-- nlsr::nlxb(lform, data = ldata, start = lstart2) -->
-<!-- nls(lform, data = ldata, start = lstart2, trace = TRUE) -->
-<!-- # Fix with scaleOffset -->
-<!-- nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0)) -->
-<!-- sessionInfo() -->
-<!-- ``` -->
-
-<!-- Edited output of as small example follows: -->
-
-<!-- ``` -->
-<!-- > t <- -10:10 -->
-<!-- > y <- 100/(1 + .1 * exp(-0.51 * t)) -->
-<!-- > lform <- y ~ a/(1 + b * exp(-c * t)) -->
-<!-- > ldata <- data.frame(t=t, y=y) -->
-<!-- > plot(t,y) -->
-<!-- > lstartbad <- c(a = 1, b = 1, c = 1) -->
-<!-- > lstart2 <- c(a = 100, b = 10, c = 1) -->
-<!-- > nlsr::nlxb(lform, data = ldata, start = lstart2) -->
-<!-- nlsr object: x  -->
-<!-- residual sumsquares =  1.007e-19  on  21 observations -->
-<!--     after  13    Jacobian and  19 function evaluations -->
-<!--   name            coeff          SE       tstat      pval      gradient    JSingval    -->
-<!-- a                    100     2.679e-11  3.732e+12  1.863e-216  -6.425e-11       626.6   -->
-<!-- b                    0.1      3.78e-13  2.646e+11  9.125e-196  -3.393e-08       112.3   -->
-<!-- c                   0.51       6.9e-13  7.391e+11  8.494e-204   1.503e-08       2.791   -->
-<!-- > nls(lform, data = ldata, start = lstart2, trace = TRUE) -->
-<!-- 40346.    (1.08e+00): par = (100 10 1) -->
-<!-- 11622.    (2.93e+00): par = (101.47 0.49449 0.71685) -->
-<!-- 5638.0    (1.08e+01): par = (102.23 0.38062 0.52792) -->
-<!-- 642.08    (1.04e+01): par = (102.16 0.22422 0.41935) -->
-<!-- 97.712    (1.79e+01): par = (100.7 0.14774 0.45239) -->
-<!-- 22.250    (1.78e+02): par = (99.803 0.093868 0.50492) -->
-<!-- 0.025789  (1.33e+03): par = (100.01 0.10017 0.50916) -->
-<!-- 6.0571e-08 (7.96e+05): par = (100 0.1 0.51) -->
-<!-- 4.7017e-19 (1.86e+04): par = (100 0.1 0.51) -->
-<!-- 1.2440e-27 (5.71e-01): par = (100 0.1 0.51) -->
-<!-- 1.2440e-27 (5.71e-01): par = (100 0.1 0.51) -->
-<!-- ... (approx 40 lines omitted) -->
-<!-- 1.2440e-27 (5.71e-01): par = (100 0.1 0.51) -->
-<!-- Error in nls(lform, data = ldata, start = lstart2, trace = TRUE) :  -->
-<!--   number of iterations exceeded maximum of 50 -->
-<!-- > # Fix with scaleOffset -->
-<!-- > nls(lform, data = ldata, start = lstart2, trace = TRUE, control = list(scaleOffset = 1.0)) -->
-<!-- 40346.      (1.08e+00): par = (100 10 1) -->
-<!-- 11622.      (2.91e+00): par = (101.47 0.49449 0.71685) -->
-<!-- 5638.0      (9.23e+00): par = (102.23 0.38062 0.52792) -->
-<!-- 642.08      (5.17e+00): par = (102.16 0.22422 0.41935) -->
-<!-- 97.712      (2.31e+00): par = (100.7 0.14774 0.45239) -->
-<!-- 22.250      (1.11e+00): par = (99.803 0.093868 0.50492) -->
-<!-- 0.025789    (3.79e-02): par = (100.01 0.10017 0.50916) -->
-<!-- 6.0571e-08  (5.80e-05): par = (100 0.1 0.51) -->
-<!-- 4.7017e-19  (1.62e-10): par = (100 0.1 0.51) -->
-<!-- Nonlinear regression model -->
-<!--   model: y ~ a/(1 + b * exp(-c * t)) -->
-<!--    data: ldata -->
-<!--      a      b      c  -->
-<!-- 100.00   0.10   0.51  -->
-<!--  residual sum-of-squares: 4.7e-19 -->
-<!-- Number of iterations to convergence: 8  -->
-<!-- Achieved convergence tolerance: 1.62e-10 -->
-<!-- ``` -->
-
-### More general termination tests
-
-The convergence criterion above, the principal termination control of `nls()`, leaves out 
-some possibilities that could
-be useful for some problems. The package `nlsr` (@nlsr2019manual) already offers both 
-the safeguarded relative offset test (**roffset**) as well as a **small sum of 
-squares** test (**smallsstest**) that compares the latest evaluated sum of squared
-(weighted) residuals to `e4` times the initial sum of squares, where
-`e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
-
-We note that `nls()` uses a termination test to stop after `maxiter` "iterations". 
-Unfortunately, the meaning of "iteration" varies among programs and requires 
-careful examination of the
-code. We prefer to use the number of times the residuals or the jacobian have
-been computed and put upper limits on these. Our codes exit (terminate) when these limits
-are reached. Generally we prefer larger limits than the default `maxiter = 50` of `nls()`,
-but that may reflect the more difficult problems we have encountered because 
-users consult us when standard tools have given unsatisfactory results. 
 
 ## Feature: Failure when Jacobian is computationally singular
 
