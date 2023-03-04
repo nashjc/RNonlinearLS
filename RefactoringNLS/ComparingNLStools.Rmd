@@ -142,7 +142,12 @@ but there is the possibility of using symbolic or automatic differentiation,
 and there are particular models where workers have provided code for the
 Jacobian.
 
-<<<<<<< HEAD
+### Algorithm and termination choices
+
+Iterative algorithms need to be stopped at some point, and how termination
+is forced may alter results. Furthermore, even supposedly similar algorithms
+may differ greatly in detail. 
+
 ### Constraints on parameters
 
 Reality often imposes conditions on parameters. While general constraints can
@@ -151,8 +156,10 @@ solvers. For some reason, fixed parameters (masks) are not often considered,
 but are very convenient when a parameter has a commonly accepted value that we
 later wish to allow to be estimated from the data.
 
-=======
->>>>>>> 9663f54c56ad936fc4d18148ce44ee74fe5441e8
+### Special capabilities
+
+?? weighting, indexed parameters, partially linear ...
+
 ### Output 
 
 While the aim of nonlinear estimation is to return a set of parameters for a
@@ -216,7 +223,7 @@ residual vector is a function of $p$. The second form
 has a minor advantage in avoiding a potential sign error 
 if we need to differentiate to get gradients etc. 
 
-### Loss function
+### The loss function and its minimization
 
 The general approach of nonlinear optimizers, of which nonlinear least squares
 solvers are usually a subset, is to try to reduce the loss function (or objective
@@ -224,24 +231,71 @@ function) defined by the sum of squares of the residuals ($y - model()$) by
 altering the model parameters from some starting guess. In all general 
 methods of which we are aware, this is an iterative process. 
 
+Let us consider there are $n$ parameters and $m$ residuals. 
 We note several useful quantities
 
 Loss function:
-$$ S(p) = r' r$$
+$$ S(p) = r' r = \sum_{i=1}^m { r_i^2 }$$
 Gradient of $S(p)$:
 $$ 2 * J' r$$
 where the Jacobian $J$ is given by elements
 $$ J_{i,j} = \partial r_i / \partial p_j $$
 and the Hessian is defined by elements
-$$ \partial ^2 S(p) / {\partial p_i \partial p_j} $$
-?? how to succinctly write the Hessian in terms of J' J
+$$ H_{i,j} = \partial ^2 S(p) / {\partial p_i \partial p_j} $$
+If we expand the Hessian for nonlinear least squares problems, we find
 
-`nlsr` tries to find solutions from very poor initial parameter values. While
-this is not always possible, `nslr` has generally been able to succeed in finding
-solutions, even when all parameters are started at 1. Let us compare its results
-with those of `nls()` and `nlsLM()`.
+$$  H_{i,j} = \sum_{k = 1}^m{ J_{k,i} J_{k,j}}  + \sum_{k = 1}^m {r_k * \partial{r_k}/{\partial p_i \partial p_j}}$$
+Let us use $D_{i,j}$ for the elements of the second term of this expression.
+What is generally called **Newton's method** for function minimization tries
+to set the gradient to zero (to find a stationary point of the function $S(p)$).
+This leads to the **Newton's equation**
+
+$$ H \delta = -g $$
+given a set of parameters $p$, we solve this equation for $\delta$, adjust $p$
+to $p + \delta$ and iterate, hopefully to converge on a solution.
+
+Applying this to a sum of squares problem gives
+
+$$ H \delta = (J'J + D) \delta = - J' r$$
+In this expression, only the elements of $D$ have second partial derivatives. 
+Gauss, attempting to model planetary orbits, had small residuals, and noted
+that these multiplied the second partial derivatives of $r$, so he approximated
+
+$$ H \approx J' J$$
+by assuming $D \approx 0$. This results in the Gauss-Newton method where we
+solve 
+
+$$ J' J \delta = - J' r$$
+though we can avoid some loss of accuracy by NOT forming the inner product matrix
+$J' J$ by solving the linear least squares matrix problem
+
+$$ J \delta \approx -r $$
+which may be accomplished by a variety of matrix decomposition methods. 
+
+In reality, there are many problems were $D$ should not be ignored, but the work
+to compute it precisely is considerable. A number of work-arounds have been 
+proposed, of which the Levenberg-Marquardt (@Levenberg1944, @Marquardt1963) is
+the most commonly used. Henceforth we will simply say "Marquardt" as we believe
+he was the first to actually incorporate the ideas into a practical computer
+program. 
+
+The suggestion is that $D$ be replaced by a multiple of the unit matrix or else
+a multiple of the diagonal part of $J' J$. For machines with exceptionally low
+precision arithmetic found on some minicomputers in the 1970s, one of us suggested
+a linear combination of these ideas, as with low precision, some elements of 
+$J' J$ could underflow to zero (@jn77ima). We note that the various choices for
+$D$, especially the scaling multiple, as well as possible line search along the
+direction $\delta$ rather than a unit step, give rise to a panoply of variant
+algorithms. "Marquardt's method" is a family of methods. Fortunately, most choices
+work well.
 
 ### Problem setup
+
+Let us specify in R the three model formulae and set some starting
+values for parameters. These starting points are NOT equivalent, and
+are deliberately crude choices. Workers performing many calculations 
+of a similar nature should try to provide good starting points to reduce
+computation time and the chance a false solution is found.
   
 ```{r ex02set, echo=TRUE}
 # model formulas
@@ -255,9 +309,63 @@ sts1<-c(c1=1, c2=1, c3=1)
 stt1<-c(Asym=1, xmid=1, scal=1)
 ```
 
+It is also possible to provide R functions for the residual and Jacobian. 
+This is usually more work for the user if the formula setup is possible.
+To illustrate, we show the functions for the unscaled 3 parameter logistic.
+
+```{r ex02fn, echo=TRUE}
+# Logistic3U
+hobbs.res  <-  function(x){ # scaled Hobbs weeds problem -- residual
+  # This variant uses looping
+  if(length(x) != 3) stop("hobbs.res -- parameter vector n!=3")
+  y  <-  c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443, 
+           38.558, 50.156, 62.948, 75.995, 91.972)
+  tt  <-  1:12
+  res  <-  x[1]/(1+x[2]*exp(-x[3]*tt)) - y
+}
+
+hobbs.jac  <-  function(x) { # scaled Hobbs weeds problem -- Jacobian
+  jj  <-  matrix(0.0, 12, 3)
+  tt  <-  1:12
+  yy  <-  exp(-x[3]*tt)
+  zz  <-  1.0/(1+x[2]*yy)
+  jj[tt,1]   <-   zz
+  jj[tt,2]   <-   -x[1]*zz*zz*yy
+  jj[tt,3]   <-   x[1]*zz*zz*yy*x[2]*tt
+  attr(jj, "gradient") <- jj
+  jj
+}
+```
+
+## Estimation of models specified as formulas
+
+Using a formula specification was one of the principal advances made
+when `nls()` became available in S sometime in the 1980s. It uses a
+Gauss-Newton (i.e., unstabilized) iteration with step reduction line
+search. This works very efficiently as long as $J$ is not ill-conditioned.
+In a one-parameter problem, think of $J$ as a very small number so that
+we need to watch for a zero-divide or 0/0 situation in computing $\delta$.
+
+```{r ex02nls}
+unls1<-try(nls(formula=frmu, start=stu1, data=weeddf))
+summary(unls1)
+snls1<-try(nls(formula=frms, start=sts1, data=weeddf))
+summary(snls1)
+tnls1<-try(nls(formula=frmt, start=stt1, data=weeddf))
+summary(tnls1)
+cat("\n")
+```
+
 
 -------------------------------------------------
 
+
+
+
+`nlsr` tries to find solutions from very poor initial parameter values. While
+this is not always possible, `nslr` has generally been able to succeed in finding
+solutions, even when all parameters are started at 1. Let us compare its results
+with those of `nls()` and `nlsLM()`.
 
 
 **nlsr** has functions to find a set of parameters that minimizes the sum of 
