@@ -37,6 +37,36 @@ different tools for nonlinear least squares modeling in R. Discussion of
 these matters is relevant to improving R generally as well as its 
 nonlinear estimation tools.
 
+
+## The `nls()` function
+
+`nls()` is the tool in base R, the primary software software distribution
+from the Comprehensive R Archive Network (*https://cran.r-project.org*),
+for estimating nonlinear statistical models. The function dates to the 1980s and the 
+work related to @bateswatts in S (see 
+*https://en.wikipedia.org/wiki/S_%28programming_language%29*). 
+
+The `nls()` function has a remarkable and comprehensive set of capabilities for 
+estimating nonlinear models that are expressed as **formulas**. In particular, we
+note that it
+
+- handles formulas that include R functions, even ones which call calculations in
+  other programming languages
+- allows data to be weighted or subset
+- can estimate bound constrained parameters
+- provides a mechanism for handling partially linear models
+- permits parameters to be indexed over a set of related data
+- produces measures of variability (i.e., standard error estimates) for the 
+estimated parameters
+- has related profiling capabilities for exploring the likelihood surface as 
+parameters are changed
+- links to a number of pre-coded (`selfStart`) models.
+
+With such a range of features and long history, the code has become untidy 
+and overly patched, difficult to maintain, and its underlying methods could
+be improved. Various workers have developed packages to overcome these 
+concerns, and we will address some of these here.
+
 ## Scope of our comparison
 
 The tools we will compare are the base-R `nls()` function 
@@ -320,6 +350,18 @@ sts1<-c(c1=1, c2=1, c3=1)
 stt1<-c(Asym=1, xmid=1, scal=1)
 ```
 
+One of the useful features of `nls()` is the possibility of a `selfStart` model,
+where starting parameter values are not required. We discuss aspects of this
+feature at several points below. However, in the event that a `selfStart` model 
+is not available, `nls()` sets all the starting parameters 
+to 1. This is, in our view, tolerable, but could be improved by using a set of values
+that are all slightly different, which, in the case of the example 
+model $y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)$
+would avoid a singular Jacobian because $b$ and $d$ were equal in value. 
+Program modifications to give a sequence like  1.0, 1.1, 1.2, 1.3 for the four 
+parameters are fairly obvious. However, users may want to avoid equal parameter
+starts in situations like this when setting starting values.
+
 It is also possible to provide R functions for the residual and Jacobian. 
 This is usually more work for the user if the formula setup is possible.
 To illustrate, we show the functions for the unscaled 3 parameter logistic.
@@ -374,8 +416,12 @@ tnls1<-try(nls(formula=frmt, start=stt1, data=weeddf))
 summary(tnls1)
 ```
 
+Here we see the infamous "singular gradient" termination message of `nls()`. 
+Questions appear quite frequently on the R-help mailing list where users
+have encountered this termination result.
+
 Let us consider three alternatives to `nls()`: `nlsr::nlxb()`, `minpack.lm::nlsLM()`
-and `gslnls::gsl_nls()`, which we will call the **class nls** methods.
+and `gslnls::gsl_nls()`.
 We use default methods and controls in these examples. 
 
 ### Solution attempts with nlsr
@@ -390,6 +436,14 @@ pshort(snlx1) # or print(snlx1)
 tnlx1<-try(nlxb(formula=frmt, start=stt1, data=weeddf))
 pshort(tnlx1) # alternatively print(tnlx1)
 ```
+
+Though we have found solutions, the Jacobian is essentially singular as 
+shown by its singular
+values. Note that these are **displayed** by package `nlsr` in a single column in
+the output to provide a compact layout, but the values do **NOT** correspond to 
+the individual parameters in 
+whose row they appear; they are a property of the whole problem.
+
 
 ### Solution attempts with minpack.lm
 
@@ -559,6 +613,18 @@ default `maxiter = 50` of `nls()`,
 but that may reflect the more difficult problems we have encountered because 
 users consult us when standard tools have given unsatisfactory results. 
 
+### When to compute ancillary information
+
+Tools that produce a class `nls` output object create a rich set of functions
+and structures that are then used in a variety of modeling tasks. By contrast,
+`nlsr` computes quantities as they are requested or needed, with additional
+features in separate functions. These two approaches
+lead to different consequences for performance and how features are
+provided. `nlsr` has antecendants in the methods of @cnm79, where storage for
+data and programs was at a ridiculous premium in the small computers of the era.
+Thus the code in `nlsr` is likely of value for workers to copy and modify it
+for customized tools.
+
 ## Jacobian calculation
 
 Gauss-Newton/Marquardt methods all need a Jacobian matrix at each iteration. 
@@ -585,12 +651,40 @@ Package `nlsr` provides, via appropriate calling syntax, four approximation
 options, with a further control `ndstep` for the size of the
 step used in the approximation. 
 
+### Jacobian code in selfStart models
+
 Analytic Jacobian code can be provided to `nls()`, `nlsLM()` and `gsl_nls()`,
 and most `selfStart` models that automatically provide starting parameters
 also include such code. There is documentation in R
-of `selfStart` models, but the construction of them is non-trivial. Their use with
+of `selfStart` models, but the construction of them is non-trivial. A number 
+of such models are included with base R in `./src/library/stats/R/zzModels.R` file 
+with package `nlraa` (@MiguezNLRAA2021) providing a richer set. 
+These provide the Jacobian in the "gradient" attribute of the "one-sided" formula
+that defines
+each model, and these Jacobians may be the analytic forms. 
+
+The `nls()` function, after
+computing the "right hand side" or `rhs` of the residual, then checks to see if the
+"gradient" attribute is defined, and, if not, uses `numericDeriv` to compute a 
+Jacobian
+into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()`
+functions. The use of analytic Jacobians
+almost certainly contributes to the good performance of `nls()` on `selfStart` 
+models.
+
+The use of `selfStart` models with
 `nlsr` is described in the "Introduction to nlsr" vignette. However, since `nlsr`
-generally can use very crude starting values, we have rarely needed them. 
+generally can use very crude starting values, we have rarely needed them, though
+it should be pointed out that our work is primarily diagnostic. If we were carrying
+out a large number of similar estimations, then good initial parameters are 
+critical to efficiency.
+
+In considering `selfStart` models, we noted that the base-R function `SSlogis`
+is intended to solve our example problem **Logistic3T**, but found initial 
+parameters for `nls()` by using a completely separate solver, then rerunning the
+solution with the default algorithm from the derived -- and final -- parameters.
+To provide simpler estimates of starting parameters, the function `SSlogisJN`
+is now part of package `nlsr`.
 
 ## Bounds constraints on parameters
 
@@ -634,6 +728,8 @@ anlx1b <- nlxb(frms, start=sts1, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
 pshort(anlx1b)
 ```
 
+### Fixed parameters (masks)
+
 Let us try to fix (mask) the first parameter in the first two example problems.
 
 ```{r ex10m, echo=TRUE}
@@ -676,7 +772,7 @@ print(anlxmskall)
 estimates. For `nlsr` we have **chosen** to suppress calculation of 
 approximate standard 
 errors in the parameters when constraints are active, though we believe this 
-worthy of discussion and further investigation.
+policy worthy of discussion and further investigation.
 
 ## Stabilization of Gauss-Newton computations
 
@@ -700,93 +796,109 @@ too frequently and unnecessarily with `singular gradient` errors.
 
 An important choice made in developing `nlsr` was to code entirely within the R 
 programming language. `nls()` uses a mix of R, C and Fortran, as does `minpack.lm`. 
-As far as we are aware, gslnls
-Generally, I believe that keeping to a single programming language allows for 
-easier maintenance and upgrades. On the other hand, R is usually somewhat slower 
-in performing computations because it keeps track of names and structures and 
+`gslnls` is an R wrapper to various C-language routines in the Gnu Scientific 
+Library (@GSL-manual).
+Generally, we believe that keeping to a single programming language can allow for 
+easier maintenance and upgrades. It also avoids some work when there are changes 
+or upgrades to libraries for the non-R languages. 
+On the other hand, R is usually somewhat slower 
+than some other computing systems because it keeps track of names and structures and 
 because it is usually interpreted rather than compiled. In recent years the 
 performance penalty for using code entirely in R has been much reduced
 with the just-in-time compiler and other improvements, so that using an all-R 
 package offers acceptable performance. Indeed, in `nlsr` the use of R may be 
-less of a performance cost than the attempt to ensure the solution has been found, 
-which forces more iterations to be used.
+less of a performance cost than a policy of aggressively seeking a solution,
+which can cause more iterations to be used.
+
+## Data sources to problems
+
+`nls()` can be called without specifying the `data` argument. In this case, it will
+search in the available environments (i.e., workspaces) for suitable data objects. 
+We do NOT like this approach, but it is "the R way". R allows users to leave many 
+objects in the default (`.GlobalEnv`) workspace. Moreover, users have to actively 
+suppress saving this workspace (`.RData`) on exit; otherwise, any such file in 
+the path, 
+when R is launched, will be loaded. The overwhelming proportion of R users in our
+acquaintance avoid saving the workspace because of the danger of lurking data and
+functions which may cause unwanted results.
+
+Nevertheless, to provide compatible behaviour with `nls()` and R generally, 
+programs need to ensure equivalent behaviour, but users should test that the 
+operation is as they intend. 
+
+### Feature: Subsetting
+
+`nls()` and other class `nls` tools accept an argument `subset`. This acts through the mediation of `model.frame` and is not clearly obvious in the source code files `/src/library/stats/R/nls.R` and `/src/library/stats/src/nls.C`. 
+
+Having `subset` at the level of the call to a function like
+`nls()` saves effort, but it does mean that the programmer of the 
+solver needs to be aware of the
+source (and value) of objects such as the data, residuals and Jacobian. 
+This is overly complicated. By preference, 
+we would implement subsetting by means of zero-value weights, with observation counts
+(and degrees of freedom) computed via the numbers of non-zero weights. Alternatively,
+we would extract a working dataframe from the relevant elements in the original.
+
+### Feature: na.action
+
+`na.action` is an argument to the `nls()` function, but it does not appear obviously in the source code, often being handled behind the scenes after referencing the option `na.action`. Yet this feature also changes the data supplied to our nonlinear
+least squares solver. 
+
+A useful, but possibly dated, description is given in:
+*https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/*.
+The typical default action, which can be seen by using the command
+`getOption("na.action")`
+is `na.omit`. This option essentially omits from computations any observations
+containing missing values (i.e. any row of a data frame containing an NA). 
+`na.exclude` does much of the same for computations, but keeps the rows with NA 
+elements so that predictions are in the correct row position. We recommend that 
+workers actually test output to verify the behaviour is as wanted.
+See *https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r*.
+
+As with `subset`, our concern with `na.action` is that users may be unaware of the
+effects of an option they may not even be aware has been set. Should `na.fail` be the default?
+
+## Feature: model frame
+
+`model` is an argument to the `nls()` and related functions, which is documented as:
+
+> **model** logical. If true, the model frame is returned as part of the object. Default is FALSE.
+
+Indeed, the argument only gets used when `nls()` is about to return its result
+object, and the
+element `model` is NULL unless the calling argument `model` is TRUE. (Using the same 
+name could
+be confusing.) However, the model frame is used within the function code in the form 
+of the object
+`mf`. We feel that users could benefit from more extensive documentation and 
+examples of its use since it is used to implement features like `subset`.
+
+
+## Weights on observations
+
+All four main tools we consider here allow a `weights` argument that
+specifies a vector of fixed weights the same length as the number of residuals. 
+Each residual is multiplied by the square root of the corresponding weight. 
+Where available, the values returned by the
+`residuals()` function are weighted, and the `fitted()` or `predict()` function are 
+used to compute raw residuals.
+
+While fixed weights may be useful, there are a number of problems for which
+we want weights that are determined at least partially from the model 
+parameters, for
+example, a measure of the standard deviation of observations.
+
+Such dynamic weighting situations are discussed in the vignette 
+"Introduction to nlsr" of package `nlsr` in section 
+*Weights that are functions of the model parameters*. Care is advised
+in applying such ideas.
+
 
 
 
 ---OLD VERSION BELOW ------------------------
 
 
-# The `nls()` function: strengths and shortcomings
-
-`nls()` is the tool in base R, the primary software software distribution
-from the Comprehensive R Archive Network (*https://cran.r-project.org*),
-for estimating nonlinear statistical models. The function dates to the 1980s and the 
-work related to @bateswatts in S (see 
-*https://en.wikipedia.org/wiki/S_%28programming_language%29*). 
-
-The `nls()` function has a remarkable and comprehensive set of capabilities for 
-estimating nonlinear models that are expressed as **formulas**. In particular, we
-note that it
-
-- handles formulas that include R functions, even ones which call calculations in
-  other programming languages
-- allows data to be weighted or subset
-- can estimate bound constrained parameters
-- provides a mechanism for handling partially linear models
-- permits parameters to be indexed over a set of related data
-- produces measures of variability (i.e., standard error estimates) for the estimated parameters
-- has related profiling capabilities for exploring the likelihood surface as parameters are changed
-- links to a number of pre-coded (`selfStart`) models 
-
-With such a range of features and long history, the code has become untidy 
-and overly patched, difficult to maintain, and its underlying methods could
-be improved. Various workers have developed packages to overcome these 
-concerns, and we will address some of these here.
-
-
-## Feature: Failure when Jacobian is computationally singular
-
-This refers to the infamous "singular gradient" termination message of `nls()`. 
-A Google search of 
-
-```
-R nls "singular gradient"
-```
-
-gets over 4000 hits that are spread over some years. This could be because the 
-Jacobian is poorly approximated (see **Jacobian computation** below). However,
-it is common in nonlinear least squares computations that the Jacobian is very close
-to singular for some values of the model parameters. In such cases, we need to find
-an alternative algorithm to the Gauss-Newton iteration of `nls()`. The most common
-work-around is the Levenberg-Marquardt stabilization (see @Marquardt1963, @Levenberg1944, 
-@jn77ima), and versions of it have been implemented in packages `minpack.lm` and `nlsr`.
-In our work, we prepared experimental prototypes of `nls` that incorporate
-stabilization, but integration with all the features of `nls()` has proved difficult.
-
-Let us consider a 'singular gradient' example 
-*https://stats.stackexchange.com/questions/13053/singular-gradient-error-in-nls-with-correct-starting-values*.
-`nlsr::nlxb()` displays the singular values of the Jacobian, which confirm that the `nls()` error message is correct,
-but this is not helpful in obtaining a solution.
-
-```{r SESingGrad}
-reala <- -3; realb <- 5; realc <- 0.5; realr <- 0.7; realm <- 1 # underlying parameters
-x <- 1:11 # x values; 11 data points
-y <- reala + realb * realr^(x - realm) + realc * x # linear + exponential function
-testdat <- data.frame(x, y) # save in a data frame
-strt <- list(a = -3, b = 5, c = 0.5, r = 0.7, m = 1) # give programs a good start
-jform <- y ~ a + b * r^(x - m) + c * x # Formula
-library(nlsr)
-linexp2 <- try(nlxb(jform, data = testdat, start = strt, trace = FALSE))
-linexp2 # Note singular values of Jacobian in rightmost column
-# We get an error with nls()
-linexp <- try(nls(jform, data = testdat, start = strt, trace = FALSE))
-```
-
-The Jacobian is essentially singular as shown by its singular
-values. Note that these are **displayed** by package `nlsr` in a single column in
-the output to provide a compact layout, but the values do **NOT** correspond to 
-the individual parameters in 
-whose row they appear; they are a property of the whole problem.
 
 ## Feature: Jacobian computation
 
@@ -826,92 +938,6 @@ can lead to different behaviour, though in our experience differences are usuall
   found a solution, though it can be debated whether such lucky accidents can be
   taken as an advantage.
 
-Note that the `selfStart` models in the base R `./src/library/stats/R/zzModels.R` file 
-and in package `nlraa` (@MiguezNLRAA2021) may
-provide the Jacobian in the "gradient" attribute of the "one-sided" formula that defines
-each model, and these Jacobians may be the analytic forms. The `nls()` function, after
-computing the "right hand side" or `rhs` of the residual, then checks to see if the
-"gradient" attribute is defined, and, if not, uses `numericDeriv` to compute a Jacobian
-into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()`
-functions. The use of analytic Jacobians
-almost certainly contributes to the good performance of `nls()` on `selfStart` models.
-
-## Feature: Weights on observations
-
-`nls()`, `nlsr::nlxb()` and `minpack.lm::nlsLM()` all have a `weights` argument that
-specifies a vector of weights the same length as the number of residuals. Each residual
-is multiplied by the square root of the corresponding weight. The values returned by the
-`residuals()` function are weighted, and the `fitted()` or `predict()` function are 
-used to compute raw residuals.
-
-## Feature: Subsetting
-
-`nls()` accepts an argument `subset`. This acts through the mediation of
-`model.frame` and is not clearly obvious in the source code files `/src/library/stats/R/nls.R` and 
-`/src/library/stats/src/nls.C`. 
-
-While the implementation of subset at the level of the call to `nls()` has a certain
-attractiveness, it does mean that the programmer of the solver needs to be aware of the
-source (and value) of objects such as the data, residuals and Jacobian. This is overly
-complicated. By preference, 
-we would implement subsetting by means of zero-value weights, with observation counts
-(and degrees of freedom) computed via the numbers of non-zero weights. Alternatively,
-we would extract a working dataframe from the relevant elements in the original.
-
-## Feature: na.action
-
-`na.action` is an argument to the `nls()` function, but it does not appear obviously in the
-source code, often being handled behind the scenes after referencing the option `na.action`.
-A useful, but possibly dated, description is given in:
-*https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/*.
-
-The typical default action, which can be seen by using the command `getOption("na.action")`
-is `na.omit`. This option essentially omits from computations any observations
-containing missing values (i.e. any row of a data frame containing an NA). 
-`na.exclude` does much of the same for computations, but keeps the rows with NA elements so 
-that predictions are in the correct row position. We recommend that workers actually test 
-output to verify the behaviour is as wanted.
-
-A succinct description of the issue is given in: *https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r*
-where the "Answer" states
-
-> The only benefit of `na.exclude` over `na.omit` is that the former will retain the 
-original number of rows in the data. This may be useful where you need to retain the 
-original size of the dataset - for example it is useful when you want to compare 
-predicted values to original values. With `na.omit` you will end up with fewer 
-rows so you won't as easily be able to compare.
-
-`na.pass` simply passes on data "as is", while `na.fail` will essentially stop if any missing
-values are present.
-
-Our concern with `na.action` is that users may be unaware of the effects of an option
-setting they may not even be aware has been set. Should `na.fail` be the default?
-
-## Feature: model frame
-
-`model` is an argument to the `nls()` function, which is documented as:
-
-> **model** logical. If true, the model frame is returned as part of the object. Default is FALSE.
-
-Indeed, the argument only gets used when `nls()` is about to return its result object, and the
-element `model` is NULL unless the calling argument `model` is TRUE. (Using the same name could
-be confusing.) However, the model frame is used within the function code in the form of the object
-`mf`. We feel that users could benefit from more extensive documentation and examples of its use.
-
-## Feature: Sources of data
-
-`nls()` can be called without specifying the `data` argument. In this case, it will
-search in the available environments (i.e., workspaces) for suitable data objects. 
-We do NOT like this approach, but it is "the R way". R allows users to leave many 
-objects in the default (`.GlobalEnv`) workspace. Moreover, users have to actively 
-suppress saving this workspace (`.RData`) on exit; otherwise, any such file in the path, 
-when R is launched, will be loaded. The overwhelming proportion of R users in our
-acquaintance avoid saving the workspace because of the danger of lurking data and
-functions which may cause unwanted results.
-
-Nevertheless, to provide compatible behaviour with `nls()`, competing programs 
-need to ensure equivalent behaviour, but users should test that the 
-operation is as they intend. 
 
 ## Feature: missing start vector and self-starting models
 
@@ -943,12 +969,6 @@ wonder why the programmers have chosen to save so many quantities in "hidden"
 variables, i.e., with names preceded by ".". These are then not displayed by the `ls()`
 command, making them difficult to access.
 
-In the event that a `selfStart` model is not available, `nls()` sets all the starting parameters 
-to 1. This is, in our view, tolerable, but could be improved by using a set of values
-that are all slightly different, which, in the case of the example model $y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)$
-would avoid a singular Jacobian because $b$ and $d$ were equal in value. 
-A sequence like  1.0, 1.1, 1.2, 1.3 for the four parameters 
-could be provided quite simply instead of all 1's.
 
 ### Strategic issues in `selfStart` models
 
