@@ -60,7 +60,8 @@ note that it
 estimated parameters
 - has related profiling capabilities for exploring the likelihood surface as 
 parameters are changed
-- links to a number of pre-coded (`selfStart`) models.
+- links to a number of pre-coded (`selfStart`) models that do not require
+  initial parameter values.
 
 With such a range of features and long history, the code has become untidy 
 and overly patched, difficult to maintain, and its underlying methods could
@@ -613,12 +614,100 @@ default `maxiter = 50` of `nls()`,
 but that may reflect the more difficult problems we have encountered because 
 users consult us when standard tools have given unsatisfactory results. 
 
+### Returned results of nls() and other tools
+
+The output of `nls()` is an object of class "nls" which has the following structure:
+
+>A list of
+
+>`m` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  an `nlsModel` object incorporating the model.
+
+>`data`	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;the expression that was passed to `nls` as the data argument. The actual \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$  data values are present in the environment of the `m` components, e.g., \newline $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ `environment(m$conv)`.
+
+>`call` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the matched call with several components, notably `algorithm`.
+
+>`na.action` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the `"na.action"` attribute (if any) of the model frame.
+
+>`dataClasses` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $~$the `"dataClasses"` attribute (if any) of the "`terms`" attribute of the \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ model frame.
+
+>`model` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;if `model = TRUE`, the model frame.
+
+>`weights` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if `weights` is supplied, the weights.
+
+>`convInfo` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; a list with convergence information.
+
+>`control` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the control `list` used, see the `control` argument.
+
+>`convergence, message` &nbsp;for an `algorithm = "port"` fit only, a convergence code (`0` for  \newline
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$convergence) and message.
+
+> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To use these is *deprecated*, as they are available from `convInfo` now.
+
+                  -----------------------------------------------------------
+
+The complexity of this object is a challenge to users. Let us use 
+`result` as the returned object from `nls()`, `minpack.lm::nlsLM()` or
+`gslnls::gsl_nls()`. For example, the `data` return element is an R symbol. To
+actually access the data from this element, we need to use the syntax:
+
+```
+eval(parse(text=result$data))
+```
+
+However, if the call is made with `model=TRUE`, then there is a returned element
+`model` which contains the data, and we can list its contents using:
+
+```
+ls(result$model)
+```
+
+and if there is an element called `xdata` that can be accessed as
+`result$model$xdata`.
+
+By contrast `nlsr::nlxb()` returns
+
+>`coefficients`    A named vector giving the parameter values at the supposed solution.
+
+>`ssquares` $~~~~~$ The sum of squared residuals at this set of parameters.
+
+>`resid` $~~~~~~~~~~$ The residual vector at the returned parameters.
+
+>`jacobian` $~~~~~$ The jacobian matrix (partial derivatives of residuals w.r.t. the 
+                parameters) at the \newline
+$~~~~~~~~~~~~~~~~~~~~$ returned parameters.
+
+>`feval` $~~~~~~~~~~$ The number of residual evaluations (sum of squares computations) used.
+
+>`jeval` $~~~~~~~~~~$ The number of Jacobian evaluations used.
+
+
+However, actually looking at the structure of a returned result gives a list of 11
+items. The extra 5 are:
+
+```
+ $ lower       : num [1:3] -Inf -Inf -Inf
+ $ upper       : num [1:3] Inf Inf Inf
+ $ maskidx     : int(0) 
+ $ weights     : NULL
+ $ formula     :Class 'formula'  language y ~ Asym/(1 + exp((xmid - tt)/scal))
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ - attr(*, "class")= chr "nlsr"
+```
+The result object from `nlsr::nlxb()` is still much smaller than the one `nls()` 
+returns. Moreover, `nlxb`
+explicitly returns the sum of squares as well as the residual vector and Jacobian. 
+The counts of evaluations are also returned.
+
 ### When to compute ancillary information
 
 Tools that produce a class `nls` output object create a rich set of functions
 and structures that are then used in a variety of modeling tasks. By contrast,
 `nlsr` computes quantities as they are requested or needed, with additional
-features in separate functions. These two approaches
+features in separate functions. For example, the singular values of the Jacobian 
+are actually computed in the `print` and `summary` methods for the result. 
+These two approaches
 lead to different consequences for performance and how features are
 provided. `nlsr` has antecendants in the methods of @cnm79, where storage for
 data and programs was at a ridiculous premium in the small computers of the era.
@@ -630,26 +719,57 @@ for customized tools.
 Gauss-Newton/Marquardt methods all need a Jacobian matrix at each iteration. 
 By default, `nlsr::nlxb()` will try to evaluate this using analytic 
 expressions using symbolic and automatic differentiation tools. 
-When using formula specification of the model, `nls()`, `minpack.lm::nlsLM()`
+When using a formula specification of the model, `nls()`, `minpack.lm::nlsLM()`
 and `gslnls::gsl_nls()` use a finite difference approximation to compute the
 Jacobian, though `gsl_nls()` does have an option to attempt symbolic expressions.
+Package `nlsr` provides, via appropriate calling syntax, four numeric approximation 
+options for the Jacobian, with a further control `ndstep` for the size of the
+step used in the approximation. 
 
-When The Jacobian code as 
-the "gradient" attribute of the output of the Jacobian function. This 
-lets us embed the code 
-for the Jacobian as this attribute of the **residual** function so that the call 
-to `nlfb()` can be made with the same name used for 
+Using the "gradient" attribute of the output of the Jacobian function to hold
+this matrix lets us embed this attribute of the **residual** function as well,
+so that the call to `nlfb()` can be made with the same name used for 
 both residual and Jacobian function arguments. This programming trick saves a 
 lot of trouble for the package developer, but it can be a nuisance for users 
 trying to understand the code. 
 
-Generally `nls()`, `nlsLM()` and `gsl_nls()` use a fairly 
-simple forward difference approximation of derivatives for the Jacobian
-from the base-R `stats` package called `numericDeriv()`. A central 
-approximation can be specified in control parameters. 
-Package `nlsr` provides, via appropriate calling syntax, four approximation 
-options, with a further control `ndstep` for the size of the
-step used in the approximation. 
+As far as we can understand the logic in `nls()`, the Jacobian computation during
+parameter estimation is carried out entirely within the called C-language program,
+and the R code function `numericDeriv()`, part of `./src/library/stats/R/nls.R`
+in the R distribution source code. This is used to provide Jacobian information in 
+the `nlsModel()` and `nlsModel.plinear()` functions, which are **not** exported for 
+general use. `gsl_nls()` also appears to use `numericDeriv()`. 
+
+`numericDeriv()` uses a 
+simple forward difference approximation of derivatives, though a central 
+difference approximation can be specified in control parameters. 
+We are unclear why `numericDeriv()` in base R calls `C_numeric_deriv`,
+as we were easily able to create a more compact version entirely in R. 
+See *https://github.com/nashjc/RNonlinearLS/tree/main/DerivsNLS*.
+
+`minpack.lm::nlsLM()` invokes `numericDeriv()` in its local 
+version of `nlsModel()`, but it appears to use an internal approximate Jacobian 
+code from 
+the original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
+can lead to different behaviour, though in our experience the differences are usually
+very minor.
+
+Minor numerical differences can give annoying results with ill-conditioned
+problems. 
+
+- A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a
+  poorly conditioned Jacobian and `nls()` fails with "singular gradient". 
+  Worse, numerical approximation to the Jacobian gives the error
+  "singular gradient matrix at initial parameter estimates" for `minpack.lm::nlsLM`
+  so that the Marquardt stabilization is unable to take effect, while the analytic
+  derivatives of `nlsr::nlxb` give a solution. 
+
+- Karl Schilling (private communication) provided an example where a model specified
+  with the formula `y ~ a * (x ˆ b)` causes `nlsr::nlxb` to fail because the partial
+  derivative w.r.t. `b` is `a * (x^b * log(x))`. If there is data for which `x = 0`,
+  the derivative is undefined, while the model can be computed. In such cases, 
+  we observed that `nls()` and 
+  `minpack.lm::nlsLM` found a solution, though this seems to be a lucky accident.
 
 ### Jacobian code in selfStart models
 
@@ -659,6 +779,7 @@ also include such code. There is documentation in R
 of `selfStart` models, but the construction of them is non-trivial. A number 
 of such models are included with base R in `./src/library/stats/R/zzModels.R` file 
 with package `nlraa` (@MiguezNLRAA2021) providing a richer set. 
+There are also some in the now-archived package `NRAIA`.
 These provide the Jacobian in the "gradient" attribute of the "one-sided" formula
 that defines
 each model, and these Jacobians may be the analytic forms. 
@@ -680,13 +801,38 @@ out a large number of similar estimations, then good initial parameters are
 critical to efficiency.
 
 In considering `selfStart` models, we noted that the base-R function `SSlogis`
-is intended to solve our example problem **Logistic3T**, but found initial 
-parameters for `nls()` by using a completely separate solver, then rerunning the
+is intended to solve our example problem **Logistic3T**, but that it finds initial 
+parameters for `nls()` by using a completely separate solver, then reruns the
 solution with the default algorithm from the derived -- and final -- parameters.
 To provide simpler estimates of starting parameters, the function `SSlogisJN`
 is now part of package `nlsr`.
 
+The `SSLogis` case is one where the `getInitial()` function (used to find
+starting values) actually calls `nls()` with a non-default algorithm. 
+Such circular references are, in our view, prone to creating errors
+in code maintenance.
+Users may also want to use these models with explicit starting values 
+other than those suggested by `getInitial()`.
+We are also surprised that the 
+analytic expressions for the Jacobian ("gradient") in the `SSLogis` R function 
+saves many quantities in "hidden"
+variables, i.e., with names preceded by ".". 
+These are then not displayed by the `ls()`
+command, making them difficult to access by users who may wish to create
+their own selfStart model by a copy and edit.
+Interactive tools, such as "visual fitting" (@nash1996nonlinear) might be
+worth considering as a way to find starting parameters, but we know of no
+R capability of this type.
+
+As a side note, the introduction of `scaleOffset` in R 4.1.1 to deal with the 
+convergence test for small residual problems now requires that the `getInitial()`
+function have dot-arguments (`...`) in its argument list. This illustrates the
+entanglement of many features in `nls()` that complicate its maintenance and
+improvement.
+
 ## Bounds constraints on parameters
+
+?? Arkajyoti -- we can probably trim these examples
 
 In some cases, we know that parameters cannot be bigger or smaller than some
 externally known limits. Cash reserves cannot be negative. Animals have a 
@@ -702,6 +848,8 @@ used in the call. Unfortunately, the documentation warns us:
    caution, especially where bounds are supplied.*
 
 - `gsl_nls()` does not offer bounds.
+
+- bounds are part of the default method for package `nlsr`.
 
 - `nlsLM()` includes bounds in the standard call, but we have observed cases
    where it fails to get the correct answer. From examination of the code,
@@ -728,6 +876,16 @@ anlx1b <- nlxb(frms, start=sts1, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
 pshort(anlx1b)
 ```
 
+### Philosophical considerations
+
+Bounds on parameters raise some interesting and difficult questions about how 
+uncertainty in parameter estimates should be computed or reported. That is, the
+traditional "standard errors" are generally taken to imply symmetric intervals about
+the point estimate in which the parameter may be expected to be found with some
+probability under certain assumptions.
+Bounds change those assumptions. Hence, `nlsr::nlxb()` does not compute standard
+errors nor their derived statistics when bounds are active.
+
 ### Fixed parameters (masks)
 
 Let us try to fix (mask) the first parameter in the first two example problems.
@@ -741,18 +899,18 @@ sts <- c(c1=2, c2=5, c3=3) # a default scaled starting vector (named!)
 traceval<-FALSE
 # fix first parameter
 anxbmsk1 <- try(nlxb(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
-			upper=c(200, 60, .3), trace=traceval))
+			upper=c(200, 60, 3), trace=traceval))
 print(anxbmsk1)
 anlM1 <- try(nlsLM(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
-			upper=c(200, 60, .3), trace=traceval))
+			upper=c(200, 60, 3), trace=traceval))
 summary(anlM1)
 # nls gives warnings
 anlsmsk1 <- try(nls(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
-		upper=c(200, 60, .3),  algorithm="port", trace=traceval))
+		upper=c(200, 60, 3),  algorithm="port", trace=traceval))
 summary(anlsmsk1)
 # Hobbs scaled problem with bounds, formula specification
 anlxmsks1 <- nlxb(frms, start=sts, data=weeddf, lower=c(2,0,0),
-                  upper=c(2,6,3))
+                  upper=c(2,6,30))
 print(anlxmsks1)
 anlshmsk1 <- nls(frms, start=sts, trace=traceval, data=weeddf, lower=c(2,0,0),
              upper=c(2,6,3), algorithm='port')
@@ -771,12 +929,13 @@ print(anlxmskall)
 `nlsr` has an output format that indicates the constraint status of the parameter
 estimates. For `nlsr` we have **chosen** to suppress calculation of 
 approximate standard 
-errors in the parameters when constraints are active, though we believe this 
+errors in the parameters when constraints are active because their meaning
+under constraints is unclear, though we believe this 
 policy worthy of discussion and further investigation.
 
 ## Stabilization of Gauss-Newton computations
 
-All four major mentioned must solve some variant of the Gauss-Newton 
+All four major tools illustrated must solve some variant of the Gauss-Newton 
 equations. `nls()` uses a modification of an approach suggested by @Hartley1961,
 while `nlsr`, `gslnls` and `minpack.lm` use flavours of @Marquardt1963. `gslnls`
 offers an accelerated Marquardt method and three alternative methods. We have 
@@ -887,7 +1046,6 @@ While fixed weights may be useful, there are a number of problems for which
 we want weights that are determined at least partially from the model 
 parameters, for
 example, a measure of the standard deviation of observations.
-
 Such dynamic weighting situations are discussed in the vignette 
 "Introduction to nlsr" of package `nlsr` in section 
 *Weights that are functions of the model parameters*. Care is advised
@@ -895,201 +1053,12 @@ in applying such ideas.
 
 
 
-
----OLD VERSION BELOW ------------------------
-
-
-
-## Feature: Jacobian computation
-
-`nls()`, with the `numericDeriv()` function, computes the Jacobian as the "gradient"
-attribute of the residual vector. This is implemented as a mix of R and C code, but
-we have created a rather more compact version entirely in R. 
-See *https://github.com/nashjc/RNonlinearLS/tree/main/DerivsNLS*.
-<!-- Code project. See the companion document **Jacobian Calculations for nls()** -->
-<!-- (?? need citation -- currently **DerivsNLS.pdf**). -->
-
-As far as we can understand the logic in `nls()`, the Jacobian computation during
-parameter estimation is carried out entirely within the called C-language program,
-and the R code function `numericDeriv()`, part of `./src/library/stats/R/nls.R`
-in the R distribution source code. This is used to provide Jacobian information in 
-the `nlsModel()` and `nlsModel.plinear()` functions, which are **not** exported for 
-general use.
-
-The Jacobian used by `nlsr::nlxb()` is, by default, computed from analytic expressions, 
-while that
-of `nls()` mostly uses a numerical approximation. Some `selfStart` models do provide
-"gradient" information. `minpack.lm::nlsLM()` invokes `numericDeriv()` in its local 
-version of `nlsModel()`, but it appears to use an internal approximate Jacobian code from 
-the original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
-can lead to different behaviour, though in our experience differences are usually minor.
-
-- A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a poorly
-  conditioned Jacobian and `nls()` fails with "singular gradient". 
-  Worse, numerical approximation to the Jacobian give the error
-  "singular gradient matrix at initial parameter estimates" for `minpack.lm::nlsLM`
-  so that the Marquardt stabilization is unable to take effect, while the analytic
-  derivatives of `nlsr::nlxb` give a solution. 
-
-- Karl Schilling (private communication) provided an example where a model specified
-  with the formula `y ~ a * (x ˆ b)` causes `nlsr::nlxb` to fail because the partial
-  derivative w.r.t. `b` is `a * (x^b * log(x))`. If there is data for which `x = 0`,
-  this is undefined. In such cases, we observed that `nls()` and `minpack.lm::nlsLM`
-  found a solution, though it can be debated whether such lucky accidents can be
-  taken as an advantage.
-
-
-## Feature: missing start vector and self-starting models
-
-Nonlinear estimation algorithms are almost all iterative and need a set of starting
-parameters. `nls()` offers a special class of modeling functions called **`selfStart`** 
-models. There are a number of these in base R (`./src/library/stats/R/zzModels.R`)
-and others in R packages such as CRAN package `nlraa` (@MiguezNLRAA2021), as well as 
-the now-archived package `NRAIA`. Unfortunately, some **`selfStart`** codes
-entangle the calculation of starting values for parameters
-with the particulars of the `nls()` code. Though there is a `getInitial()` function,
-this is not easy to use to simply compute the initial parameter estimates outside of
-`nls()`, in part 
-because it may call that function. Such circular references are, in our view, dangerous.
-Moreover, we believe that it would be helpful to have `selfStart` models that allow
-users to explicitly provide values other than those suggested for the starting parameters.
-
-Other concerns are revealed by the example below. Here, the `SSlogis` `selfStart` function 
-is used to generate a set
-of initial parameters for a 3-parameter logistic curve. The form used by `SSlogis`
-is $y \,\sim\, Asym\,/\, (1 \,+\, exp((xmid\,-\,tt)\,/\,scal))$, but we show how the starting parameters
-for this model can be transformed to those of 
-another form of the model, namely, $y \,\sim\, b1\,/\,(1 \,+\, b2\,*\,exp(-b3\,*\,t))$.
-
-The code for `SSlogis()` is in `./src/library/stats/R/zzModels.R`.
-
-This R function includes analytic expressions for the Jacobian ("gradient").
-These could be useful to R users, especially if documented. Moreover, we
-wonder why the programmers have chosen to save so many quantities in "hidden"
-variables, i.e., with names preceded by ".". These are then not displayed by the `ls()`
-command, making them difficult to access.
-
-
-### Strategic issues in `selfStart` models
-
-By providing starting values that are likely to be reasonable and by including 
-Jacobian code in the `selfStart` model code, some of the deficiencies of the 
-Gauss-Newton algorithm are mitigated. However, creating such functions is a lot 
-of work, and their
-documentation (file `./src/library/stats/man/selfStart.Rd`) is quite complicated.
-We believe that the focus should be placed on getting good initial parameters,
-that is `getInitial()` function, though avoiding the current calls back to `nls()`.
-Interactive tools, such as "visual fitting" (@nash1996nonlinear) might be
-worth considering.
-
-We also note that the introduction of `scaleOffset` in R 4.1.1 to deal with the 
-convergence test for small residual problems now requires that the `getInitial()`
-function have dot-arguments (`...`) in its argument list. This illustrates the
-entanglement of many features in `nls()`.
-
-## Issue: returned output of nls() and its documentation
-
-The output of `nls()` is an object of class "nls" which has the following structure:
-
->A list of
-
->`m` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  an `nlsModel` object incorporating the model.
-
->`data`	&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;the expression that was passed to `nls` as the data argument. The actual \newline
-$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$  data values are present in the environment of the `m` components, e.g., \newline $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ `environment(m$conv)`.
-
->`call` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the matched call with several components, notably `algorithm`.
-
->`na.action` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the `"na.action"` attribute (if any) of the model frame.
-
->`dataClasses` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $~$the `"dataClasses"` attribute (if any) of the "`terms`" attribute of the \newline
-$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ model frame.
-
->`model` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;if `model = TRUE`, the model frame.
-
->`weights` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if `weights` is supplied, the weights.
-
->`convInfo` &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; a list with convergence information.
-
->`control` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the control `list` used, see the `control` argument.
-
->`convergence, message` &nbsp;for an `algorithm = "port"` fit only, a convergence code (`0` for  \newline
-$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$convergence) and message.
-
-> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To use these is *deprecated*, as they are available from `convInfo` now.
-
-                  -----------------------------------------------------------
-
-
-The `nls` object contains some elements that are awkward to produce by other algorithms,
-but some information that would be useful is not presented in a clear manner. Moreover, the
-complexity of the object is a challenge to users.
-
-In the following, we use `result` as the returned object from `nls()`.
-
-The `data` return element is an R symbol. To actually access the data from this 
-element, we need to use the syntax:
-
-```
-eval(parse(text=result$data))
-```
-
-However, if the call is made with `model=TRUE`, then there is a returned element
-`model` which contains the data, and we can list its contents using:
-
-```
-ls(result$model)
-```
-
-and if there is an element called `xdata`, it can be accessed as `result$model$xdata`.
-
-Let us compare the `nls()` result with that from 
-`nlsr::nlxb()`, which ostensibly solves the same problem:
-
-
->`coefficients`    A named vector giving the parameter values at the supposed solution.
-
->`ssquares` $~~~~~$ The sum of squared residuals at this set of parameters.
-
->`resid` $~~~~~~~~~~$ The residual vector at the returned parameters.
-
->`jacobian` $~~~~~$ The jacobian matrix (partial derivatives of residuals w.r.t. the 
-                parameters) at the \newline
-$~~~~~~~~~~~~~~~~~~~~$ returned parameters.
-
->`feval` $~~~~~~~~~~$ The number of residual evaluations (sum of squares computations) used.
-
->`jeval` $~~~~~~~~~~$ The number of Jacobian evaluations used.
-
-
-However, actually looking at the structure of a returned result gives a list of 11
-items. The extra 5 are:
-
-```
- $ lower       : num [1:3] -Inf -Inf -Inf
- $ upper       : num [1:3] Inf Inf Inf
- $ maskidx     : int(0) 
- $ weights     : NULL
- $ formula     :Class 'formula'  language y ~ Asym/(1 + exp((xmid - tt)/scal))
-  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
- - attr(*, "class")= chr "nlsr"
-```
-The result object from `nlsr::nlxb()` is still much smaller than the one `nls()` returns. 
-Moreover, `nlxb`
-explicitly returns the sum of squares as well as the residual vector and Jacobian. 
-The counts of evaluations are also returned.
-(Note that the singular values of the Jacobian are
-actually computed in the `print` and `summary` methods for the result.) 
-As we made our comparisons, we noted several potential updates to the `nlsr` documentation
-as well as that for `nls()`.
-
-
 ### Weights in returned functions from nls()
 
-As already noted, the function `resid()` (an alias for `residuals()`) is WEIGHTED, as are those in the
-structured object `m` returned by `nls()` or `minpack.lm::nlsLM`,
-e.g., `ans$m$resid()`. The function `nlsModel()`, which we have had to extract from the 
-base R code and explicitly `source()` because it is not exported to the working namespace,
+The function `resid()` (an alias for `residuals()`) gives WEIGHTED residuals, 
+as does, for example, `result$m$resid()`. The function `nlsModel()`, which we 
+have had to extract from the base R code and explicitly `source()` because it 
+is not exported to the working namespace,
 allows us to compute residuals for particular coefficient sets.
 
 ```{r nlswtx, echo=TRUE}
@@ -1113,20 +1082,24 @@ nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
 nmod$resid()
 ```
 
+## Minor complaints
+
 ### Interim output from the "port" algorithm
 
-As the `nls()` **man** page states, when the "port" algorithm is used with the `trace` argument
-TRUE, the iterations display the objective function value which is 1/2 the sum of squares (or 
-deviance). It is likely that the trace display is embedded in the Fortran of the `nlminb`
-routine that is called to execute the "port" algorithm, but the factor of 2 discrepancy is nonetheless
+As the `nls()` **man** page states, when the "port" algorithm is used with the
+`trace` argument TRUE, the iterations display the objective function value which 
+is 1/2 the sum of squares (or deviance). It is likely that the trace display is
+embedded in the Fortran of the `nlminb` routine that is called to execute 
+the "port" algorithm, but the factor of 2 discrepancy is nonetheless
 unfortunate for users. 
 
 ### Failure to return best result achieved
 
-If `nls()` reaches a point where it cannot continue but has not found a point where the
-relative offset convergence criterion is met, it may simply exit, especially if a 
-"singular gradient" (singular Jacobian) is found. However, this may occur AFTER the 
-function has made considerable progress in reducing the sum of squared residuals. 
+If `nls()` reaches a point where it cannot continue but has not found a point 
+where the relative offset convergence criterion is met, it may simply exit,
+especially if a "singular gradient" (singular Jacobian) is found. However, 
+this may occur AFTER the function has made considerable progress in reducing 
+the sum of squared residuals. 
 <!-- An example is to be found in the `Tetra_1.R` example from the `nlsCompare` package. -->
 <!-- ?? AB: Are we far enough along to include reference? -->
 Here is an abbreviated example:
@@ -1146,26 +1119,33 @@ unless `trace` is invoked, the user will not get any information about this.
 This almost trivial change to the `nls()` function could be 
 useful to R users.
 
-## Feature: partially linear models and their specification
+## Estimating models that are partially linear
 
-The variable projection method (@Golub1973, @OlearyRust13) is generally much more 
-effective than general approaches in finding good solutions to nonlinear least squares 
+Many nonlinear models can be expressed so that some of the parameters 
+appear linearly. In our logistic examples, the asymptote parameters are
+an illustration. In such cases, specialized methods can give spectactularly
+better performance. The variable projection method (@Golub1973, @OlearyRust13) is 
+generally much more effective than general approaches in finding good solutions 
+to nonlinear least squares 
 problems when some of the parameters appear linearly. However, setting up the 
 calculations, that is, identifying which parameters are linear, is not a trivial
 task. 
 
-Moreover, specifying a model to a solver should, ideally, use the same syntax across
-solver tools. Unfortunately, R allows multiple approaches within different
-modeling tools, and within `nls()` itself. This is highlighted by the case of
-partially linear models.
+`nls()` has an option `algorithm="plinear"` that allows some partially linear
+models to be solved. The other tools, as far as we are aware, do not offer any
+such capability, with no external package providing it. 
+The feature in `nls()` has, however, some awkwardness.
+In particular, we would like to specify a model to a solver consistently
+across solver methods. Unfortunately, within `nls()` itself we must use
+different specifications with different `algorithm` options.
 
-The nonlinear modeling specifications are, of course, a development of linear ones.
-Unfortunately, the explicit model `y ~ a * x + b` does not work with the linear modeling 
-function `lm()`, which requires this model to be specified as `y ~ x`.
-
-Within `nls()`, consider the following FOUR different specifications for the same problem, plus 
-an intuitive choice, labelled `fm2a`, that does NOT work. In this failed
-attempt, putting the `Asym` parameter in the model causes the `plinear` algorithm
+The nonlinear model specifications are, of course, a development of linear ones.
+Unfortunately, the explicit model `y ~ a * x + b` does not work with the linear
+modeling function `lm()`, which requires this model to be specified as `y ~ x`.
+Within `nls()`, consider the following FOUR different specifications for the same 
+problem, plus an intuitive choice, labelled `fm2a`, that does NOT work. 
+In this failed attempt, putting the `Asym` parameter in the model causes the
+`plinear` algorithm
 to try to add another term to the model. We believe this is unfortunate, and would
 like to see a consistent syntax. At the time of writing, we do
 not foresee a resolution for this issue. In the example, we have NOT evaluated
@@ -1202,7 +1182,8 @@ fm2a <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
 summary(fm2a)
 ```
 
-## Feature: indexed parameters
+
+## Models with indexed parameters
 
 Indexed parameters -- those whose names have subscripts on some element that
 is part of the coefficient list -- 
@@ -1257,37 +1238,15 @@ This is no doubt because programming for indexed parameters is extremely challen
 <!-- However, we believe the current structure could cause confusion and error, and  -->
 <!-- propose an alternative approach below. -->
 
-
-## Feature: bounds on parameters
-
-There are many situations where the context of a problem constrains the values of parameters.
-For example, one of us was asked many years ago to estimate a model where one parameter estimate
-was negative. The client complained "But that is supposed to be the number of grain elevators
-in Saskatchewan". The number should have been a positive integer, and likely less
-than a few thousand.
-
-`nls()` can impose bounds on parameters, but only if the `port` algorithm is used. Unfortunately,
-the manual states 
-
-> The `algorithm = "port"` code appears unfinished, and does not even check that the starting 
-  value is within the bounds. Use with caution, especially where bounds are supplied.
-
-This is clearly unsatisfactory for general use, but does find bounded solutions. 
-Inclusion of bounds on parameters in nonlinear least squares computations is relatively 
-straightforward, and it is part of the default method
-for package `nlsr`. Package `minpack.lm` also includes provision for bounds, but the following
-script, which we do not run here for reasons of space, shows that it does not find a
-good solution for the scaled Hobbs test problem.
+If such models are of enough importance, we believe it would be relatively
+straightforward to prepare an external package to provide for their estimation,
+including an appropriately formatted output object so the indexing of the 
+parameters can be used in other calculations.
 
 
-### Philosophical considerations
+---OLD VERSION BELOW ------------------------
 
-Bounds on parameters raise some interesting and difficult questions about how uncertainty
-in parameter estimates should be computed or reported. That is, the traditional "standard
-errors" are generally taken to imply symmetric intervals about the point estimate in which
-the parameter may be expected to be found with some probability under certain assumptions.
-Bounds change those assumptions. Hence, `nlsr::nlxb()` does not compute standard
-errors nor their derived statistics when bounds are active.
+
 
 ## Issue: code structure and documentation for maintenance 
 
