@@ -1188,7 +1188,8 @@ summary(fm2a)
 Indexed parameters -- those whose names have subscripts on some element that
 is part of the coefficient list -- 
 are a useful idea to simplify model specification in some cases. However, they
-are also a focus of trouble. 
+are also a focus of trouble. Typically we have some common parameters and 
+others that are tied to particular cases.
 
 The **man** file for `nls()` includes the following example of a situation in which
 parameters are indexed. It also uses the "plinear" option as an added complication.
