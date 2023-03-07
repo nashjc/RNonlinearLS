@@ -1244,151 +1244,21 @@ straightforward to prepare an external package to provide for their estimation,
 including an appropriately formatted output object so the indexing of the 
 parameters can be used in other calculations.
 
-
----OLD VERSION BELOW ------------------------
-
-
-
-## Issue: code structure and documentation for maintenance 
-
-The `nls()` code is structured in a way that inhibits both maintenance and improvement.
-In particular, the iterative setup is such that introduction of Marquardt stabilization
-is not easily available. To obtain performance when the code was written, a large portion
-was written in C with consequent calls and returns that
-severely complicate the code. Over time, R has become much more efficient on modern computers, and
-the need to use compiled C and Fortran is less critical. Moreover, the burden for maintenance
-could be reduced by moving code entirely to R. 
-
-While R and its packages are generally very well documented for usage, that documentation
-rarely extends as far as it might for code maintenance. 
-The paucity of such documentation is exacerbated by the mixed R/C/Fortran code base,
-where seemingly trivial differences in things like representation of numbers or
-base index for arrays lead to traps for unwary programmers.
-
-
-# Goals and progress of our effort to improve `nls()`
-
-## Code rationalization and documentation
-
-When we started *Improvements to nls()* for the 2021 Google Summer of Code we wanted:
-
-- to provide a packaged version of `nls()` (call it `nlsalt`) coded entirely in R 
-  that matches the features in base R or what is packaged in `nlspkg` as described 
-  in @PkgFromRbase22. The R version can either serve as the operational code or
-  as a reference version to facilitate the maintenance of C, Fortran, or other 
-  versions of the software.
-  
-- to streamline the overall `nls()` infrastructure. By this we
-  mean a re-factoring of the routines so they are better suited to maintenance of both
-  the existing `nls()` methods and features as well as new features we or others
-  would like to add.
-
-- to explain what we do, either in comments, examples, or separate maintainer documentation.
-  Since we are complaining about the lack of explanatory material for the current
-  code, we feel it is incumbent on us to provide such material for our own work, and if
-  possible for the existing code.
-  
-These goals echo themes in the recent discussion by @Vidoni21 and accompanying 
-commentary.
-
-## Rationalization of formula specifications
-
-We have seen that
-`nls()` uses a different formula specification from the default if the 
-`plinear` algorithm is used. This is unfortunate, since the user cannot then simply
-add `algorithm="plinear"` to the standard call, making errors more likely. 
-
-Nonlinear models, apart from those using the "plinear" algorithm, need all the parameters specified.
-That is, the model formula should be written down as it would be computed.
-Thus a linear model (which is valid input for nonlinear estimation) should
-be specified `y ~ a * x + b` rather than `y ~ x`. 
-Moreover, we want to avoid the partially linear parameters appearing 
-in the result object as `.lin1`, `.lin2`, etc., where the actual position 
-of parameters in the model is not explicit. We are unclear why these parameters
-begin with a dot, that is, that they have the "hidden" indicator.
-
-A possible workaround to allow consistency would be to specify the 
-partially linear parameters when the `plinear` option is specified. For example, 
-we could use `algorithm="plinear(Asym)"` while keeping the general model formula 
-from the default specification. This would allow 
-for the output of different `algorithm` options to be consistent. However, we have not
-yet tried to code such a change, and welcome discussion from those working with
-other packages using model formulas.
-
-A further complication of model specification in R is that some formulas require
-the user to surround a term with `I()` to inhibit interpretation of arithmetic 
-operators. We would prefer that formulas be usable without this complication.
-
-<!-- It is also of interest to consider code that will detect partial linearity,  -->
-<!-- rather than expecting the user to provide the special structure and settings. Work in this -->
-<!-- area appears to be quite limited, with @Birkisson2013 seemingly a sole contribution -->
-<!-- we can find. -->
-<!-- Unfortunately, the mention of a "Linear and Nonlinear Discoverer" in @Zhang2011LinNonlin  -->
-<!-- is about a class of models that have almost nothing in common -->
-<!-- with the present issue. The algorithm in @Birkisson2013 will need investigating further, -->
-<!-- but we suspect that it is complicated enough that it will not easily be adapted to  -->
-<!-- a program like `nls()`. Possibly a simpler algorithm may be found. -->
-
-<!-- ``` -->
-<!-- y ~ x + z + x*z -->
-<!-- y ~ a + b*x +c*z + d * (x*z)  # <-- fully specified -->
-<!-- y ~ a*Fn1(b, c, x, z)/Fn2() -->
-
-<!-- ``` -->
-
-## Rationalization of indexed models
-
-Indexed models clearly have a place in some areas of research. 
-<!-- We need to be able to process models, as the example above, where the -->
-<!-- model formula is  -->
-We need to be able to process models such as 
-`Length ~ a[Strip] + b[Strip] * exp(-Conc / th)`, where `Strip` is the index. Data
-`Length` and `Conc` are available for all observations and parameter `th` applies
-to every fitted point, but `a[Strip]` and `b[Strip]` apply only to data indexed, which
-could be an experimental run number, or some other categorization. 
-
-Given that `[ ]` provides the R method to index arrays, the presence of square
-brackets in a model
-formula signals indexing. The question is how to perform the correct calculations.
-
-<!-- While tedious (??maybe dummies or fastdummies packages make it less so?),  -->
-<!-- we could set up the model as a sum of similar models with dummy -->
-<!-- variables to turn "on" or "off" the particular case, transforming the model -->
-<!-- parameters to simple, non-indexed ones (as does `nls()`). -->
-
-Our view is that inclusion of the indexing **within** `nls()` or similar tools introduces 
-complexity that could be avoided by a suitable wrapper function. The modeling
-formula must be expanded to encompass all the index cases, likely with indexed
-parameters renamed e.g., `a[2]` becomes `a2` as at present with `nls()`. However,
-a wrapper could process output to reconstitute the indexing of parameters. 
-
-## Streamlining code
-
-We are pessimistic that the overall structure of `nls()` can be streamlined due
-to the entanglement of so many features with the complicated mix of R, C and
-Fortran. Indeed, despite digging into the code over some months, we do not feel
-confident that we sufficiently understand it nor that we could maintain it. On the other
-hand, we do believe equivalent functionality can be built, but with at least
-some differences in how the features will be accessed.
-
 ## Tests and use-case examples
 
 Maintainers of packages need suitable tests and use-case examples in order:
 
 - to ensure packages work properly, in particular, giving
   results comparable to or better than the functions they are to replace;
-- to test individual solver functions to ensure they work across the range of calling 
-  mechanisms, that is, different ways of supplying inputs to the solver(s);
+- to test individual solver functions to ensure they work across the range of 
+  calling mechanisms, that is, different ways of supplying inputs to the solver(s);
 - to pose "silly" inputs to see if these bad inputs are caught by the programs.
   
 Such goals align with the aims of **unit testing** 
 (e.g., *https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211*, @HWtestthat11, @HWdevtools21
 and the conventional R package testing tools).
  
-
-## A testing package: NLSCompare
-
-One of us has developed a working prototype package at *https://github.com/ArkaB-DS/nlsCompare* .
+In our work, one of us has developed a working prototype package at *https://github.com/ArkaB-DS/nlsCompare* .
 A primary design objective of this is to allow the summarisation of multiple tests in
 a compact output. The prototype has a vignette to illustrate its use.
 
@@ -1414,13 +1284,73 @@ are:
   a review of optimization in R. Ideas from the present work have been instrumental
   in the creation of @NashWires22.
 
+## Should nls() be refactored?
 
-# Strategic choices in nonlinear model estimation
+When we started *Improvements to nls()* for the 2021 Google Summer of Code we wanted:
+
+- to provide a packaged version of `nls()` (call it `nlsalt`) coded entirely in R 
+  that matches the features in base R or what is packaged in `nlspkg` as described 
+  in @PkgFromRbase22. Our intent in providing a purely R version of the code was
+  either to replace `nls()` or to serve as a reference version aiding maintenance 
+  of C, Fortran, or other components of the software.
+  
+- to streamline the overall `nls()` infrastructure. By this we mean a 
+  refactoring of the routines so they are better suited to maintenance of both
+  the existing `nls()` methods and features as well as new features we or others
+  would like to add.
+
+- to explain what we do, either in comments, examples, or separate maintainer 
+  documentation. While R and its packages are generally very well documented for
+  usage, that documentation
+  rarely extends as far as it might for code maintenance. The paucity of such
+  documentation is exacerbated by the mixed R/C/Fortran code base,
+  where seemingly trivial differences in things like representation of numbers or
+  base index for arrays lead to traps for unwary programmers.
+
+  
+These goals echo themes in the recent discussion by @Vidoni21 and accompanying 
+commentary.
+
+A serious obstacle to changing `nls()` is that there are many legacy applications
+and examples. Furthermore, with `nls()` as part of the base R distribution, users
+are drawn to using it even when it is less than ideal. A possible way forward
+is to 
+
+- use a packaged version of `nls()` to provide legacy features, with notification
+  to users that there are other tools available
+
+- if maintainers are willing, to merge and rationalize the capabilities of 
+  `minpack.lm`, `nlsr` and `gslnls`
+
+- to encourage the (separate) development of capabilities such as indexed
+  parameter models if these are in demand.
+  
+This direction does not, of course, resolve the inconsistencies in model 
+specification in formulas for nonlinear models, which undoubtedly is an issue
+for other modeling tools.  
+
+A possible workaround to allow consistency for the `plinear` algorithm 
+would be to specify the linear parameters when the `plinear` option is specified. 
+For example, we could use `algorithm="plinear(Asym)"` while keeping the general 
+model formula from the default specification. This would allow 
+for the output of different `algorithm` options to be consistent. However, we 
+have not yet tried to code such a change, and welcome discussion from those working
+with other packages using model formulas.
+
+A further complication of model specification in R is that some formulas require
+the user to surround a term with `I()` to inhibit interpretation of arithmetic 
+operators. We would prefer that formulas be usable without this complication.
+
+
+
+---OLD VERSION BELOW ------------------------
+
+## Future of nonlinear model estimation in R
 
 It is possible that `nls()` will remain more or less as it has been for the past
-two decades. Given its importance to R, the focus of discussion should be the measures
-needed to secure its continued operation for legacy purposes and how that may be approached.
-We welcome an opportunity to participate in such conversations. 
+two decades. Given its importance to R, the focus of discussion should be the
+measures needed to secure its continued operation for legacy purposes and how that
+may be approached. We welcome an opportunity to participate in such conversations. 
 
 To advance the stability and maintainability of R, we believe the program objects (R functions)
 that are created by tools such as `nls()` should have minimal cross-linkages and side-effects.
