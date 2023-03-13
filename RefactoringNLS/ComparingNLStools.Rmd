@@ -70,7 +70,7 @@ concerns, and we will address some of these here.
 
 ## Scope of our comparison
 
-The tools we will compare are the base-R `nls()` function 
+The tools we will consider are the base-R `nls()` function 
 and a number of packages that are available on the CRAN repository.
 Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
 **minpack.lm** (@minpacklm12), 
@@ -80,7 +80,7 @@ Other CRAN packages worth Commentary: ??
 
 ??put in proper refs to each
 
-onls -- when there are errors in variables, this minimizes the orthogonal 
+onls (@R-onls-manual) -- when there are errors in variables, this minimizes the orthogonal 
 residuals
 
 crsnls -- Controlled random search. No vignette!
