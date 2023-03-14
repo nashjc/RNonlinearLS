@@ -218,21 +218,27 @@ are linked or grouped in some way.
 equality and/or inequality constraints. It is clearly **not** about modeling, and
 the input and output are quite different from class `nls` methods. 
 
-`nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models dedicated to predictive microbiology, including a vignette, by authors of the
+`nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models dedicated 
+to predictive microbiology, including a vignette, by authors of the
 `nlstools` package who have a strong record in the subject.
 
-`nlstools` (@p-nlstools) -- This package provides several tools for aiding the estimation of nonlinear models, particularly
-using `nls()`. The vignette is actually a journal article, and the authors have considerable experience in the subject.
+`nlstools` (@p-nlstools) -- This package provides several tools for aiding the estimation 
+of nonlinear models, particularly using `nls()`. The vignette is actually a journal article, 
+and the authors have considerable experience in the subject.
 
-`nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) regression, with details in Garay, Lachos and Abanto-Valle (2011). The problem here is to minimize an objective which is modified from the traditional sum of squared residuals.
+`nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) 
+regression, with details in Garay, Lachos and Abanto-Valle (2011). The problem 
+here is to minimize an objective which is modified from the traditional sum of squared residuals.
 
 `nls.multstart` (@nlsmultstart) -- Non-linear least squares regression using
-AIC scores with the Levenberg-Marquardt algorithm using multiple starting values for increasing the chance that the minimum found is the global minimum.
+AIC scores with the Levenberg-Marquardt algorithm using multiple starting values 
+for increasing the chance that the minimum found is the global minimum.
 
 `nls2` (@nls2-22) -- Nonlinear least squares by brute force has some similar
-motivations, but a longer history and using `nls()` within multiple trials.
+motivations, but uses `nls()` within multiple trials. The package and its
+author have a long history in the R community.
 
-`nlstac` (@m-nlstac) -- Set of functions implementing the algorithm described in Fernandez 
+`nlstac` (@m-nlstac) -- A set of functions implementing the algorithm described in Fernandez 
     Torvisco et al. (2018) for fitting separable nonlinear regression curves. The special 
     class of problem for which this package is intended is an important and difficult one.
     No vignette is provided, unfortunately.
@@ -286,7 +292,7 @@ are related as follows:
 $$   Asym =  b_1 = 100 * c_1 $$
 $$ exp(xmid/scal)  =  b_2 = 10 * c_2 $$
 $$ 1/scal  =  b_3 $$
-To allow for simpler discussion, let us say that the parameters for a vector
+To allow for simpler discussion, let us say that the parameters form a (named) vector
 $p$ and the model function is called $model(p)$. The residuals can be written
 either as 
 
@@ -296,7 +302,7 @@ or
 
 $$ r = model(p) - y $$
 
-since when squared the loss function has an identical value. In both cases, the
+since the sumsquares loss function has an identical value. In both cases, the
 residual vector is a function of $p$. The second form
 has a minor advantage in avoiding a potential sign error 
 if we need to differentiate to get gradients etc. 
@@ -305,7 +311,7 @@ if we need to differentiate to get gradients etc.
 
 The general approach of nonlinear optimizers, of which nonlinear least squares
 solvers are usually a subset, is to try to reduce the loss function (or objective
-function) defined by the sum of squares of the residuals ($y - model()$) by 
+function) defined by the sum of squares of the residuals by 
 altering the model parameters from some starting guess. In all general 
 methods of which we are aware, this is an iterative process. 
 
@@ -345,7 +351,7 @@ solve
 
 $$ J' J \delta = - J' r$$
 though we can avoid some loss of accuracy by NOT forming the inner product matrix
-$J' J$ by solving the linear least squares matrix problem
+$J' J$ and solving the linear least squares matrix problem 
 
 $$ J \delta \approx -r $$
 which may be accomplished by a variety of matrix decomposition methods. 
@@ -360,7 +366,7 @@ program.
 The suggestion is that $D$ be replaced by a multiple of the unit matrix or else
 a multiple of the diagonal part of $J' J$. For machines with exceptionally low
 precision arithmetic found on some minicomputers in the 1970s, one of us suggested
-a linear combination of these ideas, as with low precision, some elements of 
+a linear combination of these ideas. In low precision, some elements of 
 $J' J$ could underflow to zero (@jn77ima). We note that the various choices for
 $D$, especially the scaling multiple, as well as possible line search along the
 direction $\delta$ rather than a unit step (@Hartley1961), 
@@ -397,8 +403,7 @@ that are all slightly different, which, in the case of the example
 model $y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)$
 would avoid a singular Jacobian because $b$ and $d$ were equal in value. 
 Program modifications to give a sequence like  1.0, 1.1, 1.2, 1.3 for the four 
-parameters are fairly obvious. However, users may want to avoid equal parameter
-starts in situations like this when setting starting values.
+parameters are fairly obvious. 
 
 It is also possible to provide R functions for the residual and Jacobian. 
 This is usually more work for the user if the formula setup is possible.
@@ -436,9 +441,9 @@ Gauss-Newton (i.e., unstabilized) iteration with step reduction line
 search. This works very efficiently as long as $J$ is not ill-conditioned.
 In a one-parameter problem with ill-conditioning, think of $J$ as a 
 very small number so that we need to watch for a zero-divide or 0/0 
-situation in computing $\delta$.
-The following show `nls()` does poorly on this example problem. Note that `nlsr`
-offers function `pnlm0()` to give a 1-line display of class nls method results,
+situation in computing $\delta$. Below we see `nls()` does poorly on this 
+example problem. Note that `nlsr`
+offers function `pnlm0()` to give a 1-line display of results of class `nls`,
 and `pshort()` for `nlsr`.
 
 ```{r shortforms, echo=FALSE}
@@ -524,17 +529,13 @@ singular values of the Jacobian (for diagnostic purposes). By contrast,
 use `summary()`, which does NOT display the sum of squares, while `print()` 
 gives the sum of squares, but not the standard error of the residuals.
 
-The singular values displayed by `print.nlsr()` (the internal name for the 
-adaptation of the generic `print()`) are displayed in a column to the right 
-of the coefficient  and standard error display, but are NOT specific to the 
-parameters. Their position is purely for efficient use of page space. The 
-most common use of the singular values is to gauge how "nearly singular" the 
-Jacobian is at the solution, and the ratio of the largest to smallest of the 
+The singular values allow us to gauge how "nearly singular" the 
+Jacobian is at the solution, and the ratio of the smallest to largest of the 
 singular values is a simple but effective measure. In the above example, we note 
-that the scaled logistic has the smallest ratio. 
+that the scaled logistic has the largest ("least singular") ratio. 
 
 The results from `nlsLM` and `gsl_nls` for the transformed model have a very 
-large sum of squares, which may suggest that these program have failed. 
+large sum of squares, which may suggest that these programs have failed. 
 Since `nls()`, `nlsLM()`, and `gsl_nls()` do not 
 offer the singular values, we need to extract the Jacobian and compute its
 singular values. The following script shows how to do this, using what is called
@@ -635,13 +636,13 @@ gives the legacy behaviour.
 We are pleased to note that this improvement is now in the R distributed code 
 since version 4.1.0, and it has been a part of `nlsr` since it was introduced.
 
-More general termination tests can be used. `nlsr` a **small sum of 
+More general termination tests can be used. `nlsr` has a **small sum of 
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
 (weighted) residuals to `e4` times the initial sum of squares, where
 `e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
 
 Termination after what may be considered excessive computation is also important.
-`nls()` stops after `maxiter` "iterations".  
+`nls()` stops after `maxiter` "iterations". 
 Unfortunately, the meaning of "iteration" varies among programs and requires 
 careful examination of the
 code. We prefer to use the number of times the residuals or the jacobian have
@@ -764,15 +765,15 @@ options for the Jacobian, with a further control `ndstep` for the size of the
 step used in the approximation. 
 
 Using the "gradient" attribute of the output of the Jacobian function to hold
-this matrix lets us embed this attribute of the **residual** function as well,
+this matrix lets us embed this attribute in the **residual** function as well,
 so that the call to `nlfb()` can be made with the same name used for 
 both residual and Jacobian function arguments. This programming trick saves a 
 lot of trouble for the package developer, but it can be a nuisance for users 
 trying to understand the code. 
 
 As far as we can understand the logic in `nls()`, the Jacobian computation during
-parameter estimation is carried out entirely within the called C-language program,
-and the R code function `numericDeriv()`, part of `./src/library/stats/R/nls.R`
+parameter estimation is carried out within the called C-language program
+and its wrapper R code function `numericDeriv()`, part of `./src/library/stats/R/nls.R`
 in the R distribution source code. This is used to provide Jacobian information in 
 the `nlsModel()` and `nlsModel.plinear()` functions, which are **not** exported for 
 general use. `gsl_nls()` also appears to use `numericDeriv()`. 
@@ -788,10 +789,10 @@ See *https://github.com/nashjc/RNonlinearLS/tree/main/DerivsNLS*.
 version of `nlsModel()`, but it appears to use an internal approximate Jacobian 
 code from 
 the original Fortran `minpack` code, namely, `lmdif.f`. Such differences in approach
-can lead to different behaviour, though in our experience the differences are usually
+can lead to different behaviour, though in our experience these differences are usually
 very minor.
 
-Minor numerical differences can give annoying results with ill-conditioned
+However, minor numerical differences can give annoying results with ill-conditioned
 problems. 
 
 - A pasture regrowth problem (@Huet2004, page 1, based on @Ratkowsky1983) has a
@@ -1170,14 +1171,12 @@ task.
 
 `nls()` has an option `algorithm="plinear"` that allows some partially linear
 models to be solved. The other tools, as far as we are aware, do not offer any
-such capability, with no external package providing it. 
-The feature in `nls()` has, however, some awkwardness.
-In particular, we would like to specify a model to a solver consistently
-across solver methods. Unfortunately, within `nls()` itself we must use
-different specifications with different `algorithm` options.
+such capability. The `nlstac` package uses a different algorithm.
 
+Within `nls()` itself we must, unfortunately, use
+different specifications with different `algorithm` options.
 The nonlinear model specifications are, of course, a development of linear ones.
-Unfortunately, the explicit model `y ~ a * x + b` does not work with the linear
+The explicit model `y ~ a * x + b` does not work with the linear
 modeling function `lm()`, which requires this model to be specified as `y ~ x`.
 Within `nls()`, consider the following FOUR different specifications for the same 
 problem, plus an intuitive choice, labelled `fm2a`, that does NOT work. 
