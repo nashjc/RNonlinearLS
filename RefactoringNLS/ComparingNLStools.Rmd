@@ -188,30 +188,34 @@ demos, and tests indicates a package is well-supported.
 is the vertical difference between the dependent variable and the functional
 model. `onls` minimizes the sum of orthogonal residuals. The objective is
 therefore different, and involves nontrivial extra calculation. A vignette with
-the package and the blog article https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
+the package and the blog article 
+https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
 give some description with illustrative graphs. `onls` appears to be limited to 
 problems with one independent and one dependent variable. The Wikipedia article
 https://en.wikipedia.org/wiki/Total_least_squares presents an overview of some
-ideas. Our view is that the approach needs wider discussion and tutorial examples
-to allow its merits to be judged.
+ideas, with references to the literature. Our view is that the approach needs wider 
+discussion and tutorial examples to allow its merits to be judged.
 
 `crsnls` (@R-crsnls-manual) -- This package allows nonlinear estimation by 
 controlled random search via two methods. There is unfortunately no vignette.
 A modest trial we carried out showed `nlsr::nlxb()` gave the same results in 
-a small fraction of the time required by either of the methods in `crsnls`.
+a small fraction of the time required by either of the methods in `crsnls`. The
+method discussed in @tvrdik2007 claims better reliability in finding solutions
+than a Levenberg-Marquardt code (actually from Matlab), but the tests were conducted
+on the extreme NIST examples (@NISTnls-manual).
 
-NISTnls (@NISTnls-manual) -- This package provides R code and data for a set of
+`NISTnls` (@NISTnls-manual) -- This package provides R code and data for a set of
 nonlinear least squares problems from the U.S. National Institute for Standards
 and Technology for testing solvers. We caution that the problems are generally 
 poorly conditioned and may not represent real-world situations.
 
-nlshelper (@nlshelper-manual) -- This package, which unfortunately lacks a
+`nlshelper` (@nlshelper-manual) -- This package, which unfortunately lacks a
 vignette, provides a few utilities for summarizing, testing, and plotting 
 non-linear regression models estimated with nls(), nlsList() or nlme() that
 are linked or grouped in some way. 
 
-nlsic (@nlsic-manual) -- This solves non linear least squares problems with optional
-equality and/or inequality constraints. It is clearly not about modeling, and
+`nlsic` (@nlsic-manual) -- This solves non linear least squares problems with optional
+equality and/or inequality constraints. It is clearly **not** about modeling, and
 the input and output are quite different from class `nls` methods. 
 
 `nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models dedicated to predictive microbiology, including a vignette, by authors of the
