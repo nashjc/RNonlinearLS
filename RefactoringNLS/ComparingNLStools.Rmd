@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <!-- ?? nlme::gnls() -- should we note it? -->
 
-# Abstract
+## Abstract
 
 In a Google Summer of Code project "Improvements to `nls()`",
 we considered the features and limitations of the R function `nls()`
@@ -76,71 +76,8 @@ Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
 **minpack.lm** (@minpacklm12), gslnls (@gslnls23), and nls2 (@nls2-22).
 
 There are a number of other CRAN packages worth commentary, and we will give
-some capsule comments later. Packages outside of CRAN, even if they might be
-worthy of review, will not be included here.
-
-??move down
-## Other CRAN packages
-
-`onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
-is the vertical difference between the dependent variable and the functional
-model. `onls` minimizes the sum of orthogonal residuals. The objective is
-therefore different, and involves nontrivial extra calculation. A vignette with
-the package and the blog article https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
-give some description with illustrative graphs. `onls` appears to be limited to 
-problems with one independent and one dependent variable. The Wikipedia article
-https://en.wikipedia.org/wiki/Total_least_squares presents an overview of some
-ideas. Our view is that the approach needs wider discussion and tutorial examples
-to allow its merits to be judged.
-
-`crsnls` (@R-crsnls-manual) -- This package allows nonlinear estimation by 
-controlled random search via two methods. There is unfortunately no vignette.
-A modest trial we carried out showed `nlsr::nlxb()` gave the same results in 
-a small fraction of the time required by either of the methods in `crsnls`.
-
-NISTnls (@NISTnls-manual) -- This package provides R code and data for a set of
-nonlinear least squares problems from the U.S. National Institute for Standards
-and Technology for testing solvers. We caution that the problems are generally 
-poorly conditioned and may not represent real-world situations.
-
-nlshelper (@nlshelper-manual) -- This package, which unfortunately lacks a
-vignette, provides a few utilities for summarizing, testing, and plotting 
-non-linear regression models estimated with nls(), nlsList() or nlme() that
-are linked or grouped in some way. 
-
-nlsic (@nlsic-manual) -- This solves non linear least squares problems with optional
-equality and/or inequality constraints. It is clearly not about modeling, and
-the input and output are quite different from class `nls` methods. 
-
-`nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models dedicated to predictive microbiology, including a vignette, by authors of the
-`nlstools` package who have a strong record in the subject.
-
-`nlstools` (@p-nlstools) -- Several tools for assessing the quality of fit of a gaussian nonlinear model are provided.
-
-nlsmsn -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) regression, details in Garay, Lachos and Abanto-Valle (2011)
-
-`nls.multstart` (@nlsmultstart) -- Non-linear least squares regression using
-AIC scores with the Levenberg-Marquardt algorithm using multiple starting values for increasing the chance that the minimum found is the global minimum.
-
-`nls2` (@nls2-22) -- Nonlinear least squares by brute force has some similar
-motivations, but a longer history and using `nls()` within multiple trials.
-
-`nlstac` (@m-nlstac) -- Set of functions implementing the algorithm described in Fernandez 
-    Torvisco et al. (2018) for fitting separable nonlinear regression curves.
-
-    ?? check ref and add to bib.??
-
-
-easynls -- Fit and plot some nonlinear models. ?? no vignette!
-
-nlraa -- a set of nonlinear *selfStart* models. Most include analytic Jacobian
-code. (@MiguezNLRAA2021)
-
-optimx -- not really a nonlinear least squares method, but has general optimizers
-that can be applied to minimize a nonlinear function e.g., a nonlinear sum of 
-squares.
-
-It is likely that there are a number of other tools that could be relevant to
+some capsule comments later. It is likely that there are a number of other 
+tools that could be relevant to
 this comparison in the Bioconductor (@Bioconductor) collection 
 and on repositories like
 Github (https://github.com) and Gitlab (https://about.gitlab.com), but we will 
@@ -217,8 +154,14 @@ later wish to allow to be estimated from the data.
 
 ### Special capabilities
 
+Users often have particular problems that introduce other requirements. It is
+common to weight observations where their reliability is thought to differ.
+Some situations present a number of related situations where a combined model
+with some common and some local parameters are present, and the local parameters
+could be indexed. The common exponential decay and related **partially linear**
+models (sometimes called **separable** models) is a difficult one that can 
+benefit from special treatment. 
 
-?? weighting, indexed parameters, partially linear ...
 
 ### Output 
 
@@ -235,8 +178,72 @@ to know if these constraints are active at the proposed solution.
 
 ### Documentation
 
-?? presence of vignettes, demos, (good?) examples
+We believe that the availability of good documentation with examples that users
+can modify to deal with their own problems is essential. The presence of vignettes, 
+demos, and tests indicates a package is well-supported.
 
+## Other CRAN packages
+
+`onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
+is the vertical difference between the dependent variable and the functional
+model. `onls` minimizes the sum of orthogonal residuals. The objective is
+therefore different, and involves nontrivial extra calculation. A vignette with
+the package and the blog article https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
+give some description with illustrative graphs. `onls` appears to be limited to 
+problems with one independent and one dependent variable. The Wikipedia article
+https://en.wikipedia.org/wiki/Total_least_squares presents an overview of some
+ideas. Our view is that the approach needs wider discussion and tutorial examples
+to allow its merits to be judged.
+
+`crsnls` (@R-crsnls-manual) -- This package allows nonlinear estimation by 
+controlled random search via two methods. There is unfortunately no vignette.
+A modest trial we carried out showed `nlsr::nlxb()` gave the same results in 
+a small fraction of the time required by either of the methods in `crsnls`.
+
+NISTnls (@NISTnls-manual) -- This package provides R code and data for a set of
+nonlinear least squares problems from the U.S. National Institute for Standards
+and Technology for testing solvers. We caution that the problems are generally 
+poorly conditioned and may not represent real-world situations.
+
+nlshelper (@nlshelper-manual) -- This package, which unfortunately lacks a
+vignette, provides a few utilities for summarizing, testing, and plotting 
+non-linear regression models estimated with nls(), nlsList() or nlme() that
+are linked or grouped in some way. 
+
+nlsic (@nlsic-manual) -- This solves non linear least squares problems with optional
+equality and/or inequality constraints. It is clearly not about modeling, and
+the input and output are quite different from class `nls` methods. 
+
+`nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models dedicated to predictive microbiology, including a vignette, by authors of the
+`nlstools` package who have a strong record in the subject.
+
+`nlstools` (@p-nlstools) -- This package provides several tools for aiding the estimation of nonlinear models, particularly
+using `nls()`. The vignette is actually a journal article, and the authors have considerable experience in the subject.
+
+`nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) regression, with details in Garay, Lachos and Abanto-Valle (2011). The problem here is to minimize an objective which is modified from the traditional sum of squared residuals.
+
+`nls.multstart` (@nlsmultstart) -- Non-linear least squares regression using
+AIC scores with the Levenberg-Marquardt algorithm using multiple starting values for increasing the chance that the minimum found is the global minimum.
+
+`nls2` (@nls2-22) -- Nonlinear least squares by brute force has some similar
+motivations, but a longer history and using `nls()` within multiple trials.
+
+`nlstac` (@m-nlstac) -- Set of functions implementing the algorithm described in Fernandez 
+    Torvisco et al. (2018) for fitting separable nonlinear regression curves. The special 
+    class of problem for which this package is intended is an important and difficult one.
+    No vignette is provided, unfortunately.
+
+`easynls`  -- Fit and plot some nonlinear models. Thirteen models are treated, but there is minimal 
+documentation and no vignette. Package `nlraa` is to be preferred.
+
+`nlraa`  (@MiguezNLRAA2021) -- a set of nonlinear *selfStart* models. Most include analytic Jacobian
+code.
+
+`optimx` (@p-optimx) -- not really a nonlinear least squares method, but has general optimizers
+that can be applied to minimize a nonlinear function e.g., a nonlinear sum of 
+squares, as well as other objectives. This is not generally recommended if nonlinear least 
+squares programs can be easily used, but provides a way to approach problems when others are
+unavailable.
 
 ## An illustrative example
 
