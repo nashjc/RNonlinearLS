@@ -1378,9 +1378,6 @@ the user to surround a term with `I()` to inhibit interpretation of arithmetic
 operators. We would prefer that formulas be usable without this complication.
 
 
-
----OLD VERSION BELOW ------------------------
-
 ## Future of nonlinear model estimation in R
 
 It is possible that `nls()` will remain more or less as it has been for the past
@@ -1390,86 +1387,30 @@ may be approached. We welcome an opportunity to participate in such conversation
 
 To advance the stability and maintainability of R, we believe the program objects (R functions)
 that are created by tools such as `nls()` should have minimal cross-linkages and side-effects.
-The aspects of `nls()` that have given us the most trouble:
+The aspects of `nls()` that have given us the most trouble follow:
 
-- The functions that compute the residuals and jacobians often presume
-  the data and parameters needed are available in a particular environment. As long
-  as the correct environment is used, this provides a compact syntax to invoke the
+- R tools often presume data and parameters needed are available in an accessible environment. 
+  As long as the correct environment is used, this provides a compact syntax to invoke the
   calculations. The danger is that the wrong data is accessed if the internal search finds a
-  valid name that is not the object we want.
+  valid name that is not the object we want, or if `subset` or `na.action` settings modify
+  the selection, or `weights` are applied.
+
+- Mixing of R, C and Fortran code adds to the burden of following the program logic.
+
+- The class `nls` structure simplifies calls with its rich set of functions, but
+  also adds to the task of following what has been done. A design that isolates the 
+  setup, solution, and post-solution parts of complicated calculations reduces the 
+  number of objects that must be kept in alignment. 
   
-- Weights, subsets, and various contextual controls (such as that for the `na.action` option)
-  are similarly taken from the first available source, making for a very simple
-  invocation of calculations, but the context is hidden from the user. Furthermore, it can be
-  difficult for those of us trying to maintain or improve the code to be certain we have the
-  context correct.
-  
-- The mixing of R, C and Fortran code was necessary for computational performance in the past.
-  Lacking decent developer documentation, programmers now face a lot of work to fix or improve code. 
-  We believe in having at least a working reference version of code in a single programming language. 
-  If necessary, by
-  measuring ("profiling") the code, we can find bottlenecks and substitute for those slower 
-  parts of the reference code.
-
-- A design that isolates the setup, solution, and post-solution parts of
-  for complicated calculations reduces the number of objects that must be kept in 
-  alignment. On the other hand, it may mean users have to add more commands to complete
-  their computations.
-  
-- All iterative codes should return the best solution they have found so far, even if there
-  are untoward conditions reached, such as a singular Jacobian. This modification could be
-  made to `nls()` in the short term, correcting the issue identified above under "Failure to
-  return best result achieved".
-
-- Given the existence of examples of good practices such as analytic derivatives, stabilized 
-  solution of Gauss-Newton equations and bounds-constrained parameters, base R tools should 
-  be moving to incorporate them. 
-
-We anticipate that tools like `nlsr` will become more attractive as users discover
-the increased robustness and general capabilities, along with the more recent documentation.
-From a design point of view, a key difference in approach between `nls()` and 
-`nlsr::nlxb()` is that `nls()` 
-builds a large infrastructure, especially the `nlsModel()` function,  from which the Gauss-Newton
-iteration can be executed and other statistical information such as profiles can be
-computed, while `nlxb()` returns quite limited information, and 
-computes what is needed on an "as and when" basis. This follows a path that one of us
-(JN) established almost 50 years ago with the software that became @cnm79, separating
-setup, solver, and post-solution analysis phases of computations. There is, however,
-the wrapper `wrapnlsr()` that solves the nonlinear estimation problem with the solver
-of `nlsr` then calls `nls()` to build the object of class `nls` for which profile log-likelihood
-information can be computed.
-<!-- Here, that last  -->
-<!-- phase is not part of `nlxb()`, but is the domain of other functions in the `nlsr` -->
-<!-- package. -->
-
-
-<!-- The `nls()` approach, as implemented in the base R code and `nlspkg` leads to considerable -->
-<!-- entangling of the different functions and capabilities. Even after -->
-<!-- both the preparation for and carrying out of the present project, we do not feel confident -->
-<!-- to explain the code completely, nor to maintain it. However, we have made some  -->
-<!-- forays into render parts of the code in R, and to understand where difficulties -->
-<!-- lie. -->
-
-<!-- ??fix next bits -->
-<!-- - The different dialects of modeling expressions as detailed above should be rationalized. This -->
-<!--   would, however, be a painful and mainly political activity. -->
-
-<!-- - The tools for analytic derivatives that exist in parts of `nls()` for self-starting models and -->
-<!--   in `nlsr` for problems specified as models that use expressions for which derivatives exist  -->
-<!--   should be more generally available, but the task is one of tedium and limited reward to the -->
-<!--   persons who do it, while benefiting the R community substantially. -->
-
-<!-- - Similarly, default methods need stabilized solvers e.g., Marquardt methods, though to date -->
-<!--   a mechanism to incorporate such modifications in `nls()` has eluded us. -->
-
-<!-- - Bounds constraints are sufficiently important that they should be part of the default -->
-<!--   methods -->
-<!--   (rather than algorithm = "port" for `nls()`). `minpack.lm` should handle them correctly. -->
+Given the existence of examples of good practices such as analytic derivatives, stabilized 
+solution of Gauss-Newton equations and bounds-constrained parameters, base R tools should 
+be moving to incorporate them. These capabilities are available now by using several tools,
+but it would be helpful if they were unified.
 
 
 # Acknowledgement
 
-Hans Werner Borchers has been helpful in developing the proposal for this project
+Hans Werner Borchers was helpful in developing GSoC project motivating this article
 and in comments on this and related work. Heather Turner co-mentored the project 
 and helped guide the progress of the work. Exchanges with Fernando Miguez helped to
 clarify aspects of `selfStart` models and instigated the "Introduction to nlsr" 
