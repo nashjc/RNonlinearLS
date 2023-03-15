@@ -929,23 +929,20 @@ anxbmsk1 <- try(nlxb(frmu, start=stu, data=weeddf, lower=c(200,0,0),
 print(anxbmsk1)
 anlM1 <- try(nlsLM(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
 			upper=c(200, 60, 3), trace=traceval))
-summary(anlM1)
-# nls gives warnings
+pnlm0(anlM1)
 anlsmsk1 <- try(nls(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
 		upper=c(200, 60, 3),  algorithm="port", trace=traceval))
-summary(anlsmsk1)
+pnls0(anlsmsk1)
 # Hobbs scaled problem with bounds, formula specification
 anlxmsks1 <- nlxb(frms, start=sts, data=weeddf, lower=c(2,0,0),
                   upper=c(2,6,30))
 print(anlxmsks1)
 anlshmsk1 <- nls(frms, start=sts, trace=traceval, data=weeddf, lower=c(2,0,0),
-             upper=c(2,6,3), algorithm='port')
-summary(anlshmsk1)
-cat("More precisely...crossprod(resid(anlshmsk1))=",crossprod(resid(anlshmsk1)),"\n")
-# nlsLM does not always work with bounds
+             upper=c(2,6,30), algorithm='port')
+pnls0(anlshmsk1)
 anlsLMmsks1 <- nlsLM(frms, start=sts, data=weeddf, lower=c(2,0,0),
-                 upper=c(2,6,3))
-summary(anlsLMmsks1)
+                 upper=c(2,6,30))
+pnlm0(anlsLMmsks1)
 
 # Test with all parameters masked
 anlxmskall<- try(nlxb(frms, start=sts, data=weeddf, lower=sts, upper=sts))
@@ -961,21 +958,17 @@ policy worthy of discussion and further investigation.
 
 ## Stabilization of Gauss-Newton computations
 
-All four major tools illustrated must solve some variant of the Gauss-Newton 
+All four major tools illustrated solve some variant of the Gauss-Newton 
 equations. `nls()` uses a modification of an approach suggested by @Hartley1961,
 while `nlsr`, `gslnls` and `minpack.lm` use flavours of @Marquardt1963. `gslnls`
 offers an accelerated Marquardt method and three alternative methods. We have 
 not explored all five methods with various control settings.
-Though it is unlikely to be useful in general, 
-control settings for `nlxb()` or `nlfb()` allow for those routines to perform 
-a variety of Hartley and Marquardt algorithms. This
-has been useful for learning about the algorithms, but tangential to simply finding
-parameters of nonlinear models.
+Control settings for `nlxb()` or `nlfb()` allow exploration of Hartley and Marquardt 
+algorithm variants. 
 
 In general, the Levenberg-Marquardt stabilization is important in obtaining 
 solutions in methods of the Gauss-Newton family, as `nls()` terminates 
 too frequently and unnecessarily with `singular gradient` errors.
-
 
 ### Programming language
 
@@ -983,16 +976,16 @@ An important choice made in developing `nlsr` was to code entirely within the R
 programming language. `nls()` uses a mix of R, C and Fortran, as does `minpack.lm`. 
 `gslnls` is an R wrapper to various C-language routines in the Gnu Scientific 
 Library (@GSL-manual).
-Generally, we believe that keeping to a single programming language can allow for 
+Generally, keeping to a single programming language can allow for 
 easier maintenance and upgrades. It also avoids some work when there are changes 
 or upgrades to libraries for the non-R languages. 
-On the other hand, R is usually somewhat slower 
-than some other computing systems because it keeps track of names and structures and 
-because it is usually interpreted rather than compiled. In recent years the 
+R is usually considered slower 
+than most computing environments because it keeps track of objects and 
+because it is usually interpreted. In recent years the 
 performance penalty for using code entirely in R has been much reduced
-with the just-in-time compiler and other improvements, so that using an all-R 
-package offers acceptable performance. Indeed, in `nlsr` the use of R may be 
-less of a performance cost than a policy of aggressively seeking a solution,
+with the just-in-time compiler and other improvements. All-R computation 
+may now offer acceptable performance. In `nlsr` the use of R may be a
+smaller performance cost than the aggressive approach to a solution,
 which can cause more iterations to be used.
 
 ## Data sources to problems
@@ -1001,41 +994,41 @@ which can cause more iterations to be used.
 search in the available environments (i.e., workspaces) for suitable data objects. 
 We do NOT like this approach, but it is "the R way". R allows users to leave many 
 objects in the default (`.GlobalEnv`) workspace. Moreover, users have to actively 
-suppress saving this workspace (`.RData`) on exit; otherwise, any such file in 
-the path, 
-when R is launched, will be loaded. The overwhelming proportion of R users in our
-acquaintance avoid saving the workspace because of the danger of lurking data and
+suppress saving this workspace (`.RData`) on exit, otherwise any such file in 
+the path will be loaded on startup. R users in our
+acquaintance avoid saving the workspace because lurking data and
 functions which may cause unwanted results.
-
-Nevertheless, to provide compatible behaviour with `nls()` and R generally, 
-programs need to ensure equivalent behaviour, but users should test that the 
-operation is as they intend. 
+Program alternatives to `nls()` still need to ensure they work with data in 
+the available environments.
 
 ### Feature: Subsetting
 
-`nls()` and other class `nls` tools accept an argument `subset`. This acts through the mediation of `model.frame` and is not clearly obvious in the source code files `/src/library/stats/R/nls.R` and `/src/library/stats/src/nls.C`. 
-
+`nls()` and other class `nls` tools accept an argument `subset`. This acts through the 
+mediation of `model.frame`, which not obvious in the 
+source code files `/src/library/stats/R/nls.R` and `/src/library/stats/src/nls.C`. 
 Having `subset` at the level of the call to a function like
 `nls()` saves effort, but it does mean that the programmer of the 
 solver needs to be aware of the
-source (and value) of objects such as the data, residuals and Jacobian. 
-This is overly complicated. By preference, 
-we would implement subsetting by means of zero-value weights, with observation counts
+origin (and value) of objects such as the data, residuals and Jacobian. 
+By preference, 
+we would implement subsetting by zero-value weights, with observation counts
 (and degrees of freedom) computed via the numbers of non-zero weights. Alternatively,
 we would extract a working dataframe from the relevant elements in the original.
 
 ### Feature: na.action
 
-`na.action` is an argument to the `nls()` function, but it does not appear obviously in the source code, often being handled behind the scenes after referencing the option `na.action`. Yet this feature also changes the data supplied to our nonlinear
-least squares solver. 
+`na.action` is an argument to the `nls()` function, but it does not appear 
+obviously in the source code, often being handled behind the scenes after 
+referencing the option `na.action`. Yet this feature also changes the data 
+supplied to our nonlinear least squares solver. 
 
 A useful, but possibly dated, description is given in:
 *https://stats.idre.ucla.edu/r/faq/how-does-r-handle-missing-values/*.
 The typical default action, which can be seen by using the command
 `getOption("na.action")`
-is `na.omit`. This option essentially omits from computations any observations
+is `na.omit`. This option removes from computations any observations
 containing missing values (i.e. any row of a data frame containing an NA). 
-`na.exclude` does much of the same for computations, but keeps the rows with NA 
+`na.exclude` does much of the same for solver computations, but keeps the rows with NA 
 elements so that predictions are in the correct row position. We recommend that 
 workers actually test output to verify the behaviour is as wanted.
 See *https://stats.stackexchange.com/questions/492955/should-i-use-na-omit-or-na-exclude-in-a-linear-model-in-r*.
@@ -1053,7 +1046,7 @@ Indeed, the argument only gets used when `nls()` is about to return its result
 object, and the
 element `model` is NULL unless the calling argument `model` is TRUE. (Using the same 
 name could
-be confusing.) However, the model frame is used within the function code in the form 
+be confusing.) Despite this, the model frame is used within the function code in the form 
 of the object
 `mf`. We feel that users could benefit from more extensive documentation and 
 examples of its use since it is used to implement features like `subset`.
@@ -1074,10 +1067,10 @@ parameters, for
 example, a measure of the standard deviation of observations.
 Such dynamic weighting situations are discussed in the vignette 
 "Introduction to nlsr" of package `nlsr` in section 
-*Weights that are functions of the model parameters*. Care is advised
+*Weights that are functions of the model parameters* and 
+`minpack.lm` offers a function `wfct()` to 
+facilitate such weighting. Care is advised
 in applying such ideas.
-
-
 
 ### Weights in returned functions from nls()
 
@@ -1087,25 +1080,26 @@ have had to extract from the base R code and explicitly `source()` because it
 is not exported to the working namespace,
 allows us to compute residuals for particular coefficient sets.
 
+?? Arkajyoti: I think this example may get too long or be too unclear.
+
+
 ```{r nlswtx, echo=TRUE}
-weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
-          38.558, 50.156, 62.948, 75.995, 91.972)
-tt <- 1:12
-weeddf <- data.frame(tt, weed)
 wts <- 0.5^tt # simple weights
 frmlogis <- weed ~ Asym/(1 + exp((xmid - tt)/scal))
 Asym<-1; xmid<-1; scal<-1
 nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal)) # UNWEIGHTED
-nowt
-nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does NOT take coefficients.
+rnowt<-nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does NOT take coefficients.
+attr(rnowt, "gradient")<-NULL; rnowt
 usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
-usewt
-usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
+rusewt<-usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
+attr(rusewt,"gradient")<-NULL; rusewt
 source("nlsModel.R")
 nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
-nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
+rn0<-nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
+attr(rn0,"gradient")<-NULL; rn0
 nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
-nmod$resid()
+rn<-nmod$resid()
+attr(rn,"gradient")<-NULL; rn
 ```
 
 ## Minor complaints
@@ -1147,24 +1141,21 @@ useful to R users.
 
 ## Estimating models that are partially linear
 
-Many nonlinear models can be expressed so that some of the parameters 
-appear linearly. In our logistic examples, the asymptote parameters are
-an illustration. In such cases, specialized methods can give spectactularly
-better performance. The variable projection method (@Golub1973, @OlearyRust13) is 
+The variable projection method (@Golub1973, @OlearyRust13) is 
 generally much more effective than general approaches in finding good solutions 
 to nonlinear least squares 
-problems when some of the parameters appear linearly. However, setting up the 
+problems when some of the parameters appear linearly. In our logistic examples, 
+the asymptote parameters are an illustration.However, setting up the 
 calculations, that is, identifying which parameters are linear, is not a trivial
 task. 
 
 `nls()` has an option `algorithm="plinear"` that allows some partially linear
 models to be solved. The other tools, as far as we are aware, do not offer any
-such capability. The `nlstac` package uses a different algorithm.
+such capability. The `nlstac` package uses a different algorithm for similar goals.
 
 Within `nls()` itself we must, unfortunately, use
 different specifications with different `algorithm` options.
-The nonlinear model specifications are, of course, a development of linear ones.
-The explicit model `y ~ a * x + b` does not work with the linear
+For example, the explicit model `y ~ a * x + b` does not work with the linear
 modeling function `lm()`, which requires this model to be specified as `y ~ x`.
 Within `nls()`, consider the following FOUR different specifications for the same 
 problem, plus an intuitive choice, labelled `fm2a`, that does NOT work. 
@@ -1206,7 +1197,6 @@ fm2a <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
 summary(fm2a)
 ```
 
-
 ## Models with indexed parameters
 
 Indexed parameters -- those whose names have subscripts on some element that
@@ -1217,7 +1207,6 @@ others that are tied to particular cases.
 
 The **man** file for `nls()` includes the following example of a situation in which
 parameters are indexed. It also uses the "plinear" option as an added complication.
-
 Here we use a truncated version of the example to save display space.
 
 ```{r nlsindx1}
@@ -1335,9 +1324,9 @@ When we started *Improvements to nls()* for the 2021 Google Summer of Code we wa
 These goals echo themes in the recent discussion by @Vidoni21 and accompanying 
 commentary.
 
-A serious obstacle to changing `nls()` is that there are many legacy applications
-and examples. Furthermore, with `nls()` as part of the base R distribution, users
-are drawn to using it even when it is less than ideal. A possible way forward
+We found the legacy code and examples prevented us achieving a revised `nls()` 
+with all its current capabilities. Unfortunately, `nls()` is part of the base R distribution, 
+so users are drawn to using it even when it is less than ideal. A possible way forward
 is to 
 
 - use a packaged version of `nls()` to provide legacy features, with notification
@@ -1394,7 +1383,6 @@ Given the existence of examples of good practices such as analytic derivatives, 
 solution of Gauss-Newton equations and bounds-constrained parameters, base R tools should 
 be moving to incorporate them. These capabilities are available now by using several tools,
 but it would be helpful if they were unified.
-
 
 # Acknowledgement
 
