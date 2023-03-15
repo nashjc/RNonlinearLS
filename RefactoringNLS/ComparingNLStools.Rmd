@@ -129,7 +129,6 @@ of a sum of squared residuals. This implies there is a "downhill" direction.
 The gradient of the residual sum of squares is computed as the product
 of the Jacobian matrix: the partial derivatives of the residual vector 
 with respect to the modeling parameters.
-(?? do we need to present this, or give a ref)
 
 Most researchers find the effort to interface the differential calculus 
 required to specify the Jacobian to a nonlinear estimation tool very 
@@ -173,8 +172,6 @@ for statistical purposes measures of uncertainty in the parameters are helpful.
 
 Some tools allow constraints to be imposed on the solution, and it is helpful
 to know if these constraints are active at the proposed solution.
-
-?? DO WE WANT A COMPARISON TABLE
 
 ### Documentation
 
@@ -580,17 +577,15 @@ a numerical approximation for the Jacobian if the argument `jac`
 is missing.
 
 ```{r exhobbsfn, eval=TRUE}
-require(minpack.lm)
-require(nlsr)
-require(gslnls)
+require(minpack.lm); require(nlsr); require(gslnls)
 hobnlfb<-nlfb(start=stu1, resfn=hobbs.res, jacfn=hobbs.jac)
 print(hobnlfb)
 hobnlm<-nls.lm(par=stu1, fn=hobbs.res, jac=hobbs.jac)
-summary(hobnlm)  
+pnlm0(hobnlm)  
 hobgsln<-gsl_nls(start=stu1, fn=hobbs.res, y=rep(0,12))
-summary(hobgsln)
-hobgsl<-gsl_nls(start=stu1, fn=hobbs.res, y=rep(0,12),jac=hobbs.jac)
-summary(hobgsl)
+pnlm0(hobgsln)
+hobgsl<-gsl_nls(start=stu1, fn=hobbs.res, y=rep(0,12), jac=hobbs.jac)
+pnlm0(hobgsl) # using analytic Jacobian
 ```
 
 ## Design goals, termination tests and output objects
@@ -609,32 +604,33 @@ The design goals of the different tools are also evident in the so-called
 "convergence tests" for the iterative solvers. In the manual page for `nls()` 
 in R 4.0.0 there was the warning:
 
->  **Do not use `nls` on artificial "zero-residual" data.**
+>  *Do not use `nls` on artificial "zero-residual" data.*
 
-and suggested adding small perturbations to the data. This amounted to 
+with suggested addition of small perturbations to the data. This amounted to 
 admitting `nls()` cannot solve well-posed problems unless data is polluted
 with errors. We dispute that zero-residual problems are always artificial,
 since problems in function approximation and nonlinear equations can be 
-approached with nonlinear least squares. Moreover, the matter can
+approached with nonlinear least squares. Moreover, the matter 
 can be easily resolved. The "termination test" for the **program** rather than for 
 "convergence" of the underlying **algorithm** is the Relative Offset Convergence
 Criterion (see @BatesWatts81). This projects the proposed step in the parameter
-vector on the gradient and estimates how much the sum of squares loss function 
+vector onto the gradient and estimates how much the sum of squares loss function 
 should decrease. This estimate is divided 
 by the current size of the loss function to avoid scale issues.
-When we have "converged", the estimated
+When we have "converged", the estimated relative
 decrease is very small. However, with small residuals,
 the sum of squares loss function is (almost) zero and we get the possibility of a 
 zero-divide failure. 
 
 Adding a small quantity to the loss function before dividing avoids trouble. 
-In 2021, one of us (J. Nash) proposed that `nls.control()` have an additional parameter `scaleOffset` with a default value of zero. Setting it to a small 
+In 2021, one of us (J. Nash) proposed that `nls.control()` have an 
+additional parameter `scaleOffset` with a default value of zero. Setting it to a small 
 number -- 1.0 is a reasonable choice -- allows small-residual problems 
 (i.e., near-exact fits) to be dealt with easily. We call this the
 **safeguarded relative offset convergence criterion**. The default value 
 gives the legacy behaviour.
 We are pleased to note that this improvement is now in the R distributed code 
-since version 4.1.0, and it has been a part of `nlsr` since it was introduced.
+since version 4.1.0; it has been a part of `nlsr` since it was introduced.
 
 More general termination tests can be used. `nlsr` has a **small sum of 
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
@@ -642,15 +638,11 @@ squares** test (**smallsstest**) that compares the latest evaluated sum of squar
 `e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
 
 Termination after what may be considered excessive computation is also important.
-`nls()` stops after `maxiter` "iterations". 
-Unfortunately, the meaning of "iteration" varies among programs and requires 
-careful examination of the
-code. We prefer to use the number of times the residuals or the jacobian have
-been computed and put upper limits on these. Our codes exit (terminate) 
+`nls()` stops after `maxiter` "iterations". The meaning of "iteration" may require
+examination of the code. We prefer to use the number of times the residuals or 
+the jacobian have been computed and put upper limits on these. Our codes exit (terminate) 
 when these limits are reached. Generally we prefer larger limits than the 
-default `maxiter = 50` of `nls()`,
-but that may reflect the more difficult problems we have encountered because 
-users consult us when standard tools have given unsatisfactory results. 
+default `maxiter = 50` of `nls()`, avoiding the risk of stopping early. 
 
 ### Returned results of nls() and other tools
 
@@ -741,7 +733,8 @@ The counts of evaluations are also returned.
 ### When to compute ancillary information
 
 Tools that produce a class `nls` output object create a rich set of functions
-and structures that are then used in a variety of modeling tasks. By contrast,
+and structures that are then used in a variety of modeling tasks, including the
+least squares solution. By contrast,
 `nlsr` computes quantities as they are requested or needed, with additional
 features in separate functions. For example, the singular values of the Jacobian 
 are actually computed in the `print` and `summary` methods for the result. 
@@ -815,7 +808,7 @@ Analytic Jacobian code can be provided to `nls()`, `nlsLM()` and `gsl_nls()`,
 and most `selfStart` models that automatically provide starting parameters
 also include such code. There is documentation in R
 of `selfStart` models, but the construction of them is non-trivial. A number 
-of such models are included with base R in `./src/library/stats/R/zzModels.R` file 
+of such models are included with base R in `./src/library/stats/R/zzModels.R`,  
 with package `nlraa` (@MiguezNLRAA2021) providing a richer set. 
 There are also some in the now-archived package `NRAIA`.
 These provide the Jacobian in the "gradient" attribute of the "one-sided" formula
@@ -824,7 +817,7 @@ each model, and these Jacobians may be the analytic forms.
 
 The `nls()` function, after
 computing the "right hand side" or `rhs` of the residual, then checks to see if the
-"gradient" attribute is defined, and, if not, uses `numericDeriv` to compute a 
+"gradient" attribute is defined, and, if not, uses `numericDeriv()` to compute a 
 Jacobian
 into that attribute. This code is within the `nlsModel()` or `nlsModel.plinear()`
 functions. The use of analytic Jacobians
@@ -839,21 +832,20 @@ out a large number of similar estimations, then good initial parameters are
 critical to efficiency.
 
 In considering `selfStart` models, we noted that the base-R function `SSlogis`
-is intended to solve our example problem **Logistic3T**, but that it finds initial 
-parameters for `nls()` by using a completely separate solver, then reruns the
-solution with the default algorithm from the derived -- and final -- parameters.
-To provide simpler estimates of starting parameters, the function `SSlogisJN`
+is intended to solve our example problem **Logistic3T**.  This example is one 
+where the `getInitial()` function (used to find
+starting values) actually calls `nls()` recursively with a non-default algorithm
+to get "starting" parameters. Then it returns to running the default algorithm
+unnecessarily. Such circular references are, in our view, prone to creating errors
+in code maintenance. 
+To provide simpler starting parameters, the function `SSlogisJN`
 is now part of package `nlsr`.
 
-The `SSLogis` case is one where the `getInitial()` function (used to find
-starting values) actually calls `nls()` with a non-default algorithm. 
-Such circular references are, in our view, prone to creating errors
-in code maintenance.
-Users may also want to use these models with explicit starting values 
-other than those suggested by `getInitial()`.
+Users may also want to use `selfStart` models with explicit starting values 
+other than those suggested by `getInitial()`. 
 We are also surprised that the 
 analytic expressions for the Jacobian ("gradient") in the `SSLogis` R function 
-saves many quantities in "hidden"
+and others save many quantities in "hidden"
 variables, i.e., with names preceded by ".". 
 These are then not displayed by the `ls()`
 command, making them difficult to access by users who may wish to create
@@ -869,8 +861,6 @@ entanglement of many features in `nls()` that complicate its maintenance and
 improvement.
 
 ## Bounds constraints on parameters
-
-?? Arkajyoti -- we can probably trim these examples
 
 In some cases, we know that parameters cannot be bigger or smaller than some
 externally known limits. Cash reserves cannot be negative. Animals have a 
@@ -930,11 +920,9 @@ Let us try to fix (mask) the first parameter in the first two example problems.
 
 ```{r ex10m, echo=TRUE}
 # Hobbsmaskx.R -- masks with formula specification of problem
-require(nlsr)
-require(minpack.lm)
+require(nlsr); require(minpack.lm); traceval<-FALSE
 stu <- c(b1=200, b2=50, b3=0.3) # a default starting vector (named!)
 sts <- c(c1=2, c2=5, c3=3) # a default scaled starting vector (named!)
-traceval<-FALSE
 # fix first parameter
 anxbmsk1 <- try(nlxb(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
 			upper=c(200, 60, 3), trace=traceval))
