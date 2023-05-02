@@ -73,7 +73,7 @@ concerns, and we will address some of these here.
 The tools we will consider are the base-R `nls()` function 
 and a number of packages that are available on the CRAN repository.
 Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
-**minpack.lm** (@minpacklm12), gslnls (@gslnls23), and nls2 (@nls2-22).
+**minpack.lm** (@minpacklm12), **gslnls** (@gslnls23), and **nls2** (@nls2-22).
 
 There are a number of other CRAN packages worth commentary, and we will give
 some capsule comments later. It is likely that there are a number of other 
@@ -86,18 +86,15 @@ not pursue those possibilities here.
 ## Comparison dimensions
 
 The tools for nonlinear estimation we consider have been built with different
-goals and contexts. We will make our comparison in a number of directions.
-We will make a number of specific notes, but our main commentary will consider
-the following categories. These overlap, for example in that the emphasis on modeling
-versus solving the nonlinear least squares problem will result in different
-output.f
+goals and contexts. We will make our comparison considering the overlapping
+headings summarized below.
 
 ### Modeling versus minimizing a sum of squares
 
 The goal of many statisticians and other workers is to estimate a model. The
 minimization of a sum of squared residuals -- the nonlinear least squares problem --
-is the mechanism to estimate the model. Some of the tools we review focus on the
-modeling, so attempt to provide measures of uncertainty and other information. 
+is the mechanism to estimate the model. Some tools focus on modeling, 
+so attempt to provide measures of uncertainty and other information. 
 The interface to modeling tools will generally try to streamline that task. By
 contrast, nonlinear least squares tools are trying to solve the more limited
 numerical task.
@@ -126,15 +123,15 @@ of the failures, though sometimes at the cost of more calculations.
 The necessarily iterative solution of a nonlinear least squares problem 
 to carry out nonlinear modeling requires that we can find smaller values
 of a sum of squared residuals. This implies there is a "downhill" direction.
-The gradient of the residual sum of squares is computed as the product
-of the Jacobian matrix: the partial derivatives of the residual vector 
+The gradient of the residual sum of squares is computed as its product
+with the Jacobian matrix: the partial derivatives of the residual vector 
 with respect to the modeling parameters.
 
-Most researchers find the effort to interface the differential calculus 
-required to specify the Jacobian to a nonlinear estimation tool very 
-challenging. The work-around is generally to use a numerical approximation,
-but there is the possibility of using symbolic or automatic differentiation,
-and there are particular models where workers have provided code for the
+Most researchers are challenged to program the differential calculus 
+required to specify the Jacobian to a nonlinear estimation tool. 
+The work-around is generally to use a numerical approximation,
+but there is the possibility of using symbolic or automatic differentiation.
+There are also particular models where workers have provided code for the
 Jacobian.
 
 ### Algorithm and termination choices
@@ -145,10 +142,10 @@ may differ greatly in detail.
 
 ### Constraints on parameters
 
-Reality often imposes conditions on parameters. While general constraints can
+Reality imposes conditions on parameters. While general constraints can
 be difficult to include, bounds on parameters can be accommodated by many 
 solvers. For some reason, fixed parameters (masks) are not often considered,
-but are very convenient when a parameter has a commonly accepted value that we
+but are convenient when a parameter has a commonly accepted value that we
 later wish to allow to be estimated from the data.
 
 ### Special capabilities
@@ -179,11 +176,11 @@ We believe that the availability of good documentation with examples that users
 can modify to deal with their own problems is essential. The presence of vignettes, 
 demos, and tests indicates a package is well-supported.
 
-## Other CRAN packages
+## Other CRAN packages considered
 
 `onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
 is the vertical difference between the dependent variable and the functional
-model. `onls` minimizes the sum of orthogonal residuals. The objective is
+model. `onls` minimizes the sum of **orthogonal** residuals. The objective is
 therefore different, and involves nontrivial extra calculation. A vignette with
 the package and the blog article 
 https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
@@ -215,17 +212,18 @@ are linked or grouped in some way.
 equality and/or inequality constraints. It is clearly **not** about modeling, and
 the input and output are quite different from class `nls` methods. 
 
-`nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models dedicated 
-to predictive microbiology, including a vignette, by authors of the
+`nlsMicrobio` (@nlsMicrobio-manual) -- Data sets and nonlinear regression models 
+dedicated  to predictive microbiology, including a vignette, by authors of the
 `nlstools` package who have a strong record in the subject.
 
 `nlstools` (@p-nlstools) -- This package provides several tools for aiding the estimation 
-of nonlinear models, particularly using `nls()`. The vignette is actually a journal article, 
-and the authors have considerable experience in the subject.
+of nonlinear models, particularly using `nls()`. The vignette is actually a journal
+article,  and the authors have considerable experience in the subject.
 
 `nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) 
 regression, with details in Garay, Lachos and Abanto-Valle (2011). The problem 
-here is to minimize an objective which is modified from the traditional sum of squared residuals.
+here is to minimize an objective which is modified from the traditional sum of squared
+residuals.
 
 `nls.multstart` (@nlsmultstart) -- Non-linear least squares regression using
 AIC scores with the Levenberg-Marquardt algorithm using multiple starting values 
@@ -235,22 +233,22 @@ for increasing the chance that the minimum found is the global minimum.
 motivations, but uses `nls()` within multiple trials. The package and its
 author have a long history in the R community.
 
-`nlstac` (@m-nlstac) -- A set of functions implementing the algorithm described in Fernandez 
-    Torvisco et al. (2018) for fitting separable nonlinear regression curves. The special 
-    class of problem for which this package is intended is an important and difficult one.
-    No vignette is provided, unfortunately.
+`nlstac` (@m-nlstac) -- A set of functions implementing the algorithm described in
+Fernandez Torvisco et al. (2018) for fitting separable nonlinear regression curves. The 
+special class of problem for which this package is intended is an important and 
+difficult one. No vignette is provided, unfortunately.
 
-`easynls`  -- Fit and plot some nonlinear models. Thirteen models are treated, but there is minimal 
-documentation and no vignette. Package `nlraa` is to be preferred.
+`easynls`  -- Fit and plot some nonlinear models. Thirteen models are treated, but 
+there is minimal documentation and no vignette. Package `nlraa` is to be preferred.
 
-`nlraa`  (@MiguezNLRAA2021) -- a set of nonlinear *selfStart* models. Most include analytic Jacobian
-code.
+`nlraa`  (@MiguezNLRAA2021) -- a set of nonlinear *selfStart* models. Most include
+analytic Jacobian code.
 
-`optimx` (@p-optimx) -- not really a nonlinear least squares method, but has general optimizers
-that can be applied to minimize a nonlinear function e.g., a nonlinear sum of 
-squares, as well as other objectives. This is not generally recommended if nonlinear least 
-squares programs can be easily used, but provides a way to approach problems when others are
-unavailable.
+`optimx` (@p-optimx) -- not really a nonlinear least squares method, but has general
+optimizers that can be applied to minimize a nonlinear function e.g., a nonlinear sum of 
+squares, as well as other objectives. This is not generally recommended if nonlinear 
+least squares programs can be easily used, but provides a way to approach problems 
+when others are unavailable.
 
 ## An illustrative example
 
