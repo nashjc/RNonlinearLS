@@ -27,12 +27,12 @@ knitr::opts_chunk$set(echo = TRUE)
 In a Google Summer of Code project "Improvements to `nls()`",
 we considered the features and limitations of the R function `nls()`
 in the context of improving and rationalizing R tools for nonlinear regression.
-The rich features of this function are weakened by a number of deficiencies and
+The rich features of this function are weakened by several deficiencies and
 inconsistencies, in particular a lack of stabilization of the Gauss-Newton solver.
 Further considerations are the usability and  maintainability of
 the code base that provides the functionality `nls()` claims to offer.
 Various packages, including our `nlsr`, provide alternative capabilities.
-This article considers the differences in goals, approach and features of
+This article considers the differences in goals, approaches, and features of
 different tools for nonlinear least squares modeling in R. Discussion of 
 these matters is relevant to improving R generally as well as its 
 nonlinear estimation tools.
@@ -40,7 +40,7 @@ nonlinear estimation tools.
 
 ## The `nls()` function
 
-`nls()` is the tool in base R, the primary software software distribution
+`nls()` is the tool in base R, the primary software distribution
 from the Comprehensive R Archive Network (*https://cran.r-project.org*),
 for estimating nonlinear statistical models. The function dates to the 1980s and the 
 work related to @bateswatts in S (see 
@@ -50,17 +50,17 @@ The `nls()` function has a remarkable and comprehensive set of capabilities for
 estimating nonlinear models that are expressed as **formulas**. In particular, we
 note that it
 
-- handles formulas that include R functions, even ones which call calculations in
+- handles formulas that include R functions, even ones that call calculations in
   other programming languages
 - allows data to be weighted or subset
-- can estimate bound constrained parameters
+- can estimate bound-constrained parameters
 - provides a mechanism for handling partially linear models
 - permits parameters to be indexed over a set of related data
 - produces measures of variability (i.e., standard error estimates) for the 
 estimated parameters
 - has related profiling capabilities for exploring the likelihood surface as 
 parameters are changed
-- links to a number of pre-coded (`selfStart`) models that do not require
+- links to many pre-coded (`selfStart`) models that do not require
   initial parameter values.
 
 With such a range of features and long history, the code has become untidy 
@@ -71,16 +71,16 @@ concerns, and we will address some of these here.
 ## Scope of our comparison
 
 The tools we will consider are the base-R `nls()` function 
-and a number of packages that are available on the CRAN repository.
+and some packages that are available on the CRAN repository.
 Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
 **minpack.lm** (@minpacklm12), **gslnls** (@gslnls23), and **nls2** (@nls2-22).
 
-There are a number of other CRAN packages worth commentary, and we will give
-some capsule comments later. It is likely that there are a number of other 
+There are some other CRAN packages worth commentary, and we will give
+some capsule comments later. There are likely several other 
 tools that could be relevant to
 this comparison in the Bioconductor (@Bioconductor) collection 
 and on repositories like
-Github (https://github.com) and Gitlab (https://about.gitlab.com), but we will 
+GitHub (https://github.com) and Gitlab (https://about.gitlab.com), but we will 
 not pursue those possibilities here.
 
 ## Comparison dimensions
@@ -103,7 +103,7 @@ numerical task.
 
 R tools are our interest, but they often call programs in other programming
 languages. There are advantages in using a well-established program that has
-been much used and tested. Early versions of R were relatively sluggish in 
+been used and tested. Early versions of R were relatively sluggish in 
 computational speed. The downside is that we must interface between two or more
 programming languages, adding to the risk of errors. Changes to one or the 
 other language or its library support may
@@ -129,7 +129,7 @@ with respect to the modeling parameters.
 
 Most researchers are challenged to program the differential calculus 
 required to specify the Jacobian to a nonlinear estimation tool. 
-The work-around is generally to use a numerical approximation,
+The workaround is generally to use a numerical approximation,
 but there is the possibility of using symbolic or automatic differentiation.
 There are also particular models where workers have provided code for the
 Jacobian.
@@ -144,7 +144,7 @@ may differ greatly in detail.
 
 Reality imposes conditions on parameters. While general constraints can
 be difficult to include, bounds on parameters can be accommodated by many 
-solvers. For some reason, fixed parameters (masks) are not often considered,
+solvers. For some reason, fixed parameters (masks) are not often considered
 but are convenient when a parameter has a commonly accepted value that we
 later wish to allow to be estimated from the data.
 
@@ -161,19 +161,19 @@ benefit from special treatment.
 
 ### Output 
 
-While the aim of nonlinear estimation is to return a set of parameters for a
+While nonlinear estimation aims to return a set of parameters for a
 particular model, there is a variety of additional information which may be
 provided. From the perspective of the nonlinear least squares problem, there
 are measures of work and information on the quality of the solution, while
 for statistical purposes measures of uncertainty in the parameters are helpful.
 
 Some tools allow constraints to be imposed on the solution, and it is helpful
-to know if these constraints are active at the proposed solution.
+to know if these constraints are active in the proposed solution.
 
 ### Documentation
 
 We believe that the availability of good documentation with examples that users
-can modify to deal with their own problems is essential. The presence of vignettes, 
+can modify to deal with their problems is essential. The presence of vignettes, 
 demos, and tests indicates a package is well-supported.
 
 ## Other CRAN packages considered
@@ -181,7 +181,7 @@ demos, and tests indicates a package is well-supported.
 `onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
 is the vertical difference between the dependent variable and the functional
 model. `onls` minimizes the sum of **orthogonal** residuals. The objective is
-therefore different, and involves nontrivial extra calculation. A vignette with
+therefore different and involves nontrivial extra calculation. A vignette with
 the package and the blog article 
 https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
 give some description with illustrative graphs. `onls` appears to be limited to 
@@ -208,7 +208,7 @@ vignette, provides a few utilities for summarizing, testing, and plotting
 non-linear regression models estimated with nls(), nlsList() or nlme() that
 are linked or grouped in some way. 
 
-`nlsic` (@nlsic-manual) -- This solves non linear least squares problems with optional
+`nlsic` (@nlsic-manual) -- This solves nonlinear least squares problems with optional
 equality and/or inequality constraints. It is clearly **not** about modeling, and
 the input and output are quite different from class `nls` methods. 
 
@@ -221,8 +221,8 @@ of nonlinear models, particularly using `nls()`. The vignette is actually a jour
 article,  and the authors have considerable experience in the subject.
 
 `nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) 
-regression, with details in Garay, Lachos and Abanto-Valle (2011). The problem 
-here is to minimize an objective which is modified from the traditional sum of squared
+regression, with details in Garay, Lachos, and Abanto-Valle (2011). The problem 
+here is to minimize an objective that is modified from the traditional sum of squared
 residuals.
 
 `nls.multstart` (@nlsmultstart) -- Non-linear least squares regression using
@@ -230,7 +230,7 @@ AIC scores with the Levenberg-Marquardt algorithm using multiple starting values
 for increasing the chance that the minimum found is the global minimum.
 
 `nls2` (@nls2-22) -- Nonlinear least squares by brute force has some similar
-motivations, but uses `nls()` within multiple trials. The package and its
+motivation, but uses `nls()` within multiple trials. The package and its
 author have a long history in the R community.
 
 `nlstac` (@m-nlstac) -- A set of functions implementing the algorithm described in
@@ -253,13 +253,13 @@ when others are unavailable.
 ## An illustrative example
 
 The Hobbs weed infestation problem (@cnm79 [page 120]) is a growth curve modeling 
-task which is seemingly straightforward but turns out to be quite nasty. Because
+task that is seemingly straightforward but turns out to be quite nasty. Because
 this problem has a very succinct statement, it often provides the "short 
 reproducible example" much beseeched of contributors to R mailing lists. 
 Nevertheless, this is not an artificially created test problem, but one that
 came from a field researcher.
 
-The data and a graph of it is given below.
+The data and a graph of it are given below.
 
 ```{r ex01, echo=TRUE}
 weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
@@ -327,7 +327,7 @@ $$  H_{i,j} = \sum_{k = 1}^m{ J_{k,i} J_{k,j}}  + \sum_{k = 1}^m {r_k * \partial
 Let us use $D_{i,j}$ for the elements of the second term of this expression.
 What is generally called **Newton's method** for function minimization tries
 to set the gradient to zero (to find a stationary point of the function $S(p)$).
-This leads to the **Newton's equation**
+This leads to **Newton's equation**
 
 $$ H \delta = -g $$
 given a set of parameters $p$, we solve this equation for $\delta$, adjust $p$
@@ -352,10 +352,10 @@ $$ J \delta \approx -r $$
 which may be accomplished by a variety of matrix decomposition methods. 
 
 In reality, there are many problems were $D$ should not be ignored, but the work
-to compute it precisely is considerable. A number of work-arounds have been 
+to compute it precisely is considerable. Many workarounds have been 
 proposed, of which the Levenberg-Marquardt (@Levenberg1944, @Marquardt1963) is
-the most commonly used. Henceforth we will simply say "Marquardt" as we believe
-he was the first to actually incorporate the ideas into a practical computer
+the most commonly used. Henceforth, we will simply say "Marquardt", as we believe,
+was the first to actually incorporate the ideas into a practical computer
 program. 
 
 The suggestion is that $D$ be replaced by a multiple of the unit matrix or else
@@ -372,7 +372,7 @@ work well.
 ### Problem setup
 
 Let us specify in R the three model formulae and set some starting
-values for parameters. These starting points are NOT equivalent, and
+values for parameters. These starting points are NOT equivalent and
 are deliberately crude choices. Workers performing many calculations 
 of a similar nature should try to provide good starting points to reduce
 computation time and the chance a false solution is found.
@@ -391,7 +391,7 @@ stt1<-c(Asym=1, xmid=1, scal=1)
 
 One of the useful features of `nls()` is the possibility of a `selfStart` model,
 where starting parameter values are not required. We discuss aspects of this
-feature at several points below. However, in the event that a `selfStart` model 
+feature at several points below. However, if a `selfStart` model 
 is not available, `nls()` sets all the starting parameters 
 to 1. This is, in our view, tolerable, but could be improved by using a set of values
 that are all slightly different, which, in the case of the example 
@@ -488,7 +488,7 @@ whose row they appear; they are a property of the whole problem.
 ```{r ex02minpack}
 library(minpack.lm)
 unlm1<-try(nlsLM(formula=frmu, start=stu1, data=weeddf))
-summary(unlm1) # Use summary() to get display
+faraway::sumary(unlm1) # Use summary() to get display
 # unlm1 # Note the difference. Use this form to get sum of squares
 # pnlm0(unlm1)  # Short form of output
 snlm1<-try(nlsLM(formula=frms, start=sts1, data=weeddf))
@@ -880,8 +880,8 @@ used in the call. Unfortunately, the documentation warns us:
 - `nlsLM()` includes bounds in the standard call, but we have observed cases
    where it fails to get the correct answer. From examination of the code,
    we believe the authors have not taken into account all possibilities, though
-   it should be noted that all programs have some weakness in
-   regard to constrained optimization. Software creators have to work with
+   it should be noted that all programs have some weakness regarding constrained
+   optimization. Software creators have to work with
    assumptions on the extremity of scale that they are willing to countenance,
    and sometimes problems will be outside the scope envisaged.
 
@@ -1059,7 +1059,7 @@ Where available, the values returned by the
 `residuals()` function are weighted, and the `fitted()` or `predict()` function are 
 used to compute raw residuals.
 
-While fixed weights may be useful, there are a number of problems for which
+While fixed weights may be useful, there are many problems for which
 we want weights that are determined at least partially from the model 
 parameters, for
 example, a measure of the standard deviation of observations.
@@ -1106,12 +1106,12 @@ attr(rn,"gradient")<-NULL; rn
 
 As the `nls()` **man** page states, when the "port" algorithm is used with the
 `trace` argument TRUE, the iterations display the objective function value which 
-is 1/2 the sum of squares (or deviance). It is likely that the trace display is
+is 1/2 the sum of squares (or deviance). The trace display is likely
 embedded in the Fortran of the `nlminb` routine that is called to execute 
 the "port" algorithm, but the factor of 2 discrepancy is nonetheless
 unfortunate for users. 
 
-### Failure to return best result achieved
+### Failure to return the best result achieved
 
 If `nls()` reaches a point where it cannot continue but has not found a point 
 where the relative offset convergence criterion is met, it may simply exit,
