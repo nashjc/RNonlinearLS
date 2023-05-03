@@ -353,17 +353,16 @@ which may be accomplished by a variety of matrix decomposition methods.
 
 In reality, there are many problems were $D$ should not be ignored, but the work
 to compute it precisely is considerable. Many workarounds have been 
-proposed, of which the Levenberg-Marquardt (@Levenberg1944, @Marquardt1963) is
-the most commonly used. Henceforth, we will simply say "Marquardt", as we believe,
-was the first to actually incorporate the ideas into a practical computer
-program. 
+proposed, of which the Levenberg-Marquardt stabilization 
+(@Levenberg1944, @Marquardt1963) is
+the most commonly used. We will use "Marquardt", as we believe he
+first incorporated the ideas into a practical computer program. 
 
 The suggestion is that $D$ be replaced by a multiple of the unit matrix or else
-a multiple of the diagonal part of $J' J$. For machines with exceptionally low
-precision arithmetic found on some minicomputers in the 1970s, one of us suggested
-a linear combination of these ideas. In low precision, some elements of 
-$J' J$ could underflow to zero (@jn77ima). We note that the various choices for
-$D$, especially the scaling multiple, as well as possible line search along the
+a multiple of the diagonal part of $J' J$. In low precision, some elements of 
+$J' J$ could underflow to zero (@jn77ima), and a linear combination of both
+choices was suggested as a compromise. Various choices for
+$D$, as well as a possible line search along the
 direction $\delta$ rather than a unit step (@Hartley1961), 
 give rise to a panoply of variant
 algorithms. "Marquardt's method" is a family of methods. Fortunately, most choices
@@ -371,7 +370,7 @@ work well.
 
 ### Problem setup
 
-Let us specify in R the three model formulae and set some starting
+Let us specify in R the three model formulas and set some starting
 values for parameters. These starting points are NOT equivalent and
 are deliberately crude choices. Workers performing many calculations 
 of a similar nature should try to provide good starting points to reduce
@@ -393,7 +392,7 @@ One of the useful features of `nls()` is the possibility of a `selfStart` model,
 where starting parameter values are not required. We discuss aspects of this
 feature at several points below. However, if a `selfStart` model 
 is not available, `nls()` sets all the starting parameters 
-to 1. This is, in our view, tolerable, but could be improved by using a set of values
+to 1. This is tolerable, but could be improved by using a set of values
 that are all slightly different, which, in the case of the example 
 model $y \,\sim\, a \,*\, exp(-b \,*\, x) + c\,*\,exp(-d \,*\, x)$
 would avoid a singular Jacobian because $b$ and $d$ were equal in value. 
@@ -487,10 +486,12 @@ whose row they appear; they are a property of the whole problem.
 
 ```{r ex02minpack}
 library(minpack.lm)
+# ??not needed -- library(nlsr) # for pnlm0
 unlm1<-try(nlsLM(formula=frmu, start=stu1, data=weeddf))
-faraway::sumary(unlm1) # Use summary() to get display
+# summary not exported by faraway??
+# faraway::summary(unlm1) # Use summary() to get display
 # unlm1 # Note the difference. Use this form to get sum of squares
-# pnlm0(unlm1)  # Short form of output
+pnlm0(unlm1)  # Short form of output
 snlm1<-try(nlsLM(formula=frms, start=sts1, data=weeddf))
 pnlm0(snlm1)
 # summary(snlm1)
@@ -591,8 +592,8 @@ pnlm0(hobgsl) # using analytic Jacobian
 The output object of `nlxb()` is smaller than the class `nls` object returned
 by `nls()`, `nlsLM()` and `gsl_nls()`. Package `nlsr` emphasizes the solution 
 of the nonlinear least squares problem rather than the estimation of a nonlinear 
-model that fits or explains the data. `nls()` and `nlsLM` return an object of 
-class `nls`, which allows for a number of specialized modeling and diagnostic extensions. For compatibility, 
+model that fits or explains the data. The object of class `nls` allows for 
+a number of specialized modeling and diagnostic extensions. For compatibility, 
 the `nlsr` package has function `wrapnlsr()`, for which `nlsr()` is an alias. 
 This uses `nlxb()` to find good parameters, then calls `nls()` to return the class 
 `nls` object. Unless particular modeling features are needed, the use of 
@@ -640,9 +641,11 @@ Termination after what may be considered excessive computation is also important
 examination of the code. We prefer to use the number of times the residuals or 
 the jacobian have been computed and put upper limits on these. Our codes exit (terminate) 
 when these limits are reached. Generally we prefer larger limits than the 
-default `maxiter = 50` of `nls()`, avoiding the risk of stopping early. 
+default `maxiter = 50` of `nls()` to avoid stopping early. 
 
 ### Returned results of nls() and other tools
+
+?? Can we simplify or suggest use of `str()` ??
 
 The output of `nls()` is an object of class "nls" which has the following structure:
 
@@ -837,7 +840,7 @@ to get "starting" parameters. Then it returns to running the default algorithm
 unnecessarily. Such circular references are, in our view, prone to creating errors
 in code maintenance. 
 To provide simpler starting parameters, the function `SSlogisJN`
-is now part of package `nlsr`.
+is now part of package `nlsr`, but is most useful for `nls()`.
 
 Users may also want to use `selfStart` models with explicit starting values 
 other than those suggested by `getInitial()`. 
@@ -1013,7 +1016,7 @@ we would implement subsetting by zero-value weights, with observation counts
 (and degrees of freedom) computed via the numbers of non-zero weights. Alternatively,
 we would extract a working dataframe from the relevant elements in the original.
 
-### Feature: na.action
+### Feature: na.action (missing value treatment)
 
 `na.action` is an argument to the `nls()` function, but it does not appear 
 obviously in the source code, often being handled behind the scenes after 
@@ -1078,7 +1081,7 @@ have had to extract from the base R code and explicitly `source()` because it
 is not exported to the working namespace,
 allows us to compute residuals for particular coefficient sets.
 
-?? Arkajyoti: I think this example may get too long or be too unclear.
+<!-- ?? Arkajyoti: I think this example may get too long or be too unclear. -->
 
 
 ```{r nlswtx, echo=TRUE}
@@ -1255,6 +1258,10 @@ straightforward to prepare an external package to provide for their estimation,
 including an appropriately formatted output object so the indexing of the 
 parameters can be used in other calculations.
 
+<!-- Ben Bolker mentioned a possibility of using a nonlinear model in  -->
+<!-- ??I think?? nlme with some sort of linear model form of the parameters. -->
+<!-- May need to mention. -->
+
 ## Tests and use-case examples
 
 Maintainers of packages need suitable tests and use-case examples in order:
@@ -1323,7 +1330,8 @@ These goals echo themes in the recent discussion by @Vidoni21 and accompanying
 commentary.
 
 We found the legacy code and examples prevented us achieving a revised `nls()` 
-with all its current capabilities. Unfortunately, `nls()` is part of the base R distribution, 
+with all its current capabilities. Unfortunately, `nls()` is part of the base R
+distribution, 
 so users are drawn to using it even when it is less than ideal. A possible way forward
 is to 
 
@@ -1360,13 +1368,17 @@ two decades. Given its importance to R, the focus of discussion should be the
 measures needed to secure its continued operation for legacy purposes and how that
 may be approached. We welcome an opportunity to participate in such conversations. 
 
-To advance the stability and maintainability of R, we believe the program objects (R functions)
-that are created by tools such as `nls()` should have minimal cross-linkages and side-effects.
+To advance the stability and maintainability of R, we believe the program 
+objects (R functions)
+that are created by tools such as `nls()` should have minimal 
+cross-linkages and side-effects.
 The aspects of `nls()` that have given us the most trouble follow:
 
-- R tools often presume data and parameters needed are available in an accessible environment. 
-  As long as the correct environment is used, this provides a compact syntax to invoke the
-  calculations. The danger is that the wrong data is accessed if the internal search finds a
+- R tools often presume data and parameters needed are available in an 
+  accessible environment. As long as the correct environment is used, this provides 
+  a compact syntax to invoke the
+  calculations. The danger is that the wrong data is accessed if the 
+  internal search finds a
   valid name that is not the object we want, or if `subset` or `na.action` settings modify
   the selection, or `weights` are applied.
 
@@ -1377,10 +1389,11 @@ The aspects of `nls()` that have given us the most trouble follow:
   setup, solution, and post-solution parts of complicated calculations reduces the 
   number of objects that must be kept in alignment. 
   
-Given the existence of examples of good practices such as analytic derivatives, stabilized 
+Given the existence of examples of good practices such as analytic derivatives, 
+stabilized 
 solution of Gauss-Newton equations and bounds-constrained parameters, base R tools should 
-be moving to incorporate them. These capabilities are available now by using several tools,
-but it would be helpful if they were unified.
+be moving to incorporate them. These capabilities are available now by 
+using several tools, but it would be helpful if they were unified.
 
 # Acknowledgement
 
