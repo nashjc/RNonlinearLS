@@ -20,8 +20,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ## require(bookdown) # language engine to display text - does not seem necessary
 ```
 
-<!-- ?? nlme::gnls() -- should we note it? -->
-
 ## Abstract
 
 In a Google Summer of Code project "Improvements to `nls()`",
@@ -73,110 +71,15 @@ concerns, and we will address some of these here.
 The tools we will consider are the base-R `nls()` function 
 and some packages that are available on the CRAN repository.
 Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
-**minpack.lm** (@minpacklm12), **gslnls** (@gslnls23), and **nls2** (@nls2-22).
+**minpack.lm** (@minpacklm12), and **gslnls** (@gslnls23) which are
+general nonlinear least-squares solvers.
 
-There are some other CRAN packages worth commentary, and we will give
-some capsule comments later. There are likely several other 
-tools that could be relevant to
-this comparison in the Bioconductor (@Bioconductor) collection 
-and on repositories like
-GitHub (https://github.com) and Gitlab (https://about.gitlab.com), but we will 
-not pursue those possibilities here.
+While we will provide capsule comments for some other CRAN packages, 
+we will not pursue those in the Bioconductor (@Bioconductor) 
+collection and on repositories such as 
+GitHub (https://github.com) and Gitlab (https://about.gitlab.com).
 
-## Comparison dimensions
-
-The tools for nonlinear estimation we consider have been built with different
-goals and contexts. We will make our comparison considering the overlapping
-headings summarized below.
-
-### Modeling versus minimizing a sum of squares
-
-The goal of many statisticians and other workers is to estimate a model. The
-minimization of a sum of squared residuals -- the nonlinear least squares problem --
-is the mechanism to estimate the model. Some tools focus on modeling, 
-so attempt to provide measures of uncertainty and other information. 
-The interface to modeling tools will generally try to streamline that task. By
-contrast, nonlinear least squares tools are trying to solve the more limited
-numerical task.
-
-### Programming language(s)
-
-R tools are our interest, but they often call programs in other programming
-languages. There are advantages in using a well-established program that has
-been used and tested. Early versions of R were relatively sluggish in 
-computational speed. The downside is that we must interface between two or more
-programming languages, adding to the risk of errors. Changes to one or the 
-other language or its library support may
-force maintenance issues. Moreover, the pool of expertise with languages like C
-and Fortran is diminishing.
-
-### Internal solver stabilization
-
-Early nonlinear least squares programs generally used the Gauss-Newton method 
-(@Hartley1961). This is often very effective and efficient, but for a quite large 
-proportion of problems can fail to find the solution. Stabilization of the 
-computations is relatively straightforward in principle, and overcomes most
-of the failures, though sometimes at the cost of more calculations.
-
-### Jacobian calculation
-
-The necessarily iterative solution of a nonlinear least squares problem 
-to carry out nonlinear modeling requires that we can find smaller values
-of a sum of squared residuals. This implies there is a "downhill" direction.
-The gradient of the residual sum of squares is computed as its product
-with the Jacobian matrix: the partial derivatives of the residual vector 
-with respect to the modeling parameters.
-
-Most researchers are challenged to program the differential calculus 
-required to specify the Jacobian to a nonlinear estimation tool. 
-The workaround is generally to use a numerical approximation,
-but there is the possibility of using symbolic or automatic differentiation.
-There are also particular models where workers have provided code for the
-Jacobian.
-
-### Algorithm and termination choices
-
-Iterative algorithms need to be stopped at some point, and how termination
-is forced may alter results. Furthermore, even supposedly similar algorithms
-may differ greatly in detail. 
-
-### Constraints on parameters
-
-Reality imposes conditions on parameters. While general constraints can
-be difficult to include, bounds on parameters can be accommodated by many 
-solvers. For some reason, fixed parameters (masks) are not often considered
-but are convenient when a parameter has a commonly accepted value that we
-later wish to allow to be estimated from the data.
-
-### Special capabilities
-
-Users often have particular problems that introduce other requirements. It is
-common to weight observations where their reliability is thought to differ.
-Some situations present a number of related situations where a combined model
-with some common and some local parameters are present, and the local parameters
-could be indexed. The common exponential decay and related **partially linear**
-models (sometimes called **separable** models) is a difficult one that can 
-benefit from special treatment. 
-
-
-### Output 
-
-While nonlinear estimation aims to return a set of parameters for a
-particular model, there is a variety of additional information which may be
-provided. From the perspective of the nonlinear least squares problem, there
-are measures of work and information on the quality of the solution, while
-for statistical purposes measures of uncertainty in the parameters are helpful.
-
-Some tools allow constraints to be imposed on the solution, and it is helpful
-to know if these constraints are active in the proposed solution.
-
-### Documentation
-
-We believe that the availability of good documentation with examples that users
-can modify to deal with their problems is essential. The presence of vignettes, 
-demos, and tests indicates a package is well-supported.
-
-## Other CRAN packages considered
+## Some other CRAN packages for nonlinear modeling
 
 `onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
 is the vertical difference between the dependent variable and the functional
@@ -199,9 +102,8 @@ than a Levenberg-Marquardt code (actually from Matlab), but the tests were condu
 on the extreme NIST examples (@NISTnls-manual).
 
 `NISTnls` (@NISTnls-manual) -- This package provides R code and data for a set of
-nonlinear least squares problems from the U.S. National Institute for Standards
-and Technology for testing solvers. We caution that the problems are generally 
-poorly conditioned and may not represent real-world situations.
+(numerically ill-conditioned) nonlinear least squares problems from the U.S. National 
+Institute for Standards and Technology. These may not represent real-world situations.
 
 `nlshelper` (@nlshelper-manual) -- This package, which unfortunately lacks a
 vignette, provides a few utilities for summarizing, testing, and plotting 
@@ -229,9 +131,8 @@ residuals.
 AIC scores with the Levenberg-Marquardt algorithm using multiple starting values 
 for increasing the chance that the minimum found is the global minimum.
 
-`nls2` (@nls2-22) -- Nonlinear least squares by brute force has some similar
-motivation, but uses `nls()` within multiple trials. The package and its
-author have a long history in the R community.
+`nls2` (@nls2-22) -- Nonlinear least squares by brute force has similar
+motivations, but uses `nls()` within multiple trials.
 
 `nlstac` (@m-nlstac) -- A set of functions implementing the algorithm described in
 Fernandez Torvisco et al. (2018) for fitting separable nonlinear regression curves. The 
@@ -244,22 +145,19 @@ there is minimal documentation and no vignette. Package `nlraa` is to be preferr
 `nlraa`  (@MiguezNLRAA2021) -- a set of nonlinear *selfStart* models. Most include
 analytic Jacobian code.
 
-`optimx` (@p-optimx) -- not really a nonlinear least squares method, but has general
-optimizers that can be applied to minimize a nonlinear function e.g., a nonlinear sum of 
-squares, as well as other objectives. This is not generally recommended if nonlinear 
-least squares programs can be easily used, but provides a way to approach problems 
-when others are unavailable.
+`optimx` (@p-optimx) -- This provides 
+optimizers that can be applied to minimize a nonlinear function which could be
+a nonlinear sum of 
+squares. NOT generally recommended if nonlinear 
+least squares programs can be easily used, but provides a check and alternative
+solvers.
 
 ## An illustrative example
 
 The Hobbs weed infestation problem (@cnm79 [page 120]) is a growth curve modeling 
-task that is seemingly straightforward but turns out to be quite nasty. Because
-this problem has a very succinct statement, it often provides the "short 
-reproducible example" much beseeched of contributors to R mailing lists. 
-Nevertheless, this is not an artificially created test problem, but one that
-came from a field researcher.
-
-The data and a graph of it are given below.
+task that seems straightforward but is quite nasty. Its very succinct statement 
+provides the "short reproducible example" much requested on R mailing lists. 
+This is a real problem from a field researcher. The data and graph follow.
 
 ```{r ex01, echo=TRUE}
 weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
@@ -289,82 +187,60 @@ $$ exp(xmid/scal)  =  b_2 = 10 * c_2 $$
 $$ 1/scal  =  b_3 $$
 To allow for simpler discussion, let us say that the parameters form a (named) vector
 $p$ and the model function is called $model(p)$. The residuals can be written
-either as 
+either as $r_1 = y - model(p)$ or $r = model(p) - y$
+since their sum of squares has an identical value. The second form
+avoids a potential sign error if we need to evaluate derivatives. 
 
-$$ r_1 = y - model(p)$$
-
-or
-
-$$ r = model(p) - y $$
-
-since the sumsquares loss function has an identical value. In both cases, the
-residual vector is a function of $p$. The second form
-has a minor advantage in avoiding a potential sign error 
-if we need to differentiate to get gradients etc. 
-
-### The loss function and its minimization
-
-The general approach of nonlinear optimizers, of which nonlinear least squares
-solvers are usually a subset, is to try to reduce the loss function (or objective
-function) defined by the sum of squares of the residuals by 
-altering the model parameters from some starting guess. In all general 
-methods of which we are aware, this is an iterative process. 
+We wish to minimize the sum of squared residuals, which is our loss (or objective) function. 
+Starting with some guess for the parameters, we aim to alter these parameters to obtain a smaller
+loss function. We then iterate until we can make no further progress.
 
 Let us consider there are $n$ parameters and $m$ residuals. 
-We note several useful quantities
-
-Loss function:
+We note several useful quantities. The loss function is 
 $$ S(p) = r' r = \sum_{i=1}^m { r_i^2 }$$
-Gradient of $S(p)$:
+The gradient of $S(p)$ is
 $$ 2 * J' r$$
 where the Jacobian $J$ is given by elements
 $$ J_{i,j} = \partial r_i / \partial p_j $$
 and the Hessian is defined by elements
 $$ H_{i,j} = \partial ^2 S(p) / {\partial p_i \partial p_j} $$
 If we expand the Hessian for nonlinear least squares problems, we find
-
 $$  H_{i,j} = \sum_{k = 1}^m{ J_{k,i} J_{k,j}}  + \sum_{k = 1}^m {r_k * \partial{r_k}/{\partial p_i \partial p_j}}$$
 Let us use $D_{i,j}$ for the elements of the second term of this expression.
 What is generally called **Newton's method** for function minimization tries
 to set the gradient to zero (to find a stationary point of the function $S(p)$).
 This leads to **Newton's equation**
-
 $$ H \delta = -g $$
-given a set of parameters $p$, we solve this equation for $\delta$, adjust $p$
-to $p + \delta$ and iterate, hopefully to converge on a solution.
-
+Given a set of parameters $p$, we solve this equation for $\delta$, adjust $p$
+to $p + \delta$ and iterate, hopefully to converge on a solution. 
 Applying this to a sum of squares problem gives
-
 $$ H \delta = (J'J + D) \delta = - J' r$$
 In this expression, only the elements of $D$ have second partial derivatives. 
 Gauss, attempting to model planetary orbits, had small residuals, and noted
 that these multiplied the second partial derivatives of $r$, so he approximated
-
 $$ H \approx J' J$$
 by assuming $D \approx 0$. This results in the Gauss-Newton method where we
 solve 
-
 $$ J' J \delta = - J' r$$
 though we can avoid some loss of accuracy by NOT forming the inner product matrix
 $J' J$ and solving the linear least squares matrix problem 
-
 $$ J \delta \approx -r $$
-which may be accomplished by a variety of matrix decomposition methods. 
+by one of several matrix decomposition methods. 
 
 In reality, there are many problems were $D$ should not be ignored, but the work
-to compute it precisely is considerable. Many workarounds have been 
+to compute it precisely is considerable. Many work-arounds have been 
 proposed, of which the Levenberg-Marquardt stabilization 
 (@Levenberg1944, @Marquardt1963) is
-the most commonly used. We will use "Marquardt", as we believe he
+the most commonly used. For convenience, we will use "Marquardt", as we believe he
 first incorporated the ideas into a practical computer program. 
 
-The suggestion is that $D$ be replaced by a multiple of the unit matrix or else
+The usual suggestion is that $D$ be replaced by a multiple of the unit matrix or else
 a multiple of the diagonal part of $J' J$. In low precision, some elements of 
-$J' J$ could underflow to zero (@jn77ima), and a linear combination of both
-choices was suggested as a compromise. Various choices for
+$J' J$ could underflow to zero (@jn77ima), and one of us suggested a linear combination of both
+choices as a compromise. Various choices for
 $D$, as well as a possible line search along the
 direction $\delta$ rather than a unit step (@Hartley1961), 
-give rise to a panoply of variant
+give rise to several variant
 algorithms. "Marquardt's method" is a family of methods. Fortunately, most choices
 work well.
 
@@ -389,8 +265,7 @@ stt1<-c(Asym=1, xmid=1, scal=1)
 ```
 
 One of the useful features of `nls()` is the possibility of a `selfStart` model,
-where starting parameter values are not required. We discuss aspects of this
-feature at several points below. However, if a `selfStart` model 
+where starting parameter values are not required. However, if a `selfStart` model 
 is not available, `nls()` sets all the starting parameters 
 to 1. This is tolerable, but could be improved by using a set of values
 that are all slightly different, which, in the case of the example 
@@ -429,47 +304,34 @@ hobbs.jac  <-  function(x) { # scaled Hobbs weeds problem -- Jacobian
 
 ## Estimation of models specified as formulas
 
-Using a formula specification was one of the principal advances made
-when `nls()` became available in S sometime in the 1980s. It uses a
-Gauss-Newton (i.e., unstabilized) iteration with step reduction line
+Using a formula specification was a principal advantage made
+with `nls()` when it became available in S sometime in the 1980s. It uses a
+Gauss-Newton (i.e., unstabilized) iteration with a step reduction line
 search. This works very efficiently as long as $J$ is not ill-conditioned.
-In a one-parameter problem with ill-conditioning, think of $J$ as a 
-very small number so that we need to watch for a zero-divide or 0/0 
-situation in computing $\delta$. Below we see `nls()` does poorly on this 
-example problem. Note that `nlsr`
-offers function `pnlm0()` to give a 1-line display of results of class `nls`,
-and `pshort()` for `nlsr`.
+Below we see `nls()` does poorly on the example problem. To save page space,
+we use 1-line result display functions from package `nlsr`, nameley `pnlm0()` 
+and `pshort()`.
 
 ```{r shortforms, echo=FALSE}
 library(nlsr)
+library(minpack.lm)
 ```
 
 ```{r ex02nls}
 unls1<-try(nls(formula=frmu, start=stu1, data=weeddf))
-summary(unls1)
 snls1<-try(nls(formula=frms, start=sts1, data=weeddf))
-summary(snls1)
 tnls1<-try(nls(formula=frmt, start=stt1, data=weeddf))
-summary(tnls1)
 ```
 
 Here we see the infamous "singular gradient" termination message of `nls()`. 
-Questions appear quite frequently on the R-help mailing list where users
-have encountered this termination result.
-
-Let us consider three alternatives to `nls()`: `nlsr::nlxb()`, `minpack.lm::nlsLM()`
-and `gslnls::gsl_nls()`.
-We use default methods and controls in these examples. 
 
 ### Solution attempts with nlsr
 
 ```{r ex02nlsr}
-library(nlsr)
 unlx1<-try(nlxb(formula=frmu, start=stu1, data=weeddf))
 print(unlx1) 
-pshort(unlx1) # A short form output
 snlx1<-try(nlxb(formula=frms, start=sts1, data=weeddf))
-pshort(snlx1) # or print(snlx1)
+pshort(snlx1) # a short-form output
 tnlx1<-try(nlxb(formula=frmt, start=stt1, data=weeddf))
 pshort(tnlx1) # alternatively print(tnlx1)
 ```
@@ -485,23 +347,12 @@ whose row they appear; they are a property of the whole problem.
 ### Solution attempts with minpack.lm
 
 ```{r ex02minpack}
-library(minpack.lm)
-# ??not needed -- library(nlsr) # for pnlm0
 unlm1<-try(nlsLM(formula=frmu, start=stu1, data=weeddf))
-# summary not exported by faraway??
-# faraway::summary(unlm1) # Use summary() to get display
-# unlm1 # Note the difference. Use this form to get sum of squares
 pnlm0(unlm1)  # Short form of output
 snlm1<-try(nlsLM(formula=frms, start=sts1, data=weeddf))
 pnlm0(snlm1)
-# summary(snlm1)
-## Following structure needed to deal with M1mac issue
 tnlm1<-try(nlsLM(formula=frmt, start=stt1, data=weeddf))
-if (inherits(tnlm1, "try-error")) {
-   cat("Failure to compute solution -- likely singular Jacobian\n")
-} else {  
-   pnlm0(tnlm1) # short form to give sum of squares, else use summary(tnlm1)
-}   
+pnlm0(tnlm1) # short form to give sum of squares, else use summary(tnlm1)
 ```
 
 ### Solution attempts with gslnls
@@ -509,7 +360,6 @@ if (inherits(tnlm1, "try-error")) {
 ```{r ex02gslnls}
 library(gslnls)
 ugslnls1<-try(gsl_nls(fn = frmu, data = weeddf,  start = stu1))
-summary(ugslnls1) # Use summary() to get display
 pnlm0(ugslnls1) # to get sum of squares
 sgslnls1<-try(gsl_nls(fn = frms, data = weeddf,  start = sts1))
 pnlm0(sgslnls1) # Use summary() to get display
@@ -517,9 +367,9 @@ tgslnls1<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1))
 pnlm0(tgslnls1) 
 ```
 
-### Comparison notes - formula setup
+### Comparison notes for formula setup solutions
 
-`nlsr::nlxb()` is set up to use `print()` to output standard errors and 
+`nlsr::nlxb()` uses `print()` to output standard errors and 
 singular values of the Jacobian (for diagnostic purposes). By contrast, 
 `minpack.lm::nlsLM()` and `nls()`
 use `summary()`, which does NOT display the sum of squares, while `print()` 
@@ -527,14 +377,15 @@ gives the sum of squares, but not the standard error of the residuals.
 
 The singular values allow us to gauge how "nearly singular" the 
 Jacobian is at the solution, and the ratio of the smallest to largest of the 
-singular values is a simple but effective measure. In the above example, we note 
-that the scaled logistic has the largest ("least singular") ratio. 
+singular values is a simple but effective measure. The ratios are
+4.6641e-05 for Logistic3U, 0.021022 for Logistic3S and 0.001055 for
+Logistic3T, so Logistic3S is the "least singular". 
 
-The results from `nlsLM` and `gsl_nls` for the transformed model have a very 
+The results from `nlsLM` and `gsl_nls` for the transformed model Logistic3T have a very 
 large sum of squares, which may suggest that these programs have failed. 
 Since `nls()`, `nlsLM()`, and `gsl_nls()` do not 
 offer the singular values, we need to extract the Jacobian and compute its
-singular values. The following script shows how to do this, using what is called
+singular values. The following script shows how to do this, using as Jacobian what is called
 the `gradient` element in the returned solution for these solvers.
 
 ```{r ex04singval, echo=TRUE, eval=TRUE}  
@@ -556,9 +407,8 @@ if (inherits(tgslnls1, "try-error")) {
 
 We see that there are differences in detail, but the more important result is that
 two out of three singular values are essentially 0. Our Jacobian is singular, and no 
-method of the Gauss-Newton type should be able to continue. Indeed, from this set of
-parameters, `nlxb` also stops, even though the code in `nlsr` tries to find solutions
-from very poor initial parameter values. 
+method of the Gauss-Newton type should be able to continue. Indeed, from the parameters
+reported at this saddle point, `nlsr::nlxb()` cannot proceed. 
 
 ```{r ex05, echo=TRUE}  
 stspecial<- c(Asym = 35.532,  xmid = 43376,  scal = -2935.4)
@@ -576,9 +426,8 @@ a numerical approximation for the Jacobian if the argument `jac`
 is missing.
 
 ```{r exhobbsfn, eval=TRUE}
-require(minpack.lm); require(nlsr); require(gslnls)
 hobnlfb<-nlfb(start=stu1, resfn=hobbs.res, jacfn=hobbs.jac)
-print(hobnlfb)
+pshort(hobnlfb) # use print(hobnlfb) for more detail
 hobnlm<-nls.lm(par=stu1, fn=hobbs.res, jac=hobbs.jac)
 pnlm0(hobnlm)  
 hobgsln<-gsl_nls(start=stu1, fn=hobbs.res, y=rep(0,12))
@@ -1406,3 +1255,100 @@ attempts to succinctly summarize computing environments.
 
 
 # References
+
+
+------------------------------
+
+## Comparison dimensions
+
+The tools for nonlinear estimation we consider have been built with different
+goals and contexts. We will make our comparison considering the overlapping
+headings summarized below.
+
+### Modeling versus minimizing a sum of squares
+
+The goal of many statisticians and other workers is to estimate a model. The
+minimization of a sum of squared residuals -- the nonlinear least squares problem --
+is the mechanism to estimate the model. Some tools focus on modeling, 
+so attempt to provide measures of uncertainty and other information. 
+The interface to modeling tools will generally try to streamline that task. By
+contrast, nonlinear least squares tools are trying to solve the more limited
+numerical task.
+
+### Programming language(s)
+
+R tools are our interest, but they often call programs in other programming
+languages. There are advantages in using a well-established program that has
+been used and tested. Early versions of R were relatively sluggish in 
+computational speed. The downside is that we must interface between two or more
+programming languages, adding to the risk of errors. Changes to one or the 
+other language or its library support may
+force maintenance issues. Moreover, the pool of expertise with languages like C
+and Fortran is diminishing.
+
+### Internal solver stabilization
+
+Early nonlinear least squares programs generally used the Gauss-Newton method 
+(@Hartley1961). This is often very effective and efficient, but for a quite large 
+proportion of problems can fail to find the solution. Stabilization of the 
+computations is relatively straightforward in principle, and overcomes most
+of the failures, though sometimes at the cost of more calculations.
+
+### Jacobian calculation
+
+The necessarily iterative solution of a nonlinear least squares problem 
+to carry out nonlinear modeling requires that we can find smaller values
+of a sum of squared residuals. This implies there is a "downhill" direction.
+The gradient of the residual sum of squares is computed as its product
+with the Jacobian matrix: the partial derivatives of the residual vector 
+with respect to the modeling parameters.
+
+Most researchers are challenged to program the differential calculus 
+required to specify the Jacobian to a nonlinear estimation tool. 
+The workaround is generally to use a numerical approximation,
+but there is the possibility of using symbolic or automatic differentiation.
+There are also particular models where workers have provided code for the
+Jacobian.
+
+### Algorithm and termination choices
+
+Iterative algorithms need to be stopped at some point, and how termination
+is forced may alter results. Furthermore, even supposedly similar algorithms
+may differ greatly in detail. 
+
+### Constraints on parameters
+
+Reality imposes conditions on parameters. While general constraints can
+be difficult to include, bounds on parameters can be accommodated by many 
+solvers. For some reason, fixed parameters (masks) are not often considered
+but are convenient when a parameter has a commonly accepted value that we
+later wish to allow to be estimated from the data.
+
+### Special capabilities
+
+Users often have particular problems that introduce other requirements. It is
+common to weight observations where their reliability is thought to differ.
+Some situations present a number of related situations where a combined model
+with some common and some local parameters are present, and the local parameters
+could be indexed. The common exponential decay and related **partially linear**
+models (sometimes called **separable** models) is a difficult one that can 
+benefit from special treatment. 
+
+
+### Output 
+
+While nonlinear estimation aims to return a set of parameters for a
+particular model, there is a variety of additional information which may be
+provided. From the perspective of the nonlinear least squares problem, there
+are measures of work and information on the quality of the solution, while
+for statistical purposes measures of uncertainty in the parameters are helpful.
+
+Some tools allow constraints to be imposed on the solution, and it is helpful
+to know if these constraints are active in the proposed solution.
+
+### Documentation
+
+We believe that the availability of good documentation with examples that users
+can modify to deal with their problems is essential. The presence of vignettes, 
+demos, and tests indicates a package is well-supported.
+
