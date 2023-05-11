@@ -1,5 +1,5 @@
 ---
-title: "A comparison on R tools for nonlinear least squares modeling"
+title: "A comparison of R tools for nonlinear least squares modeling"
 author: 
    - John C. Nash \thanks{ retired professor, Telfer School of Management, University of Ottawa}
    - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian Institute of Technology, Kanpur}
@@ -7,7 +7,7 @@ date: "2023-3-2"
 output: 
     pdf_document:
         keep_tex: true
-        toc: true
+        toc: false
 bibliography: ./ImproveNLS.bib
 link-citations: yes
 linkcolor: red
@@ -22,26 +22,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Abstract
 
-In a Google Summer of Code project "Improvements to `nls()`",
-we considered the features and limitations of the R function `nls()`
-in the context of improving and rationalizing R tools for nonlinear regression.
-The rich features of this function are weakened by several deficiencies and
-inconsistencies, in particular a lack of stabilization of the Gauss-Newton solver.
+Our Google Summer of Code project "Improvements to `nls()`" considered the features and limitations of the R function `nls()` with the aim 
+of improving and rationalizing R tools for nonlinear regression.
+The rich features of `nls()` are weakened by several deficiencies and
+inconsistencies such as a lack of stabilization of the Gauss-Newton solver.
 Further considerations are the usability and  maintainability of
 the code base that provides the functionality `nls()` claims to offer.
 Various packages, including our `nlsr`, provide alternative capabilities.
-This article considers the differences in goals, approaches, and features of
+We consider the differences in goals, approaches, and features of
 different tools for nonlinear least squares modeling in R. Discussion of 
 these matters is relevant to improving R generally as well as its 
 nonlinear estimation tools.
 
-
 ## The `nls()` function
 
-`nls()` is the tool in base R, the primary software distribution
-from the Comprehensive R Archive Network (*https://cran.r-project.org*),
-for estimating nonlinear statistical models. The function dates to the 1980s and the 
-work related to @bateswatts in S (see 
+`nls()` is the tool for estimating nonlinear statistical models in base R, the 
+primary software distribution
+from the Comprehensive R Archive Network (*https://cran.r-project.org*).
+The function dates to the 1980s and the work related to @bateswatts in S (see 
 *https://en.wikipedia.org/wiki/S_%28programming_language%29*). 
 
 The `nls()` function has a remarkable and comprehensive set of capabilities for 
@@ -76,7 +74,7 @@ general nonlinear least-squares solvers.
 
 While we will provide capsule comments for some other CRAN packages, 
 we will not pursue those in the Bioconductor (@Bioconductor) 
-collection and on repositories such as 
+collection, nor those on repositories such as 
 GitHub (https://github.com) and Gitlab (https://about.gitlab.com).
 
 ## Some other CRAN packages for nonlinear modeling
