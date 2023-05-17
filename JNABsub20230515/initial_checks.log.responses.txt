@@ -1,0 +1,32 @@
+Responses to initial check results: 
+
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+
+NOTE: A potential list of spelling to check: 
+
+Package name or function hits: 
+  nls, nlsr, minpack, lm, (i.e., minpack.lm), gslnls, cran, onls, crsnls, 
+  nlfb, nlxb, nlshelper, nlme, nlsic, jac, pnlslm, pnls, pshort, 
+  nlstools, multstart, nlstac, easynls, nlraa, optimx, gsl, nlminb, bbmle,
+  lme, nlspkg, testthat,  wrapnlsr,  na, mf, wfct, resid,
+
+Words in citations:
+  bateswatts, tvrdik, cnm, nash, nist, nlsmultstart, minpacklm, jn, ima,  gauss
+
+Variable, argument, or object names:
+  tt, weeddf, nlsmsn, smallsstest, eps, maxiter, xdata,  ndstep,
+  src, plinear, deriv, lmdif, fm, 
+
+Not found in text (case sensitive). Why these are noted is unknown.
+  jacobian, itl, strd, shtml
+
+Other hits that seem to be false positives:
+  pre, et, al, optimizers, arounds, unscaled, unstabilized, asizes,  
+  selfstart, workspaces, na, mf, wfct, resid, nlminb, asymptote, 
+  summarization, http, www, ^
+

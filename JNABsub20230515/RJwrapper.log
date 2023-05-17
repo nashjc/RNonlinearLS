@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.11.18)  6 FEB 2023 21:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.8.15)  15 MAY 2023 12:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -808,7 +808,7 @@ LaTeX Info: Redefining \nameref on input line 47.
 Package backref Info: ** backref set up for natbib ** on input line 47.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-(./JNAB230203.tex
+(./ComparingNLStools.tex
 LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 9.
 
 (/usr/share/texlive/texmf-dist/tex/latex/inconsolata/t1zi4.fd
@@ -821,33 +821,37 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 12.24005pt on input line 12.
+(Font)              scaled to size 10.20004pt on input line 12.
+
+Package hyperref Warning: Difference (2) between bookmark levels is greater 
+(hyperref)                than one, level fixed on input line 12.
+
 
 LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
-(Font)              using `T1/zi4/m/n' instead on input line 15.
+(Font)              using `T1/zi4/m/n' instead on input line 16.
 
 LaTeX Font Info:    Trying to load font information for OT1+ppl on input line 1
-5.
+6.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ppl.fd
 File: ot1ppl.fd 2001/06/04 font definitions for OT1/ppl.
 )
 LaTeX Font Info:    Trying to load font information for OML+zplm on input line 
-15.
+16.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omlzplm.fd
 File: omlzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OML/zplm.
 )
 LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 
-15.
+16.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omszplm.fd
 File: omszplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMS/zplm.
 )
 LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 
-15.
+16.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omxzplm.fd
 File: omxzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMX/zplm.
 )
 LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 
-15.
+16.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1zplm.fd
 File: ot1zplm.fd 2002/09/08 Fontinst v1.914 font definitions for OT1/zplm.
 )
@@ -856,69 +860,94 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 9.37807pt on input line 15.
+(Font)              scaled to size 9.37807pt on input line 16.
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 7.29405pt on input line 15.
+(Font)              scaled to size 7.29405pt on input line 16.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 5.21004pt on input line 15.
+(Font)              scaled to size 5.21004pt on input line 16.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 9.37807pt on input line 15.
+(Font)              scaled to size 9.37807pt on input line 16.
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 7.29405pt on input line 15.
+(Font)              scaled to size 7.29405pt on input line 16.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 5.21004pt on input line 15.
+(Font)              scaled to size 5.21004pt on input line 16.
 LaTeX Font Info:    Font shape `T1/zi4/m/it' will be
-(Font)              scaled to size 9.18004pt on input line 17.
+(Font)              scaled to size 9.18004pt on input line 18.
 LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 2
-5.
+7.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ppl.fd
 File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
-)
-LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 9.18004pt on input line 60.
-[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
+) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
-] [2] [3]
-Overfull \hbox (7.17581pt too wide) in paragraph at lines 279--281
-\T1/zi4/m/it/9 492955 / should -[] i -[] use -[] na -[] omit -[] or -[] na -[] 
-exclude -[] in -[] a -[] linear -[] model -[] in -[] r$[][] \T1/ppl/m/n/9 (-20)
- where the ``An-swer'' states 
+]
+<ComparingNLStools_files/figure-latex/ex01-1.pdf, id=121, 436.63126pt x 283.057
+5pt>
+File: ComparingNLStools_files/figure-latex/ex01-1.pdf Graphic file (type pdf)
+<use ComparingNLStools_files/figure-latex/ex01-1.pdf>
+Package pdftex.def Info: ComparingNLStools_files/figure-latex/ex01-1.pdf  used 
+on input line 160.
+(pdftex.def)             Requested size: 436.63019pt x 283.0568pt.
+
+Overfull \hbox (53.29161pt too wide) in paragraph at lines 160--161
+[][] 
  []
 
-[4]
-LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 10.20004pt on input line 368.
-
-Overfull \hbox (54.7655pt too wide) in paragraph at lines 370--379
-\T1/ppl/m/n/9 (-20) ever, cre-at-ing such func-tions is a lot of work, and thei
-r doc-u-men-ta-tion (file \T1/zi4/m/it/9 ./src/library/stats/man/selfStart.Rd\T
-1/ppl/m/n/9 (-20) )
+[2] [3 <./ComparingNLStools_files/figure-latex/ex01-1.pdf>] [4] [5] [6] [7]
+Overfull \hbox (9.60854pt too wide) in paragraph at lines 582--591
+\T1/ppl/m/n/9 (-20) Gauss-Newton/Marquardt meth-ods all need a Ja-co-bian ma-tr
+ix at each it-er-a-tion. By de-fault, \T1/zi4/m/it/9 nlsr::nlxb()
  []
 
-[5]
-LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 5
-03.
+
+Overfull \hbox (1.12457pt too wide) in paragraph at lines 582--591
+\T1/ppl/m/n/9 (-20) When us-ing a for-mula spec-i-fi-ca-tion of the model, \T1/
+zi4/m/it/9 nls()\T1/ppl/m/n/9 (-20) , \T1/zi4/m/it/9 minpack.lm::nlsLM() \T1/pp
+l/m/n/9 (-20) and \T1/zi4/m/it/9 gslnls::gsl_nls()
+ []
+
+[8] [9]
+LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 7
+33.
 (/usr/share/texlive/texmf-dist/tex/latex/inconsolata/ts1zi4.fd
 File: ts1zi4.fd 2018/01/14 TS1/zi4 (Inconsolata)
 )
 LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
-(Font)              scaled to size 9.18004pt on input line 503.
+(Font)              scaled to size 9.18004pt on input line 733.
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `zi4' (encoding: TS1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-[6]
+[10] [11]
+Overfull \hbox (84.22392pt too wide) in paragraph at lines 931--942
+\T1/zi4/m/it/9 model.frame\T1/ppl/m/n/9 (-20) , which not ob-vi-ous in the sour
+ce code files \T1/zi4/m/it/9 /src/library/stats/R/nls.R \T1/ppl/m/n/9 (-20) and
+ \T1/zi4/m/it/9 /src/library/stats/src/nls.C\T1/ppl/m/n/9 (-20) .
+ []
+
+
+Overfull \hbox (13.20969pt too wide) in paragraph at lines 946--962
+\T1/zi4/m/it/9 questions / 492955 / should -[] i -[] use -[] na -[] omit -[] or
+ -[] na -[] exclude -[] in -[] a -[] linear -[] model -[] in -[] r$[][]\T1/ppl/
+m/n/9 (-20) . As with \T1/zi4/m/it/9 subset\T1/ppl/m/n/9 (-20) ,
+ []
+
+[12]
+Overfull \hbox (13.9631pt too wide) in paragraph at lines 1018--1018
+[]\T1/zi4/m/it/9 rnowt<-nowt$m$resid() # This has UNWEIGHTED residual and Jacob
+ian. Does NOT take coefficients.[] 
+ []
+
 Package textcomp Info: Symbol \textasciigrave not provided by
 (textcomp)             font family zi4 in TS1 encoding.
-(textcomp)             Default family used instead on input line 615.
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 6
-15.
+(textcomp)             Default family used instead on input line 1041.
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 1
+041.
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
@@ -927,7 +956,7 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 
-615.
+1041.
 (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmtt.fd
 File: ts1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
@@ -937,51 +966,67 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             See the microtype manual for details.
 Package textcomp Info: Symbol \textasciigrave not provided by
 (textcomp)             font family zi4 in TS1 encoding.
-(textcomp)             Default family used instead on input line 615.
-[7]
-Overfull \hbox (65.19638pt too wide) in paragraph at lines 667--667
+(textcomp)             Default family used instead on input line 1041.
+
+Overfull \hbox (65.19638pt too wide) in paragraph at lines 1096--1096
 []\T1/zi4/m/it/9 #> [1] "Error in nls(NLSformula, data = NLSdata, start = NLSst
 art, trace = TRUE) : \n  singular gradient\n"[] 
  []
 
 
-Overfull \hbox (47.46083pt too wide) in paragraph at lines 667--667
+Overfull \hbox (47.46083pt too wide) in paragraph at lines 1096--1096
 []\T1/zi4/m/it/9 #> <simpleError in nls(NLSformula, data = NLSdata, start = NLS
 start, trace = TRUE): singular gradient>[] 
  []
 
-[8] [9] [10] [11] [12] [13]
+[13] [14] [15]
+Overfull \hbox (78.48872pt too wide) in paragraph at lines 1361--1363
+[]\T1/ppl/m/n/9 (-20) National In-sti-tutes for Stan-dards, orig-i-nal from, an
+d Tech-nol-ogy http://www.itl.nist.gov/div898/strd/nls/nls_main.shtml
+ []
+
+[16]
+Package textcomp Info: Symbol \textasciicaron not provided by
+(textcomp)             font family ppl in TS1 encoding.
+(textcomp)             Default family used instead on input line 1386.
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
+File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
+(RS)
+)
 No file RJwrapper.bbl.
-) [14] (./RJwrapper.aux)
+) [17] (./RJwrapper.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `RJwrapper.out' has not changed.
-(rerunfilecheck)             Checksum: 30F9E7BC7FFEA7EF658740B01D58D739;6773.
+(rerunfilecheck)             Checksum: E3647D27CDED0812DEA0BCEA1207F7B9;5269.
  ) 
 Here is how much of TeX's memory you used:
- 26865 strings out of 480129
- 489933 string characters out of 5893408
- 790044 words of memory out of 5000000
- 43970 multiletter control sequences out of 15000+600000
- 508178 words of font info for 243 fonts, out of 8000000 for 9000
- 81 hyphenation exceptions out of 8191
- 115i,12n,131p,1006b,705s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/john/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt0900.600p
-k>{/usr/share/texlive/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}{/usr/s
-hare/texlive/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}{/usr/share/tex
-live/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/font
-s/type1/public/inconsolata/Inconsolata-zi4b.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/public/mathpazo/fplmri.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/pa
-latino/uplb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplr8
-a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on RJwrapper.pdf (14 pages, 185310 bytes).
+ 27013 strings out of 478287
+ 492616 string characters out of 5849289
+ 794815 words of memory out of 5000000
+ 44292 multiletter control sequences out of 15000+600000
+ 513279 words of font info for 268 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 115i,12n,131p,1006b,695s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texli
+ve/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}{/usr/share/texlive/texmf-
+dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}{/usr/share/texlive/texmf-dist/fon
+ts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/inco
+nsolata/Inconsolata-zi4b.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+inconsolata/Inconsolata-zi4r.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/mathpazo/
+fplmr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/mathpazo/fplmri.pfb
+></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></usr/share/texmf/f
+onts/type1/public/cm-super/sftt0900.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/urw/palatino/uplb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/pala
+tino/uplr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a
+.pfb>
+Output written on RJwrapper.pdf (17 pages, 229240 bytes).
 PDF statistics:
- 339 PDF objects out of 1000 (max. 8388607)
- 301 compressed objects within 4 object streams
- 96 named destinations out of 1000 (max. 500000)
- 56557 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 406 PDF objects out of 1000 (max. 8388607)
+ 357 compressed objects within 4 object streams
+ 119 named destinations out of 1000 (max. 500000)
+ 58570 words of extra memory for PDF output out of 61914 (max. 10000000)
 
