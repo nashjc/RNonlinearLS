@@ -1,0 +1,216 @@
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+WARNING: The archive contains hidden files which will be removed: .Rhistory
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, behaviour, smallsstest, eps, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, flavours, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarisation, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+NOTE: No CRAN activities detected for package initial_check_article("./")
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 7 | NOTE: 2 | WARNING: 1 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+WARNING: The archive contains hidden files which will be removed: .Rhistory
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, behaviour, smallsstest, eps, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, flavours, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 1 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+WARNING: The archive contains hidden files which will be removed: .Rhistory
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, behaviour, ˆ, selfstart, gauss, flavours, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 1 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+WARNING: The archive contains hidden files which will be removed: .Rhistory
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, flavours, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 1 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+WARNING: The archive contains hidden files which will be removed: .Rhistory
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 1 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 0 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 0 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 0 | ERROR: 1
+
+Initial check results: 
+
+ERROR: Submission does not have consistently named tex, R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 8 | NOTE: 1 | WARNING: 0 | ERROR: 1
+
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 9 | NOTE: 1 | WARNING: 0 | ERROR: 0
+
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 9 | NOTE: 1 | WARNING: 0 | ERROR: 0
+
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+WARNING: The archive contains hidden files which will be removed: .Rhistory
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 9 | NOTE: 1 | WARNING: 1 | ERROR: 0
+
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 9 | NOTE: 1 | WARNING: 0 | ERROR: 0
+
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: JNABmotivationletter2.md
+SUCCESS: The article title is properly formatted in title case.
+SUCCESS: All sections are properly formatted in sentence case
+SUCCESS: Abstract comes before the introduction section
+NOTE: A potential list of spelling to check: nls, nlsr, pre, minpack, lm, et, al, gslnls, cran, onls, crsnls, nlxb, nlshelper, nlme, nlsic, nlstools, nlsmsn, multstart, nlstac, easynls, nlraa, optimx, optimizers, tt, weeddf, arounds, unscaled, unstabilized, pnls, pshort, gsl, jac, pnlslm, asizes, wrapnlsr, smallsstest, eps, rjtools, maxiter, snlm, xdata, jacobian, ndstep, nlfb, src, plinear, deriv, lmdif, ˆ, selfstart, gauss, workspaces, na, mf, wfct, resid, nlminb, asymptote, fm, bbmle, lme, summarization, nlspkg, bateswatts, minpacklm, tvrdik, jn, ima, cnm, nash, http, www, itl, nist, strd, shtml, nlsmultstart, testthat
+SUCCESS: No proposed package for the article, nothing to check.
+SUCCESS: All CRAN & Bioconductor packages mentioned are available
+
+SUCCESS: 9 | NOTE: 1 | WARNING: 0 | ERROR: 0
+
