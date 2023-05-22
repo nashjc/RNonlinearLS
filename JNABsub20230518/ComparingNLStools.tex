@@ -103,7 +103,7 @@ method discussed in Josef Tvrdík and Ivan Křivý and Ladislav Mišík (2007) c
 than a Levenberg-Marquardt code (actually from Matlab), but the tests were conducted
 on the extreme NIST examples mentioned next.
 
-\texttt{NISTnls} (National Institutes for Standards and R port by Douglas Bates (2012)) -- This package provides R code and data for a set of
+\texttt{NISTnls} ((\emph{NISTnls: Nonlinear Least Squares Examples from Nist} 2012)) -- This package provides R code and data for a set of
 (numerically ill-conditioned) nonlinear least squares problems from the U.S. National
 Institute for Standards and Technology. These may not represent real-world situations.
 
@@ -149,7 +149,7 @@ there is minimal documentation and no vignette. Package \texttt{nlraa} is to be 
 \texttt{nlraa} (Miguez (2021)) -- a set of nonlinear \emph{selfStart} models, primarily from
 agriculture. Most include analytic Jacobian code.
 
-\texttt{optimx} (John C. Nash and Varadhan (2011)) -- This provides
+\texttt{optimx} (Nash and Varadhan (2011)) -- This provides
 optimizers that can be applied to minimize a nonlinear function which could be
 a nonlinear sum of
 squares. NOT generally recommended if nonlinear
@@ -159,7 +159,7 @@ solvers.
 \hypertarget{an-illustrative-example}{%
 \subsection{An illustrative example}\label{an-illustrative-example}}
 
-The Hobbs weed infestation problem (John C. Nash (1979, 120)) is a growth curve modeling
+The Hobbs weed infestation problem (Nash (1979, 120)) is a growth curve modeling
 task that seems straightforward but is quite nasty. Its very succinct statement
 provides the ``short reproducible example'' much requested on R mailing lists.
 This is a real problem from a field researcher. The data and graph follow.
@@ -192,7 +192,7 @@ are related as follows:
 
 \[   Asym =  b_1 = 100 * c_1 \]
 \[ exp(xmid/scal)  =  b_2 = 10 * c_2 \]
-\[ 1/scal  =  b_3 \]
+\[ 1/scal  =  b_3 = 0.1*c3 \]
 To allow for simpler discussion, let us say that the parameters form a (named) vector
 \(p\) and the model function is called \(model(p)\). The residuals can be written
 either as \(r_1 = y - model(p)\) or \(r = model(p) - y\)
@@ -244,7 +244,7 @@ first incorporated the ideas into a practical computer program.
 
 The usual suggestion is that \(D\) be replaced by a multiple of the unit matrix or else
 a multiple of the diagonal part of \(J' J\). In low precision, some elements of
-\(J' J\) could underflow to zero (John C. Nash (1977)), and a linear combination of both
+\(J' J\) could underflow to zero (Nash (1977)), and a linear combination of both
 choices is an effective compromise. Various choices for
 \(D\), as well as a possible line search along the
 direction \(\delta\) rather than a unit step (Hartley (1961)),
@@ -341,6 +341,10 @@ Here we see the infamous ``singular gradient'' termination message of \texttt{nl
 
 \hypertarget{solution-attempts-with-nlsr}{%
 \subsubsection{Solution attempts with nlsr}\label{solution-attempts-with-nlsr}}
+
+\begin{verbatim}
+#> unlx1:
+\end{verbatim}
 
 \begin{verbatim}
 #> residual sumsquares =  2.5873  on  12 observations
@@ -538,7 +542,6 @@ Additional termination tests can be used. \texttt{nlsr} has a \textbf{small sum 
 squares} test (\textbf{smallsstest}) that compares the latest evaluated sum of squared
 (weighted) residuals to \texttt{e4} times the initial sum of squares, where
 \texttt{e4\ \textless{}-\ (100*.Machine\$double.eps)\^{}4} is approximately 2.43e-55.
-\%\% \^{} is picked up in rjtools check
 
 Termination after what may be considered excessive computation is also important.
 \texttt{nls()} stops after \texttt{maxiter} ``iterations''. The meaning of ``iteration'' may require an
@@ -586,7 +589,7 @@ features in separate functions. For example, the singular values of the Jacobian
 are actually computed in the \texttt{print} and \texttt{summary} methods for the result.
 These two approaches
 lead to different consequences for performance and how features are
-provided. \texttt{nlsr} has antecedents in the methods of John C. Nash (1979), where storage for
+provided. \texttt{nlsr} has antecedents in the methods of Nash (1979), where storage for
 data and programs was at a ridiculous premium in the small computers of the era.
 Thus the code in \texttt{nlsr} is likely of value for workers to copy and modify
 for customized tools.
@@ -602,7 +605,8 @@ and \texttt{gslnls::gsl\_nls()} use a finite difference approximation to compute
 Jacobian, though \texttt{gsl\_nls()} does have an option to attempt symbolic expressions.
 Package \texttt{nlsr} provides, via appropriate calling syntax, four numeric approximation
 options for the Jacobian, with a further control \texttt{ndstep} for the size of the
-step used in the approximation.
+step used in the approximation. These options allow programming choices to be
+examined. Users can largely ignore them.
 
 Using the ``gradient'' attribute of the output of the Jacobian function to hold
 the Jacobian matrix lets us embed this in the \textbf{residual} function as well,
@@ -692,8 +696,8 @@ Users may also want to profit from the Jacobian code of \texttt{selfStart} model
 but supply explicit starting values other than those suggested by \texttt{getInitial()}.
 This does not appear to be possible with \texttt{nls()}. \texttt{nlsr::nlxb()} always requires
 starting parameters, and can either use \texttt{getInitial()} to find them from the \texttt{selfStart}
-model or provide explicit values, but the \texttt{selfStart} model is used in the formula
-for the \texttt{nlxb()} call.
+model or provide explicit values, but the formula used in the call to \texttt{nlxb()}
+still involves the \texttt{selfStart} function.
 
 We are also surprised that the
 analytic expressions for the Jacobian (``gradient'') in the \texttt{SSLogis} function
@@ -702,7 +706,7 @@ variables, i.e., with names preceded by ``.''.
 These are then not displayed by the \texttt{ls()}
 command, making them difficult to access by users who may wish to create
 their own selfStart model via copy and edit.
-Interactive tools, such as ``visual fitting'' (John C. Nash and Velleman (1996)) might be
+Interactive tools, such as ``visual fitting'' (Nash and Velleman (1996)) might be
 worth considering as another way to find starting parameters, but we know of no
 R capability of this type.
 
@@ -938,7 +942,7 @@ which can cause more iterations to be used.
 search in the available environments (i.e., workspaces) for suitable data objects.
 We do NOT like this approach, but it is ``the R way''. R allows users to leave many
 objects in the default (\texttt{.GlobalEnv}) workspace. Moreover, users have to actively
-suppress saving this workspace (\texttt{.RData}) on exit; otherwise, any such file in
+suppress saving this workspace (\texttt{.RData}) on exit; otherwise any such file in
 the path will be loaded on startup. R users in our
 acquaintance avoid saving the workspace because of lurking data and
 functions that may cause unwanted results.
@@ -947,8 +951,10 @@ functions that may cause unwanted results.
 \subsubsection{Feature: Subsetting}\label{feature-subsetting}}
 
 \texttt{nls()} and other class \texttt{nls} tools accept an argument \texttt{subset}. This acts through
-the mediation of \texttt{model.frame}, which not obvious in the
-source code files \texttt{/src/library/stats/R/nls.R} and \texttt{/src/library/stats/src/nls.C}.
+the mediation of \texttt{model.frame}, which is not obvious in the
+source code files
+\texttt{/src/library/stats/R/nls.R} and
+\texttt{/src/library/stats/src/nls.C}.
 Having \texttt{subset} at the level of the call to a function like
 \texttt{nls()} saves effort, but it does mean that the programmer of the
 solver needs to be aware of the
@@ -1023,7 +1029,7 @@ in applying such ideas.
 The function \texttt{resid()} (an alias for \texttt{residuals()}) gives WEIGHTED residuals,
 as does, for example, \texttt{result\$m\$resid()}. The function \texttt{nlsModel()}
 allows us to compute residuals for particular coefficient sets.
-We have had to extract from the base R code and include it via a code chunk
+We have had to extract \texttt{nlsModel()} from the base R code and include it via a code chunk
 (not echoed here for space) because it is not exported to the working namespace,
 We could also explicitly \texttt{source()} this code.
 
@@ -1056,7 +1062,7 @@ attr(rusewt,"gradient")<-NULL; rusewt
 ## source("nlsModel.R") # or use {r nlsmodelsource, echo=FALSE} code chunk
 nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
 rn0<-nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
-attr(rn0,"gradient")<-NULL; rn0
+attr(rn0,"gradient")<-NULL; rn0 # weighted residuals at starting coefficients
 \end{verbatim}
 
 \begin{verbatim}
@@ -1067,7 +1073,7 @@ attr(rn0,"gradient")<-NULL; rn0
 \begin{verbatim}
 nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
 rn<-nmod$resid()
-attr(rn,"gradient")<-NULL; rn
+attr(rn,"gradient")<-NULL; rn # same as rusewt
 \end{verbatim}
 
 \begin{verbatim}
@@ -1116,14 +1122,14 @@ Here is an abbreviated example:
 
 Note that the sum of squares has been reduced from 61216 to 1.6211, but
 unless \texttt{trace} is invoked, the user will not get any information about this.
-This almost trivial change to the \texttt{nls()} function could be
-useful to R users.
+Changing this in the \texttt{nls()} function could be useful to R users, and would
+be almost trivial.
 
 \hypertarget{estimating-models-that-are-partially-linear}{%
 \subsection{Estimating models that are partially linear}\label{estimating-models-that-are-partially-linear}}
 
 The variable projection method (Golub and Pereyra (1973), O'Leary and Rust (2013)) is
-generally much more effective than general approaches in finding good solutions
+usually much more effective than general approaches in finding good solutions
 to nonlinear least squares
 problems when some of the parameters appear linearly. In our logistic examples,
 the asymptote parameters are an illustration. However, identifying which parameters
@@ -1188,7 +1194,7 @@ as in a vector.
 That is, we do not see \texttt{a{[}1{]},\ a{[}2{]},\ a{[}3{]}} but \texttt{a1,\ a2,\ a3}.
 This is no doubt because programming for indexed parameters is challenging.
 We note that there are capabilities in packages for mixed-effects modeling
-such as \texttt{nlme} (Pinheiro et al. (2013)), \texttt{bbmle} (Bolker and Team (2013)), and \texttt{lme4} (p-lme4) for
+such as \texttt{nlme} (Pinheiro et al. (2013)), \texttt{bbmle} (Bolker and Team (2013)), and \texttt{lme4} (Bates et al. (2015)) for
 estimating models of such type.
 
 \hypertarget{tests-and-use-case-examples}{%
@@ -1291,129 +1297,128 @@ vignette. Colin Gillespie (package \texttt{benchmarkme}) has been helpful in gui
 attempts to succinctly summarize computing environments.
 
 \hypertarget{references}{%
-\section{References}\label{references}}
-
-\hypertarget{references-1}{%
-\section*{References}\label{references-1}}
+\section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
 \hypertarget{refs}{}
-\begin{CSLReferences}{1}{0}
-\leavevmode\vadjust pre{\hypertarget{ref-R-onls-manual}{}}%
+\begin{cslreferences}
+\leavevmode\hypertarget{ref-R-onls-manual}{}%
 Andrej-Nikolai Spiess. 2022. \emph{Onls: Orthogonal Nonlinear Least-Squares Regression}. \url{https://CRAN.R-project.org/package=onls}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-bateswatts}{}}%
+\leavevmode\hypertarget{ref-bateswatts}{}%
 Bates, D. M., and D. G. Watts. 1988. \emph{Nonlinear Regression Analysis and Its Applications}. Wiley.
 
-\leavevmode\vadjust pre{\hypertarget{ref-BatesWatts81}{}}%
-Bates, Douglas M., and Watts, Donald G. 1981. {``A Relative Offset Orthogonality Convergence Criterion for Nonlinear Least Squares.''} \emph{Technometrics} 23 (2): 179--83.
+\leavevmode\hypertarget{ref-p-lme4}{}%
+Bates, Douglas, Martin Mächler, Ben Bolker, and Steve Walker. 2015. ``Fitting Linear Mixed-Effects Models Using lme4.'' \emph{Journal of Statistical Software} 67 (1): 1--48. \url{https://doi.org/10.18637/jss.v067.i01}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-p-nlstools}{}}%
+\leavevmode\hypertarget{ref-BatesWatts81}{}%
+Bates, Douglas M., and Watts, Donald G. 1981. ``A Relative Offset Orthogonality Convergence Criterion for Nonlinear Least Squares.'' \emph{Technometrics} 23 (2): 179--83.
+
+\leavevmode\hypertarget{ref-p-nlstools}{}%
 Baty, Florent, and Marie-Laure Delignette-Muller. 2013. \emph{Nlstools: Tools for Nonlinear Regression Diagnostics}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nlsMicrobio-manual}{}}%
----------. 2014. \emph{nlsMicrobio: Data Sets and Nonlinear Regression Models Dedicated to Predictive Microbiology}.
+\leavevmode\hypertarget{ref-nlsMicrobio-manual}{}%
+---------. 2014. \emph{NlsMicrobio: Data Sets and Nonlinear Regression Models Dedicated to Predictive Microbiology}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-p-bbmle}{}}%
+\leavevmode\hypertarget{ref-p-bbmle}{}%
 Bolker, Ben, and R Development Core Team. 2013. \emph{Bbmle: Tools for General Maximum Likelihood Estimation}. \url{http://CRAN.R-project.org/package=bbmle}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-gslnls23}{}}%
+\leavevmode\hypertarget{ref-gslnls23}{}%
 Chau, Joris. 2023. \emph{Gslnls: GSL Nonlinear Least-Squares Fitting}. \url{https://CRAN.R-project.org/package=gslnls}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nlshelper-manual}{}}%
+\leavevmode\hypertarget{ref-nlshelper-manual}{}%
 Duursma, Remko. 2017. \emph{Nlshelper: Convenient Functions for Non-Linear Regression}. \url{https://CRAN.R-project.org/package=nlshelper}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-minpacklm12}{}}%
-Elzhov, Timur V., Katharine M. Mullen, Andrej-Nikolai Spiess, and Ben Bolker. 2012. \emph{Minpack.lm: R Interface to the Levenberg-Marquardt Nonlinear Least-Squares Algorithm Found in MINPACK, Plus Support for Bounds}. R Project for Statistical Computing. \url{http://CRAN.R-project.org/package=minpack.lm}.
+\leavevmode\hypertarget{ref-minpacklm12}{}%
+Elzhov, Timur V., Katharine M. Mullen, Andrej-Nikolai Spiess, and Ben Bolker. 2012. \emph{Minpack.lm: R Interface to the Levenberg-Marquardt Nonlinear Least-Squares Algorithm Found in Minpack, Plus Support for Bounds}. R Project for Statistical Computing. \url{http://CRAN.R-project.org/package=minpack.lm}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-GSL-manual}{}}%
-Galassi, Mark, Jim Davies, James Theiler, Brian Gough, and Gerard Jungman. 2009. \emph{GNU Scientific Library - Reference Manual, Third Edition, for GSL Version 1.12 (3. Ed.).}
+\leavevmode\hypertarget{ref-GSL-manual}{}%
+Galassi, Mark, Jim Davies, James Theiler, Brian Gough, and Gerard Jungman. 2009. \emph{GNU Scientific Library - Reference Manual, Third Edition, for Gsl Version 1.12 (3. Ed.).}
 
-\leavevmode\vadjust pre{\hypertarget{ref-Bioconductor}{}}%
-Gentleman, Robert C., Vincent J. Carey, Douglas M. Bates, Ben Bolstad, Marcel Dettling, Sandrine Dudoit, Byron Ellis, et al. 2004. {``Bioconductor: Open Software Development for Computational Biology and Bioinformatics.''} \emph{{Genome Biology}} 5 (R80). \url{https://doi.org/10.1186/gb-2004-5-10-r80}.
+\leavevmode\hypertarget{ref-Bioconductor}{}%
+Gentleman, Robert C., Vincent J. Carey, Douglas M. Bates, Ben Bolstad, Marcel Dettling, Sandrine Dudoit, Byron Ellis, et al. 2004. ``Bioconductor: Open Software Development for Computational Biology and Bioinformatics.'' \emph{Genome Biology} 5 (R80). \url{https://doi.org/10.1186/gb-2004-5-10-r80}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Golub1973}{}}%
-Golub, G. H., and V. Pereyra. 1973. {``The Differentiation of Pseudo-Inverses and Nonlinear Least Squares Problems Whose Variables Separate.''} \emph{SIAM Journal of Numerical Analysis} 10 (2): 413--32.
+\leavevmode\hypertarget{ref-Golub1973}{}%
+Golub, G. H., and V. Pereyra. 1973. ``The Differentiation of Pseudo-Inverses and Nonlinear Least Squares Problems Whose Variables Separate.'' \emph{SIAM Journal of Numerical Analysis} 10 (2): 413--32.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nls2-22}{}}%
+\leavevmode\hypertarget{ref-nls2-22}{}%
 Grothendieck, G. 2022. \emph{Nls2: Non-Linear Regression with Brute Force}. \url{https://CRAN.R-project.org/package=nls2}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Hartley1961}{}}%
-Hartley, H. O. 1961. {``The Modified Gauss-Newton Method for the Fitting of Non-Linear Regression Functions by Least Squares.''} \emph{Technometrics} 3: 269-\/-280.
+\leavevmode\hypertarget{ref-Hartley1961}{}%
+Hartley, H. O. 1961. ``The Modified Gauss-Newton Method for the Fitting of Non-Linear Regression Functions by Least Squares.'' \emph{Technometrics} 3: 269--80.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Huet2004}{}}%
-Huet, S., A. Bouvier, M.-A. Poursat, and E. Jolivet. 2004. \emph{Statistical Tools for Nonlinear Regression: A Practical Guide with {S-PLUS} Examples, 2nd Edition}. Berlin \& New York: Springer-Verlag.
+\leavevmode\hypertarget{ref-Huet2004}{}%
+Huet, S., A. Bouvier, M.-A. Poursat, and E. Jolivet. 2004. \emph{Statistical Tools for Nonlinear Regression: A Practical Guide with S-PLUS Examples, 2nd Edition}. Berlin \& New York: Springer-Verlag.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nlsr2023manual}{}}%
-John C Nash, and Duncan Murdoch. 2023. \emph{{nlsr: Functions for Nonlinear Least Squares Solutions}}.
+\leavevmode\hypertarget{ref-nlsr2023manual}{}%
+John C Nash, and Duncan Murdoch. 2023. \emph{nlsr: Functions for Nonlinear Least Squares Solutions}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-tvrdik2007}{}}%
-Josef Tvrdík and Ivan Křivý and Ladislav Mišík. 2007. {``Adaptive Population-Based Search: Application to Estimation of Nonlinear Regression Parameters.''} \emph{{Computational Statistics \& Data Analysis}} 52 (2): 713--24. \url{https://doi.org/10.1016/j.csda.2006.10.014}.
+\leavevmode\hypertarget{ref-tvrdik2007}{}%
+Josef Tvrdík and Ivan Křivý and Ladislav Mišík. 2007. ``Adaptive Population-Based Search: Application to Estimation of Nonlinear Regression Parameters.'' \emph{Computational Statistics \& Data Analysis} 52 (2): 713--24. \url{https://doi.org/10.1016/j.csda.2006.10.014}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Levenberg1944}{}}%
-Levenberg, Kenneth. 1944. {``A Method for the Solution of Certain Non-Linear Problems in Least Squares.''} \emph{Quarterly of Applied Mathematics} 2: 164-\/-168.
+\leavevmode\hypertarget{ref-Levenberg1944}{}%
+Levenberg, Kenneth. 1944. ``A Method for the Solution of Certain Non-Linear Problems in Least Squares.'' \emph{Quarterly of Applied Mathematics} 2: 164--68.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Marquardt1963}{}}%
-Marquardt, Donald W. 1963. {``{An Algorithm for Least-Squares Estimation of Nonlinear Parameters}.''} \emph{SIAM Journal on Applied Mathematics} 11 (2): 431--41.
+\leavevmode\hypertarget{ref-Marquardt1963}{}%
+Marquardt, Donald W. 1963. ``An Algorithm for Least-Squares Estimation of Nonlinear Parameters.'' \emph{SIAM Journal on Applied Mathematics} 11 (2): 431--41.
 
-\leavevmode\vadjust pre{\hypertarget{ref-MiguezNLRAA2021}{}}%
-Miguez, Fernando. 2021. \emph{{nlraa: Nonlinear Regression for Agricultural Applications}}. \url{https://CRAN.R-project.org/package=nlraa}.
+\leavevmode\hypertarget{ref-MiguezNLRAA2021}{}%
+Miguez, Fernando. 2021. \emph{nlraa: Nonlinear Regression for Agricultural Applications}. \url{https://CRAN.R-project.org/package=nlraa}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-jn77ima}{}}%
-Nash, John C. 1977. {``Minimizing a Nonlinear Sum of Squares Function on a Small Computer.''} \emph{Journal of the Institute for Mathematics and Its Applications} 19: 231--37.
+\leavevmode\hypertarget{ref-jn77ima}{}%
+Nash, John C. 1977. ``Minimizing a Nonlinear Sum of Squares Function on a Small Computer.'' \emph{Journal of the Institute for Mathematics and Its Applications} 19: 231--37.
 
-\leavevmode\vadjust pre{\hypertarget{ref-cnm79}{}}%
+\leavevmode\hypertarget{ref-cnm79}{}%
 ---------. 1979. \emph{Compact Numerical Methods for Computers: Linear Algebra and Function Minimisation}. Bristol: Adam Hilger.
 
-\leavevmode\vadjust pre{\hypertarget{ref-NashWires22}{}}%
----------. 2022. {``{Function minimization and nonlinear least squares in R}.''} \emph{WIREs Computational Statistics}, no. e1580. https://doi.org/\url{https://doi.org/10.1002/wics.1580}.
+\leavevmode\hypertarget{ref-NashWires22}{}%
+---------. 2022. ``Function minimization and nonlinear least squares in R.'' \emph{WIREs Computational Statistics}, no. e1580. \url{https://doi.org/https://doi.org/10.1002/wics.1580}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-PkgFromRbase22}{}}%
-Nash, John C., and Arkajyoti Bhattacharjee. 2022. {``Making a Package from Base {R} Files.''} \emph{R-Bloggers}, January. \url{https://www.r-bloggers.com/2022/01/making-a-package-from-base-r-files/}.
+\leavevmode\hypertarget{ref-PkgFromRbase22}{}%
+Nash, John C., and Arkajyoti Bhattacharjee. 2022. ``Making a Package from Base R Files.'' \emph{R-Bloggers}, January. \url{https://www.r-bloggers.com/2022/01/making-a-package-from-base-r-files/}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-p-optimx}{}}%
-Nash, John C, and Ravi Varadhan. 2011. \emph{\emph{Optimx}: A Replacement and Extension of the {optim()} Function}. Nash Information Services Inc.; Johns Hopkins University.
+\leavevmode\hypertarget{ref-p-optimx}{}%
+Nash, John C, and Ravi Varadhan. 2011. \emph{\textup{Optimx}: A Replacement and Extension of the optim() Function}. Nash Information Services Inc.; Johns Hopkins University.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nash1996nonlinear}{}}%
-Nash, John C., and Paul Velleman. 1996. {``Nonlinear Estimation Combining Visual Fitting with Optimization Methods.''} In \emph{Proceedings of the Section on Physical and Engineering Sciences of the American Statistical Association}, 256--61. American Statistical Association.
+\leavevmode\hypertarget{ref-nash1996nonlinear}{}%
+Nash, John C., and Paul Velleman. 1996. ``Nonlinear Estimation Combining Visual Fitting with Optimization Methods.'' In \emph{Proceedings of the Section on Physical and Engineering Sciences of the American Statistical Association}, 256--61. American Statistical Association.
 
-\leavevmode\vadjust pre{\hypertarget{ref-NISTnls-manual}{}}%
-National Institutes for Standards, original from, and Technology http://www.itl.nist.gov/div898/strd/nls/nls\_main.shtml R port by Douglas Bates. 2012. \emph{NISTnls: Nonlinear Least Squares Examples from NIST}. \url{https://CRAN.R-project.org/package=NISTnls}.
+\leavevmode\hypertarget{ref-NISTnls-manual}{}%
+\emph{NISTnls: Nonlinear Least Squares Examples from Nist}. 2012. \url{https://CRAN.R-project.org/package=NISTnls}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-OlearyRust13}{}}%
-O'Leary, Dianne P., and Bert W. Rust. 2013. {``Variable Projection for Nonlinear Least Squares Problems.''} \emph{Computational Optimization and Applications} 54 (3): 579--93.
+\leavevmode\hypertarget{ref-OlearyRust13}{}%
+O'Leary, Dianne P., and Bert W. Rust. 2013. ``Variable Projection for Nonlinear Least Squares Problems.'' \emph{Computational Optimization and Applications} 54 (3): 579--93.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nlsmultstart}{}}%
-Padfield, Daniel, and Granville Matheson. 2020. \emph{Nls.multstart: Robust Non-Linear Regression Using AIC Scores}. \url{https://CRAN.R-project.org/package=nls.multstart}.
+\leavevmode\hypertarget{ref-nlsmultstart}{}%
+Padfield, Daniel, and Granville Matheson. 2020. \emph{Nls.multstart: Robust Non-Linear Regression Using Aic Scores}. \url{https://CRAN.R-project.org/package=nls.multstart}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-p-nlme}{}}%
+\leavevmode\hypertarget{ref-p-nlme}{}%
 Pinheiro, Jose, Douglas Bates, Saikat DebRoy, Deepayan Sarkar, and R Core Team. 2013. \emph{Nlme: Linear and Nonlinear Mixed Effects Models}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-m-nlsmsn}{}}%
+\leavevmode\hypertarget{ref-m-nlsmsn}{}%
 Prates, Marcos, Victor Lachos, and Aldo Garay. 2021. \emph{Nlsmsn: Fitting Nonlinear Models with Scale Mixture of Skew-Normal Distributions}. \url{https://CRAN.R-project.org/package=nlsmsn}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Ratkowsky1983}{}}%
+\leavevmode\hypertarget{ref-Ratkowsky1983}{}%
 Ratkowsky, David A. 1983. \emph{Nonlinear Regression Modeling: A Unified Practical Approach}. New York; Basel: Marcel Dekker Inc.
 
-\leavevmode\vadjust pre{\hypertarget{ref-m-nlstac}{}}%
-Rodriguez-Arias, Mariano, Juan Antonio Fernandez, Javier Cabello, and Rafael Benitez. 2020. \emph{Nlstac: An r Package for Fitting Separable Nonlinear Models}. \url{https://CRAN.R-project.org/package=nlstac}.
+\leavevmode\hypertarget{ref-m-nlstac}{}%
+Rodriguez-Arias, Mariano, Juan Antonio Fernandez, Javier Cabello, and Rafael Benitez. 2020. \emph{Nlstac: An R Package for Fitting Separable Nonlinear Models}. \url{https://CRAN.R-project.org/package=nlstac}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-nlsic-manual}{}}%
+\leavevmode\hypertarget{ref-nlsic-manual}{}%
 Sokol, Serguei. 2022. \emph{Nlsic: Non Linear Least Squares with Inequality Constraints}. \url{https://CRAN.R-project.org/package=nlsic}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Torvisco2018}{}}%
-Torvisco, Juan Antonio Fernandez, Mariano Rodrıguez-Arias Fernandez, and Javier Cabello Sanchez. 2018. {``A New Algorithm to Fit Exponential Decays Without Initial Guess.''} {Faculty of Sciences and Mathematics, University of Niˇs, Serbia}. \url{https://doi.org/doi.org/10.2298/FIL1812233T}.
+\leavevmode\hypertarget{ref-Torvisco2018}{}%
+Torvisco, Juan Antonio Fernandez, Mariano Rodrıguez-Arias Fernandez, and Javier Cabello Sanchez. 2018. ``A New Algorithm to Fit Exponential Decays Without Initial Guess.'' Faculty of Sciences and Mathematics, University of Niˇs, Serbia. \url{https://doi.org/doi.org/10.2298/FIL1812233T}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-R-crsnls-manual}{}}%
-Tvrdík, Josef. 2016. \emph{Crsnls: Nonlinear Regression Parameters Estimation by 'CRS4HC' and 'CRS4HCe'}. \url{https://CRAN.R-project.org/package=crsnls}.
+\leavevmode\hypertarget{ref-R-crsnls-manual}{}%
+Tvrdík, Josef. 2016. \emph{Crsnls: Nonlinear Regression Parameters Estimation by 'Crs4hc' and 'Crs4hce'}. \url{https://CRAN.R-project.org/package=crsnls}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-HWtestthat11}{}}%
-Wickham, Hadley. 2011. {``{testthat: Get Started with Testing}.''} \emph{The R Journal} 3: 5--10. \url{https://journal.r-project.org/archive/2011-1/RJournal_2011-1_Wickham.pdf}.
+\leavevmode\hypertarget{ref-HWtestthat11}{}%
+Wickham, Hadley. 2011. ``testthat: Get Started with Testing.'' \emph{The R Journal} 3: 5--10. \url{https://journal.r-project.org/archive/2011-1/RJournal_2011-1_Wickham.pdf}.
 
-\leavevmode\vadjust pre{\hypertarget{ref-HWdevtools21}{}}%
-Wickham, Hadley, Jim Hester, Winston Chang, and Jennifer Bryan. 2021. \emph{{devtools: Tools to Make Developing R Packages Easier}}. \url{https://CRAN.R-project.org/package=devtools}.
-
-\end{CSLReferences}
+\leavevmode\hypertarget{ref-HWdevtools21}{}%
+Wickham, Hadley, Jim Hester, Winston Chang, and Jennifer Bryan. 2021. \emph{devtools: Tools to Make Developing R Packages Easier}. \url{https://CRAN.R-project.org/package=devtools}.
+\end{cslreferences}
 
 \bibliography{./ComparingNLStools.bib}
 

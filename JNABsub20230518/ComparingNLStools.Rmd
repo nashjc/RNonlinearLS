@@ -208,7 +208,7 @@ are related as follows:
 
 $$   Asym =  b_1 = 100 * c_1 $$
 $$ exp(xmid/scal)  =  b_2 = 10 * c_2 $$
-$$ 1/scal  =  b_3 $$
+$$ 1/scal  =  b_3 = 0.1*c3 $$
 To allow for simpler discussion, let us say that the parameters form a (named) vector
 $p$ and the model function is called $model(p)$. The residuals can be written
 either as $r_1 = y - model(p)$ or $r = model(p) - y$
@@ -353,6 +353,7 @@ Here we see the infamous "singular gradient" termination message of `nls()`.
 
 ```{r ex02nlsr}
 unlx1<-try(nlxb(formula=frmu, start=stu1, data=weeddf))
+cat("unlx1:")
 print(unlx1) 
 snlx1<-try(nlxb(formula=frms, start=sts1, data=weeddf))
 pshort(snlx1) # a short-form output
@@ -503,7 +504,6 @@ Additional termination tests can be used. `nlsr` has a **small sum of
 squares** test (**smallsstest**) that compares the latest evaluated sum of squared
 (weighted) residuals to `e4` times the initial sum of squares, where
 `e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
-%% ^ is picked up in rjtools check
 
 Termination after what may be considered excessive computation is also important.
 `nls()` stops after `maxiter` "iterations". The meaning of "iteration" may require an 
@@ -560,7 +560,8 @@ and `gslnls::gsl_nls()` use a finite difference approximation to compute the
 Jacobian, though `gsl_nls()` does have an option to attempt symbolic expressions.
 Package `nlsr` provides, via appropriate calling syntax, four numeric approximation 
 options for the Jacobian, with a further control `ndstep` for the size of the
-step used in the approximation. 
+step used in the approximation. These options allow programming choices to be
+examined. Users can largely ignore them.
 
 Using the "gradient" attribute of the output of the Jacobian function to hold
 the Jacobian matrix lets us embed this in the **residual** function as well,
@@ -646,8 +647,8 @@ Users may also want to profit from the Jacobian code of `selfStart` models
 but supply explicit starting values other than those suggested by `getInitial()`.
 This does not appear to be possible with `nls()`. `nlsr::nlxb()` always requires 
 starting parameters, and can either use `getInitial()` to find them from the `selfStart`
-model or provide explicit values, but the `selfStart` model is used in the formula 
-for the `nlxb()` call.
+model or provide explicit values, but the formula used in the call to `nlxb()`
+still involves the `selfStart` function.
 
 <!-- tssx <-try(nls(weed ~ SSlogis(tt, Asym, xmid, scale), start=stt1, data=weeddf)) -->
 <!-- tssx <-try(nls(weed ~ SSlogis(tt, Asym=1, xmid=1, scale=1),  data=weeddf)) -->
@@ -802,7 +803,7 @@ which can cause more iterations to be used.
 search in the available environments (i.e., workspaces) for suitable data objects. 
 We do NOT like this approach, but it is "the R way". R allows users to leave many 
 objects in the default (`.GlobalEnv`) workspace. Moreover, users have to actively 
-suppress saving this workspace (`.RData`) on exit; otherwise, any such file in 
+suppress saving this workspace (`.RData`) on exit; otherwise any such file in 
 the path will be loaded on startup. R users in our
 acquaintance avoid saving the workspace because of lurking data and
 functions that may cause unwanted results.
@@ -810,8 +811,10 @@ functions that may cause unwanted results.
 ### Feature: Subsetting
 
 `nls()` and other class `nls` tools accept an argument `subset`. This acts through 
-the mediation of `model.frame`, which not obvious in the 
-source code files `/src/library/stats/R/nls.R` and `/src/library/stats/src/nls.C`. 
+the mediation of `model.frame`, which is not obvious in the 
+source code files 
+`/src/library/stats/R/nls.R` and 
+`/src/library/stats/src/nls.C`. 
 Having `subset` at the level of the call to a function like
 `nls()` saves effort, but it does mean that the programmer of the 
 solver needs to be aware of the
@@ -880,7 +883,7 @@ in applying such ideas.
 The function `resid()` (an alias for `residuals()`) gives WEIGHTED residuals, 
 as does, for example, `result$m$resid()`. The function `nlsModel()` 
 allows us to compute residuals for particular coefficient sets.
-We have had to extract from the base R code and include it via a code chunk 
+We have had to extract `nlsModel()` from the base R code and include it via a code chunk 
 (not echoed here for space) because it is not exported to the working namespace,
 We could also explicitly `source()` this code.
 
@@ -1071,10 +1074,10 @@ attr(rusewt,"gradient")<-NULL; rusewt
 ## source("nlsModel.R") # or use {r nlsmodelsource, echo=FALSE} code chunk
 nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
 rn0<-nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
-attr(rn0,"gradient")<-NULL; rn0
+attr(rn0,"gradient")<-NULL; rn0 # weighted residuals at starting coefficients
 nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
 rn<-nmod$resid()
-attr(rn,"gradient")<-NULL; rn
+attr(rn,"gradient")<-NULL; rn # same as rusewt
 ```
 
 ## Minor issues with nonlinear least-squares tools
@@ -1111,13 +1114,13 @@ print(tryit)
 
 Note that the sum of squares has been reduced from 61216 to 1.6211, but 
 unless `trace` is invoked, the user will not get any information about this.
-This almost trivial change to the `nls()` function could be 
-useful to R users.
+Changing this in the `nls()` function could be useful to R users, and would
+be almost trivial.
 
 ## Estimating models that are partially linear
 
 The variable projection method (@Golub1973, @OlearyRust13) is 
-generally much more effective than general approaches in finding good solutions 
+usually much more effective than general approaches in finding good solutions 
 to nonlinear least squares 
 problems when some of the parameters appear linearly. In our logistic examples, 
 the asymptote parameters are an illustration. However, identifying which parameters
@@ -1186,7 +1189,7 @@ This is no doubt because programming for indexed parameters is challenging.
 <!-- However, we believe the current structure could cause confusion and error, and  -->
 <!-- propose an alternative approach below. -->
 We note that there are capabilities in packages for mixed-effects modeling
-such as `nlme` (@p-nlme), `bbmle` (@p-bbmle), and `lme4` (p-lme4) for 
+such as `nlme` (@p-nlme), `bbmle` (@p-bbmle), and `lme4` (@p-lme4) for 
 estimating models of such type.
 
 
@@ -1273,7 +1276,4 @@ and helped guide the progress of the work. Exchanges with Fernando Miguez helped
 clarify aspects of `selfStart` models and instigated the "Introduction to nlsr" 
 vignette. Colin Gillespie (package `benchmarkme`) has been helpful in guiding our 
 attempts to succinctly summarize computing environments.
-
-
-# References
 

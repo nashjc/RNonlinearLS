@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.8.15)  18 MAY 2023 10:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.8.15)  22 MAY 2023 15:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -886,7 +886,7 @@ File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
 ) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 ] [2]
-<ComparingNLStools_files/figure-latex/ex01-1.pdf, id=127, 436.63126pt x 283.057
+<ComparingNLStools_files/figure-latex/ex01-1.pdf, id=123, 436.63126pt x 283.057
 5pt>
 File: ComparingNLStools_files/figure-latex/ex01-1.pdf Graphic file (type pdf)
 <use ComparingNLStools_files/figure-latex/ex01-1.pdf>
@@ -899,13 +899,13 @@ Overfull \hbox (53.29161pt too wide) in paragraph at lines 175--176
  []
 
 [3 <./ComparingNLStools_files/figure-latex/ex01-1.pdf>] [4] [5] [6] [7]
-Overfull \hbox (9.60854pt too wide) in paragraph at lines 597--606
+Overfull \hbox (9.60854pt too wide) in paragraph at lines 600--610
 \T1/ppl/m/n/9 (-20) Gauss-Newton/Marquardt meth-ods all need a Ja-co-bian ma-tr
 ix at each it-er-a-tion. By de-fault, \T1/zi4/m/it/9 nlsr::nlxb()
  []
 
 
-Overfull \hbox (1.12457pt too wide) in paragraph at lines 597--606
+Overfull \hbox (1.12457pt too wide) in paragraph at lines 600--610
 \T1/ppl/m/n/9 (-20) When us-ing a for-mula spec-i-fi-ca-tion of the model, \T1/
 zi4/m/it/9 nls()\T1/ppl/m/n/9 (-20) , \T1/zi4/m/it/9 minpack.lm::nlsLM() \T1/pp
 l/m/n/9 (-20) and \T1/zi4/m/it/9 gslnls::gsl_nls()
@@ -913,41 +913,41 @@ l/m/n/9 (-20) and \T1/zi4/m/it/9 gslnls::gsl_nls()
 
 [8] [9]
 LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 7
-48.
+52.
 (/usr/share/texlive/texmf-dist/tex/latex/inconsolata/ts1zi4.fd
 File: ts1zi4.fd 2018/01/14 TS1/zi4 (Inconsolata)
 )
 LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
-(Font)              scaled to size 9.18004pt on input line 748.
+(Font)              scaled to size 9.18004pt on input line 752.
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `zi4' (encoding: TS1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 [10] [11]
-Overfull \hbox (84.22392pt too wide) in paragraph at lines 949--960
-\T1/zi4/m/it/9 model.frame\T1/ppl/m/n/9 (-20) , which not ob-vi-ous in the sour
-ce code files \T1/zi4/m/it/9 /src/library/stats/R/nls.R \T1/ppl/m/n/9 (-20) and
- \T1/zi4/m/it/9 /src/library/stats/src/nls.C\T1/ppl/m/n/9 (-20) .
+Overfull \hbox (92.24013pt too wide) in paragraph at lines 953--966
+\T1/zi4/m/it/9 model.frame\T1/ppl/m/n/9 (-20) , which is not ob-vi-ous in the s
+ource code files \T1/zi4/m/it/9 /src/library/stats/R/nls.R \T1/ppl/m/n/9 (-20) 
+and \T1/zi4/m/it/9 /src/library/stats/src/nls.C\T1/ppl/m/n/9 (-20) .
  []
 
 
-Overfull \hbox (13.20969pt too wide) in paragraph at lines 964--980
+Overfull \hbox (13.20969pt too wide) in paragraph at lines 970--986
 \T1/zi4/m/it/9 questions / 492955 / should -[] i -[] use -[] na -[] omit -[] or
  -[] na -[] exclude -[] in -[] a -[] linear -[] model -[] in -[] r$[][]\T1/ppl/
 m/n/9 (-20) . As with \T1/zi4/m/it/9 subset\T1/ppl/m/n/9 (-20) ,
  []
 
 [12]
-Overfull \hbox (13.9631pt too wide) in paragraph at lines 1037--1037
+Overfull \hbox (13.9631pt too wide) in paragraph at lines 1043--1043
 []\T1/zi4/m/it/9 rnowt<-nowt$m$resid() # This has UNWEIGHTED residual and Jacob
 ian. Does NOT take coefficients.[] 
  []
 
 Package textcomp Info: Symbol \textasciigrave not provided by
 (textcomp)             font family zi4 in TS1 encoding.
-(textcomp)             Default family used instead on input line 1060.
+(textcomp)             Default family used instead on input line 1066.
 LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 1
-060.
+066.
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
@@ -956,7 +956,7 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 
-1060.
+1066.
 (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmtt.fd
 File: ts1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
@@ -966,48 +966,43 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             See the microtype manual for details.
 Package textcomp Info: Symbol \textasciigrave not provided by
 (textcomp)             font family zi4 in TS1 encoding.
-(textcomp)             Default family used instead on input line 1060.
+(textcomp)             Default family used instead on input line 1066.
 [13]
-Overfull \hbox (65.19638pt too wide) in paragraph at lines 1115--1115
+Overfull \hbox (65.19638pt too wide) in paragraph at lines 1121--1121
 []\T1/zi4/m/it/9 #> [1] "Error in nls(NLSformula, data = NLSdata, start = NLSst
 art, trace = TRUE) : \n  singular gradient\n"[] 
  []
 
 
-Overfull \hbox (47.46083pt too wide) in paragraph at lines 1115--1115
+Overfull \hbox (47.46083pt too wide) in paragraph at lines 1121--1121
 []\T1/zi4/m/it/9 #> <simpleError in nls(NLSformula, data = NLSdata, start = NLS
 start, trace = TRUE): singular gradient>[] 
  []
 
 [14] [15] [16]
-Overfull \hbox (78.48872pt too wide) in paragraph at lines 1380--1382
-[]\T1/ppl/m/n/9 (-20) National In-sti-tutes for Stan-dards, orig-i-nal from, an
-d Tech-nol-ogy http://www.itl.nist.gov/div898/strd/nls/nls_main.shtml
- []
-
 Package textcomp Info: Symbol \textasciicaron not provided by
 (textcomp)             font family ppl in TS1 encoding.
-(textcomp)             Default family used instead on input line 1405.
+(textcomp)             Default family used instead on input line 1411.
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
 No file RJwrapper.bbl.
-) [17] (./RJwrapper.aux)
+) [17] [18] (./RJwrapper.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `RJwrapper.out' has not changed.
-(rerunfilecheck)             Checksum: E3647D27CDED0812DEA0BCEA1207F7B9;5269.
+(rerunfilecheck)             Checksum: 4B3F058B3AD6C28172066B29B7F9F0A6;5163.
  ) 
 Here is how much of TeX's memory you used:
- 27018 strings out of 478287
- 492678 string characters out of 5849289
- 794867 words of memory out of 5000000
- 44293 multiletter control sequences out of 15000+600000
- 513438 words of font info for 270 fonts, out of 8000000 for 9000
+ 27019 strings out of 478287
+ 492675 string characters out of 5849289
+ 795829 words of memory out of 5000000
+ 44291 multiletter control sequences out of 15000+600000
+ 513593 words of font info for 272 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 115i,12n,131p,1006b,757s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 115i,12n,131p,1006b,754s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texli
 ve/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}{/usr/share/texlive/texmf-
 dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}{/usr/share/texlive/texmf-dist/fon
@@ -1022,10 +1017,10 @@ onts/type1/public/cm-super/sftt0900.pfb></usr/share/texlive/texmf-dist/fonts/ty
 pe1/urw/palatino/uplb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/pala
 tino/uplr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a
 .pfb>
-Output written on RJwrapper.pdf (17 pages, 230610 bytes).
+Output written on RJwrapper.pdf (18 pages, 231116 bytes).
 PDF statistics:
- 407 PDF objects out of 1000 (max. 8388607)
+ 408 PDF objects out of 1000 (max. 8388607)
  358 compressed objects within 4 object streams
  120 named destinations out of 1000 (max. 500000)
- 58570 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 58562 words of extra memory for PDF output out of 61914 (max. 10000000)
 

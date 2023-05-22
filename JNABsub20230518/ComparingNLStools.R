@@ -62,6 +62,7 @@ tnls1<-try(nls(formula=frmt, start=stt1, data=weeddf))
 
 ## ----ex02nlsr-----------------------------------------------------------------
 unlx1<-try(nlxb(formula=frmu, start=stu1, data=weeddf))
+cat("unlx1:")
 print(unlx1) 
 snlx1<-try(nlxb(formula=frms, start=sts1, data=weeddf))
 pshort(snlx1) # a short-form output
@@ -356,10 +357,10 @@ attr(rusewt,"gradient")<-NULL; rusewt
 ## source("nlsModel.R") # or use {r nlsmodelsource, echo=FALSE} code chunk
 nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
 rn0<-nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
-attr(rn0,"gradient")<-NULL; rn0
+attr(rn0,"gradient")<-NULL; rn0 # weighted residuals at starting coefficients
 nmod <- nlsModel(frmlogis, data=weeddf, start=coef(usewt), wts=wts)
 rn<-nmod$resid()
-attr(rn,"gradient")<-NULL; rn
+attr(rn,"gradient")<-NULL; rn # same as rusewt
 
 
 ## ----tetrarun-----------------------------------------------------------------
