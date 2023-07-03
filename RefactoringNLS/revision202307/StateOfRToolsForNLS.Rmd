@@ -434,18 +434,18 @@ gives the sum of squares, but not the standard error of the residuals.
 As pointed out by one of the referees, such behaviour is consistent
 with other modeling functions such as `lm()`.
 
-The importance of the  singular values is to allow us to gauge how "nearly singular" the 
-Jacobian is at the solution, and the ratio of the smallest to largest of the 
+The importance of the  singular values is to allow us to gauge how "nearly singular" 
+the Jacobian is at the solution, and the ratio of the smallest to largest of the 
 singular values is a simple but effective measure. The ratios are
 4.6641e-05 for Logistic3U, 0.021022 for Logistic3S, and 0.001055 for
 Logistic3T, so Logistic3S is the "least singular". 
 
-The results from `nlsLM` and `gsl_nls` for the transformed model Logistic3T have a very 
-large sum of squares, which may suggest that these programs have failed. 
+The results from `nlsLM` and `gsl_nls` for the transformed model Logistic3T have a 
+very large sum of squares, which may suggest that these programs have failed. 
 Since `nls()`, `nlsLM()`, and `gsl_nls()` do not 
 offer singular values, we need to extract the Jacobian and compute its
-singular values. The following script shows how to do this, using as Jacobian what is called
-the `gradient` element in the returned solution for these solvers.
+singular values. The following script shows how to do this, using as Jacobian 
+what is called the `gradient` element in the returned solution for these solvers.
 
 ```{r ex04singval, echo=TRUE, eval=TRUE}  
 # for nlsLM
@@ -466,13 +466,15 @@ if (inherits(tgslnls1, "try-error")) {
 
 We see that there are differences in detail, but the more important result is that
 two out of three singular values are essentially 0. Our Jacobian is singular, and no 
-method of the Gauss-Newton type should be able to continue. Indeed, from the parameters
-reported at this saddle point, `nlsr::nlxb()` cannot proceed. We also note that
-changing the start to
+method of the Gauss-Newton type should be able to continue. Indeed, from the 
+parameters reported at this saddle point, `nlsr::nlxb()` cannot proceed. We also 
+note that changing the start to
 ```
 stt2<-c(Asym=1, xmid=1, scal=2)
 ```
-allows both `nlsLM` and `gsl_nls` to find the minimum.
+allows both `nlsLM` and `gsl_nls` to find the minimum. `gsl_nls` also succeeds
+when the particular form of the Marquardt stabilization is changed from the
+default by the control setting `scale="levenberg"`.
 
 
 ```{r ex05, echo=TRUE}  
