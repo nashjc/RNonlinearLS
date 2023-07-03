@@ -878,7 +878,9 @@ computational matrices for the Jacobian or its inner product. The method
 "Rcgmin" from package `optimx` (@p-optimx) can be orders of magnitude
 faster, but is entirely written in R. Note that "Rcgmin" is a much more
 reliable conjugate gradient minimizer than method "CG" of `optim()`. One
-of us created both, but now deprecates the latter.
+of us created both, but now deprecates the latter. It should be noted
+that timings of CG methods are more sensitive to small differences in
+setup and arithmetic than Gauss-Newton methods.
 
 ## Data sources for problems
 
@@ -1026,7 +1028,7 @@ useful to R users.
 ## Estimating models that are partially linear
 
 The variable projection method (@Golub1973, @OlearyRust13) is 
-generally much more effective than general approaches in finding good solutions 
+usually much more effective than general approaches in finding good solutions 
 to nonlinear least squares 
 problems when some of the parameters appear linearly. In our logistic examples, 
 the asymptote parameters are an illustration. However, identifying which parameters
