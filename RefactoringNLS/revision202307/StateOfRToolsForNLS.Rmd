@@ -1,5 +1,5 @@
 ---
-title: "A Comparison of R Tools for Nonlinear Least Squares Modeling"
+title: "The Current State of R Tools for Nonlinear Least Squares Modeling"
 author:
 - John C. Nash \thanks{ retired professor, Telfer School of Management, University
   of Ottawa}
@@ -12,7 +12,7 @@ output:
     toc: no
   word_document:
     toc: no
-bibliography: ./ImproveNLS.bib
+bibliography: ./StateOfRToolsForNLS.bib
 link-citations: yes
 linkcolor: red
 urlcolor: blue
@@ -26,13 +26,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Abstract
 
-Our Google Summer of Code project "Improvements to `nls()`" considered the features and limitations of the R function `nls()` with the aim 
+Our Google Summer of Code project "Improvements to `nls()`" considered the features 
+and limitations of the R function `nls()` with the aim 
 of improving and rationalizing R tools for nonlinear regression.
 The rich features of `nls()` are weakened by several deficiencies and
 inconsistencies such as a lack of stabilization of the Gauss-Newton solver.
 Further considerations are the usability and  maintainability of
 the code base that provides the functionality `nls()` claims to offer.
-Various packages, including our `nlsr`, provide alternative capabilities.
+Various packages, in particular our `nlsr`, provide alternative capabilities.
 We consider the differences in goals, approaches, and features of
 different tools for nonlinear least squares modeling in R. Discussion of 
 these matters is relevant to improving R generally as well as its 
@@ -42,9 +43,11 @@ nonlinear estimation tools.
 
 `nls()` is the tool for estimating nonlinear statistical models in base R, the 
 primary software distribution
-from the Comprehensive R Archive Network (*https://cran.r-project.org*).
-The function dates to the 1980s and the work related to @bateswatts in S (see 
-*https://en.wikipedia.org/wiki/S_%28programming_language%29*). 
+from the Comprehensive R Archive Network (*https://cran.r-project.org*), hereafter
+abbreviated CRAN.
+Users do not have to request that `nls()` be loaded.
+The function dates to the 1980s and the work related to @bateswatts and others 
+in S (see *https://en.wikipedia.org/wiki/S_%28programming_language%29*). 
 
 The `nls()` function has a remarkable and comprehensive set of capabilities for 
 estimating nonlinear models that are expressed as **formulas**. In particular, we
@@ -70,18 +73,42 @@ concerns, and we will address some of these here.
 
 ## Scope of our comparison
 
-The tools we will consider are the base-R `nls()` function 
-and some packages that are available on the CRAN repository.
+Our Google Summer of Code project for 2021, "Improvements to `nls()`"
+had the goal of providing a version of the code that would address some
+of the deficiencies discovered over the long period that the `nls()`
+has been part of R. However, it was also critical to preserve legacy
+functionality, and we did not achieve a result that provided desired
+improvements and preserved legacy results. On the other hand, working
+with `nls()` suggested ways our own `nlsr` package could be improved
+in features, while also revealing how it has a very different internal
+structure and design.
+
+The primary goal of this paper is to present some of these issues,
+with a limited consideration of some other tools that exist for 
+nonlinear least squares calculations. A hope is that we will encourage
+others to engage, possibly with us, to find ways to bring improvements.
+We note that the referees' comments have been most helpful to focus
+the discussion here in ways that illustrate the best aspects of open
+source software development. We believe it is desirable to consolidate
+tools where reasonable so that users have an easier task in choosing
+which to use, but such consolidation demands careful and wide-ranging
+discussion of options. It is much simpler to create new packages than
+to bring together and simplify existing ones.
+
+### Tools considered
+
+Besides the base-R `nls()` function, we consider some packages that 
+are available on the CRAN repository.
 Of these, we will pay particular attention to **nlsr** (@nlsr2023manual),
 **minpack.lm** (@minpacklm12), and **gslnls** (@gslnls23) which are
-general nonlinear least-squares solvers.
-
-While we will provide capsule comments for some other CRAN packages, 
-we will not pursue those in the Bioconductor (@Bioconductor) 
+general nonlinear least-squares solvers. We will 
+not pursue tools in the Bioconductor (@Bioconductor) 
 collection, nor those on repositories such as 
 GitHub (https://github.com) and Gitlab (https://about.gitlab.com).
 
 ## Some other CRAN packages for nonlinear modeling
+
+?? check wording
 
 `onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
 is the vertical difference between the dependent variable and the functional
@@ -153,7 +180,7 @@ agriculture. Most include analytic Jacobian code.
 `optimx` (@p-optimx) -- This provides 
 optimizers that can be applied to minimize a nonlinear function which could be
 a nonlinear sum of 
-squares. NOT generally recommended if nonlinear 
+squares. not generally recommended if nonlinear 
 least squares programs can be easily used, but provides a check and alternative
 solvers.
 
@@ -228,7 +255,7 @@ $$ H \approx J' J$$
 by assuming $D \approx 0$. This results in the Gauss-Newton method where we
 solve 
 $$ J' J \delta = - J' r$$
-though we can avoid some loss of accuracy by NOT forming the inner product matrix
+though we can avoid some loss of accuracy by not forming the inner product matrix
 $J' J$ and solving the linear least squares matrix problem 
 $$ J \delta \approx -r $$
 by one of several matrix decomposition methods. 
@@ -253,7 +280,7 @@ work well.
 ### Problem setup
 
 Let us specify in R the three model formulas and set some starting
-values for parameters. These starting points are NOT equivalent and
+values for parameters. These starting points are not equivalent and
 are deliberately crude choices. Workers performing many calculations 
 of a similar nature should try to provide good starting points to reduce
 computation time and avoid finding a false solution.
@@ -331,6 +358,21 @@ tnls1<-try(nls(formula=frmt, start=stt1, data=weeddf))
 
 Here we see the infamous "singular gradient" termination message of `nls()`. 
 
+However, `nls()` also offers the option of using the "port" library algorithm
+choice (@FoxHallSchryer1978). There is a warning in the `nls()` documentation that
+this "appears unfinished", but it is successful in solving all three cases.
+
+```{r ex02nlsport}
+unls1p<-try(nls(formula=frmu, start=stu1, data=weeddf, algorithm="port"))
+pnls(unls1p)
+snls1p<-try(nls(formula=frms, start=sts1, data=weeddf, algorithm="port"))
+pnls(snls1p)
+tnls1p<-try(nls(formula=frmt, start=stt1, data=weeddf, algorithm="port"))
+pnls(tnls1p)
+```
+
+
+
 ### Solution attempts with nlsr
 
 ```{r ex02nlsr}
@@ -345,7 +387,7 @@ pshort(tnlx1) # alternatively print(tnlx1)
 Though we have found solutions, the Jacobian is essentially singular as 
 shown by its singular
 values. Note that these are **displayed** by package `nlsr` in a single column in
-the output to provide a compact layout, but the values do **NOT** correspond to 
+the output to provide a compact layout, but the values do **not** correspond to 
 the individual parameters in 
 whose row they appear; they are a property of the whole problem.
 
@@ -371,6 +413,15 @@ sgslnls1<-try(gsl_nls(fn = frms, data = weeddf,  start = sts1))
 pnls(sgslnls1) # Use summary() to get display
 tgslnls1<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1))
 pnls(tgslnls1) 
+## Other algorithms
+## tgslnls1a<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="lmaccel"))
+## pnls(tgslnls1a) 
+## tgslnls1d<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="dogleg"))
+## pnls(tgslnls1d) 
+## tgslnls1dd<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="ddogleg"))
+## pnls(tgslnls1dd) 
+## tgslnls1s2<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="subspace2D"))
+## pnls(tgslnls1s2) 
 ```
 
 ### Comparison notes for formula-setup solutions
@@ -378,10 +429,12 @@ pnls(tgslnls1)
 `nlsr::nlxb()` uses `print()` to output standard errors and 
 singular values of the Jacobian (for diagnostic purposes). By contrast, 
 `minpack.lm::nlsLM()` and `nls()`
-use `summary()`, which does NOT display the sum of squares, while `print()` 
+use `summary()`, which does not display the sum of squares, while `print()` 
 gives the sum of squares, but not the standard error of the residuals.
+As pointed out by one of the referees, such behaviour is consistent
+with other modeling functions such as `lm()`.
 
-The singular values allow us to gauge how "nearly singular" the 
+The importance of the  singular values is to allow us to gauge how "nearly singular" the 
 Jacobian is at the solution, and the ratio of the smallest to largest of the 
 singular values is a simple but effective measure. The ratios are
 4.6641e-05 for Logistic3U, 0.021022 for Logistic3S, and 0.001055 for
@@ -414,7 +467,13 @@ if (inherits(tgslnls1, "try-error")) {
 We see that there are differences in detail, but the more important result is that
 two out of three singular values are essentially 0. Our Jacobian is singular, and no 
 method of the Gauss-Newton type should be able to continue. Indeed, from the parameters
-reported at this saddle point, `nlsr::nlxb()` cannot proceed. 
+reported at this saddle point, `nlsr::nlxb()` cannot proceed. We also note that
+changing the start to
+```
+stt2<-c(Asym=1, xmid=1, scal=2)
+```
+allows both `nlsLM` and `gsl_nls` to find the minimum.
+
 
 ```{r ex05, echo=TRUE}  
 stspecial<- c(Asym = 35.532,  xmid = 43376,  scal = -2935.4)
@@ -422,7 +481,31 @@ badstart<-nlxb(formula=frmt, start=stspecial, data=weeddf)
 print(badstart)
 ```
 
+We consider the code inside package `nlsr` to be competently coded, with
+the advantage over `nls()` of the Levenberg-Marquardt
+stabilization in common with `minpack.lm` and `glsnls`. However, our principal 
+message is that we obtain diagnostic information in the form of the singular values
+of the Jacobian that allow us to try alternative starts, algorithms or programs in 
+cases where there are indications of early termination.
+
+
 ## Functional specification of problems
+
+Let us write a slightly modified form of the nonlinear least squares problem:
+
+$$ S(p) = \sum_{i=1}^m { r_i(p)^2 }$$
+
+R users are likely to think almost always that the functions $r_i$ are all of
+the same form, differing in the details of the data they use. However, the
+famous Rosenbrock banana-shaped valley (@Rosenbrock1960, 
+also https://en.wikipedia.org/wiki/Rosenbrock_function) has 
+$$ r_1(p) = (1 - p_1)$$
+$$ r_2(p) = 10 (p_2 - {p_1}^2)$$
+
+Thus there can be problems where the idea of a "model" or a "prediction"
+makes no sense, though the nonlinear least squares problem is still
+well-posed. In our code, we still refer to the functions as "residuals",
+though this is purely a convenience.
 
 We illustrate how to solve nonlinear least squares problems using
 a function to define the residual. Note that `gsl_nls()` requires
@@ -514,7 +597,8 @@ and if there is an element called `xdata`, then it can be accessed as
 `result$model$xdata`.
 
 By contrast, `nlsr::nlxb()` returns a much simpler structure of 11 items
-in one level. Moreover, `nlxb` explicitly returns the sum of squares, the residual vector, Jacobian, and counts of evaluations.
+in one level. Moreover, `nlxb` explicitly returns the sum of squares, the 
+residual vector, Jacobian, and counts of evaluations.
 
 ### When to compute ancillary information
 
@@ -634,13 +718,13 @@ for the `nlxb()` call.
 <!-- tssx <-try(nls(weed ~ SSlogis(tt, Asym=1, xmid=1, scale=1),  data=weeddf)) -->
 <!-- tssx <-try(nls(weed ~ SSlogis(tt, Asym, xmid, scale),  data=weeddf))summary(tssx) -->
 
-We are also surprised that the 
-analytic expressions for the Jacobian ("gradient") in the `SSLogis` function 
-and others save quantities in "hidden"
-variables, i.e., with names preceded by ".". 
-These are then not displayed by the `ls()`
-command, making them difficult to access by users who may wish to create
-their own selfStart model via copy and edit.
+We note that the analytic expressions for the Jacobian ("gradient") in the `SSLogis` 
+function and others save quantities by default in "hidden" variables, i.e., with 
+names preceded by ".".  A referee has indicated this behaviour is to avoid name 
+conflicts with user quantities. Hidden variables are not displayed by the `ls()` 
+command, so users need to remember to use `ls(all.names=TRUE)` to see which quantities
+are defined, for example, in developing their own selfStart model via copy and edit.
+
 Interactive tools, such as "visual fitting" (@nash1996nonlinear) might be
 worth considering as another way to find starting parameters, but we know of no
 R capability of this type.
@@ -674,13 +758,25 @@ used in the call. Unfortunately, the documentation warns us:
    all programs have some weakness regarding constrained optimization in that
    programmers have to work with assumptions on the scale of numbers, 
    and some problems will be outside the scope envisaged.
+   
+Examples of the use of bounds constraints for nonlinear regression modeling are
+quite scarce. Traditionally, workers transform variables to ensure bounds are
+satisfied, such as squaring a parameter, or using a parameter which is the log()
+of the actual parameter, so that its exponential is positive. These transformations
+can create scaling issues, but seem to generally work.
+
+Bounds can also be helpful to avoid unanticipated excursions of the minimization
+trajectory into inadmissible parameter regions. Such bounds should not be too
+tight, as this may hinder progress to an optimum by causing the methods to 
+bump along the constraint in many cycles. Our aim is to avoid rubbish, not
+specify where the solution will be.
 
 ```{r ex10, echo=TRUE} 
 # Start MUST be feasible i.e. on or within bounds
 anlshob1b <- nls(frms, start=sts1, data=weeddf, lower=c(0,0,0),
              upper=c(2,6,3), algorithm='port')
 pnls(anlshob1b) #  check the answer (short form)
-# nlsLM seems NOT to work with bounds in this example
+# nlsLM seems not to work with bounds in this example
 anlsLM1b <- nlsLM(frms, start=sts1, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
 pnls(anlsLM1b)
 # also no warning if starting out of bounds, but gets a good answer!!
@@ -774,11 +870,21 @@ may now offer acceptable performance. In `nlsr`, the use of R may be a
 smaller performance cost than the aggressive approach to a solution,
 which can cause more iterations to be used.
 
+One of the referees pointed out that nlsr::nlfb() is quite slow on a
+"large" case of the Penalty 1 test problem of @More1981TUO. We agree. 
+However, we would suggest that problems in large numbers of parameters
+will be problematic for Gauss-Newton methods because they create large
+computational matrices for the Jacobian or its inner product. The method
+"Rcgmin" from package `optimx` (@p-optimx) can be orders of magnitude
+faster, but is entirely written in R. Note that "Rcgmin" is a much more
+reliable conjugate gradient minimizer than method "CG" of `optim()`. One
+of us created both, but now deprecates the latter.
+
 ## Data sources for problems
 
 `nls()` can be called without specifying the `data` argument. In this case, it will
 search in the available environments (i.e., workspaces) for suitable data objects. 
-We do NOT like this approach, but it is "the R way". R allows users to leave many 
+We do not like this approach, but it is "the R way". R allows users to leave many 
 objects in the default (`.GlobalEnv`) workspace. Moreover, users have to actively 
 suppress saving this workspace (`.RData`) on exit; otherwise, any such file in 
 the path will be loaded on startup. R users in our
@@ -855,7 +961,7 @@ in applying such ideas.
 
 ### Weights in returned functions from nls()
 
-The function `resid()` (an alias for `residuals()`) gives WEIGHTED residuals, 
+The function `resid()` (an alias for `residuals()`) gives weighted residuals, 
 as does, for example, `result$m$resid()`. The function `nlsModel()`, which we 
 have had to extract from the base R code and explicitly `source()` because it 
 is not exported to the working namespace,
@@ -865,11 +971,11 @@ allows us to compute residuals for particular coefficient sets.
 wts <- 0.5^tt # simple weights
 frmlogis <- weed ~ Asym/(1 + exp((xmid - tt)/scal))
 Asym<-1; xmid<-1; scal<-1
-nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal)) # UNWEIGHTED
-rnowt<-nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does NOT take coefficients.
+nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal)) # unweighted
+rnowt<-nowt$m$resid() # This has unweighted residual and Jacobian. Does not take coefficients.
 attr(rnowt, "gradient")<-NULL; rnowt
 usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
-rusewt<-usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
+rusewt<-usewt$m$resid() # weighted. Does not take coefficients.
 attr(rusewt,"gradient")<-NULL; rusewt
 source("nlsModel.R")
 nmod0 <- nlsModel(frmlogis, data=weeddf, start=c(Asym=1, xmid=1, scal=1), wts=wts)
@@ -934,12 +1040,12 @@ different specifications with different `algorithm` options.
 For example, the explicit model `y ~ a * x + b` does not work with the linear
 modeling function `lm()`, which requires this model to be specified as `y ~ x`.
 Within `nls()`, consider the following FOUR different specifications for the same 
-problem, plus an intuitive choice, labeled `fm2a`, that does NOT work. 
+problem, plus an intuitive choice, labeled `fm2a`, that does not work. 
 In this failed attempt, putting the `Asym` parameter in the model causes the
 `plinear` algorithm
 to try to add another term to the model. We believe this is unfortunate, and would
 like to see a consistent syntax. At the time of writing, we do
-not foresee a resolution for this issue. In the example, we have NOT evaluated
+not foresee a resolution for this issue. In the example, we have not evaluated
 the commands to save space.
 
 ```{r log4ways, echo=TRUE, eval=FALSE}
@@ -966,7 +1072,7 @@ fm4 <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)),
                  algorithm = "port"))
 summary(fm4)
 
-## using conditional linearity AND Asym does NOT work
+## using conditional linearity AND Asym does not work
 fm2a <- try(nls(density ~ Asym / (1 + exp((xmid - log(conc)) / scal)), 
                  data = DNase1, start = list(Asym=3, xmid = 0, scal = 1),
                  algorithm = "plinear", trace = TRUE))
@@ -979,7 +1085,7 @@ Some models have several common parameters and
 others that are tied to particular cases. 
 The **man** file for `nls()` includes an example of a situation in which
 parameters are indexed but which uses the "plinear" option as an added complication.
-Running this example reveals that the answers for the parameters are NOT indexed
+Running this example reveals that the answers for the parameters are not indexed
 as in a vector. 
 <!-- e.g. `coef(musc.2)` is a single level vector of parameters.  -->
 That is, we do not see `a[1], a[2], a[3]` but `a1, a2, a3`. 
@@ -1009,7 +1115,7 @@ estimating models of such type.
 <!-- withAutoprint({ -->
 <!--   ## The non linear model considered is -->
 <!--   ##       Length = alpha + beta*exp(-Conc/theta) + error -->
-<!--   ## where theta is constant. For now alpha and beta do NOT vary with Strip. -->
+<!--   ## where theta is constant. For now alpha and beta do not vary with Strip. -->
 <!--   with(mm, table(Strip)) # 2, 3 or 4 obs per strip -->
 <!--   nl <- nlevels(mm$Strip) -->
 <!--   ## We first use the plinear algorithm to fit an overall model, -->
