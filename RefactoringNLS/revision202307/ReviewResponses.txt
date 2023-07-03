@@ -1,3 +1,13 @@
+Revew Responses to first review of R Journal paper 2023-15.
+
+We have created a text file with the content of both referees'
+reports and edited our responses to comments under headings
+
+   Response X:YY  
+   
+where X indicates the referee (1 or 2) and YY is an identifying
+number.
+
 Review 1
 
 Referee report of “A Comparison of R Tools for Nonlinear Least
@@ -22,9 +32,9 @@ of four authors but only two of them are cited in the paper).
 
 Response 1:01
 
-Fernando Miguez and Arkajyoti Bhattacharjee, who are listed as contributors,
-provided comments that were very helpful in revising package nlsr, but Nash 
-and Murdoch provided all the code to our knowledge.
+    Fernando Miguez and Arkajyoti Bhattacharjee, who are listed as contributors,
+    provided comments that were very helpful in revising package nlsr, but Nash 
+    and Murdoch provided all the code to our knowledge.
 
 There are 
 also indications that the paper is about replacing nls in base R with 
