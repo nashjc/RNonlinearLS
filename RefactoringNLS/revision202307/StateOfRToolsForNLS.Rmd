@@ -577,18 +577,20 @@ default `maxiter = 50` of `nls()` to avoid stopping early.
 
 ### Returned results of nls() and other tools
 
-As mentioned, the output of `nls()` is an object of class "nls" which has a quite rich structure
-described in the manual file or revealed by applying the `str()` function to the
-result of `nls()`.
+As mentioned, the output of `nls()` is an object of class "nls" which has a quite 
+rich structure described in the manual file or revealed by applying the `str()` 
+function to the result of `nls()`.
 
 The complexity of this object is a challenge to users. Let us use the
 `result` as the returned object from `nls()`, `minpack.lm::nlsLM()` or,
-`gslnls::gsl_nls()`. For example, the `data` return element is an R symbol. To
-actually access the data from this element, we need to use the syntax:
+`gslnls::gsl_nls()`. For example, the `data` return element is an R symbol. 
+If the user's environment exists, which it may not, we could see this data 
+via the syntax:
 ```
 eval(parse(text=result$data))
 ```
-However, if the call is made with `model=TRUE`, then there is a returned element
+However, a better approach is to make the call to `nls()` with `model=TRUE`, 
+which returns an element 
 `model` which contains the data, and we can list its contents using:
 ```
 ls(result$model)
@@ -598,7 +600,8 @@ and if there is an element called `xdata`, then it can be accessed as
 
 By contrast, `nlsr::nlxb()` returns a much simpler structure of 11 items
 in one level. Moreover, `nlxb` explicitly returns the sum of squares, the 
-residual vector, Jacobian, and counts of evaluations.
+residual vector, Jacobian, and counts of evaluations, but does not include
+the input data.
 
 ### When to compute ancillary information
 
