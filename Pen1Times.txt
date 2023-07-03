@@ -188,6 +188,7 @@ grad from Jacobian:
 1 cg10        26.6   27.3      33.7    6.75MB     3.74     9     1       267. <named list [6]> <Rprofmem [1,760 × 3]> <bench_tm [10]> <tibble>
 
 > print(TT)
+        n       nlfb      nls.lm     Rcgmin
      [,1]        [,2]        [,3]       [,4]
 [1,]   10    6.173968    1.223474  16.895894
 [2,]   25    7.381477    2.521636   6.678168

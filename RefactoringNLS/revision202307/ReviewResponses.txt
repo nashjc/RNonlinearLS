@@ -448,7 +448,12 @@ authors mention that nlxb() returns a much simpler structure of 11
 items in one level, but I did not manage to find the input data object in 
 the nlsr-object returned by nlxb().
 
-Response 2:05 ??
+Response 2:05 The section has been reworded to reflect the comments. I (JN) 
+   confess to having used `lm()` only a few times in a whole career, so
+   missed the parallel to that function. My work has focused on developing 
+   computational tools or diagnosing extreme cases where conventional 
+   statistical calculations seem to have misfired, and also do not work 
+   exclusively in R.
 
 The section Functional specification of problems mentions the use of 
 nlsr::nlfb() to solve nonlinear least squares problems using a function 
@@ -504,7 +509,10 @@ Response 2:07 Reparametrization is likely the appropriate approach if
     as in nlsr::nlxb. We also note that in cases where a simple and 
     obvious transformation is available, such as squaring a parameter to 
     ensure positivity, this is likely a better approach than imposing bounds.
-
+    However, when there are more general bounds, transformations become more
+    tricky to apply, and may de-scale a problem. We have considered the
+    transfinite function used in CRAN package `adagio`, but consider that
+    this needs more extensive investigation before recommending in general.
 
 5. The section Programming language makes the argument that keeping to a 
 single programming language can allow for easier maintenance and upgrades, 
@@ -524,8 +532,8 @@ Response 2:08  In that we are in general agreement with this comment, we have ad
     The referee's commends ant Illustrating Code led us to try the Pen1 problem
     (it is part of the funconstrain package https://github.com/jlmelville/funconstrain
     to which one of us recently added Hessian code). This showed that the R code
-    of nlsr::nlfb() was faster than the compiled Fortran of minpack.lm::nls.lm.
-    Moreover, the all-R code optimx::Rcgmin was 2 orders of magnitude faster --
+    of nlsr::nlfb() was sometimes faster than the compiled Fortran of minpack.lm::nls.lm.
+    Moreover, the all-R code optimx::Rcgmin was much faster for larger problems --
     it does not build a matrix! 
 
 
