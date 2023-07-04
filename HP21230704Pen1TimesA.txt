@@ -1,0 +1,258 @@
+
+> alpha <- 1e-5
+
+> a <- 1e-5
+
+> sqrta <- sqrt(alpha)
+
+> ### residuals
+> fres <- function(x) {
++   c(sqrt(alpha) * (x - 1), sum(x^2) - 0.25)
++ }
+
+> ### jacobian
+> fjac <- function(x) {
++   jj <- rbind(diag(sqrt(alpha), nrow = length(x)), 2 * t(x))
++   attr(jj, "gradient") <- jj
++   jj
++ }
+
+> ffn = function(par) {
++   n <- length(par)
++   if (n < 1) {
++     stop("Penalty Function I: n must be positive")
++   }
++   fsum <- 0
++   fn1 <- 0
++  .... [TRUNCATED] 
+
+> fgr = function(par) {
++   n <- length(par)
++   if (n < 1) {
++     stop("Penalty Function I: n must be positive")
++   }
++   grad <- rep(0, n)
++   fn1 .... [TRUNCATED] 
+
+> n<-10
+
+> # ftest
+> x0<-1:n
+
+> cat("ffn=",ffn(x0),"\n")
+ffn= 148032.6 
+
+> cat("fres:")
+fres:
+> fr<-fres(x0)
+
+> print(fr)
+ [1] 0.000000e+00 3.162278e-03 6.324555e-03 9.486833e-03 1.264911e-02 1.581139e-02
+ [7] 1.897367e-02 2.213594e-02 2.529822e-02 2.846050e-02 3.847500e+02
+
+> cat("sum(fr^2)=", sum(fr^2), "\n")
+sum(fr^2)= 148032.6 
+
+> cat("fgr:")
+fgr:
+> print(fgr(x0))
+ [1]  1539  3078  4617  6156  7695  9234 10773 12312 13851 15390
+
+> cat("Jacobian:\n")
+Jacobian:
+
+> JJ<-fjac(x0)
+
+> print(JJ)
+             [,1]        [,2]        [,3]        [,4]         [,5]         [,6]
+ [1,] 0.003162278 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+ [2,] 0.000000000 0.003162278 0.000000000 0.000000000  0.000000000  0.000000000
+ [3,] 0.000000000 0.000000000 0.003162278 0.000000000  0.000000000  0.000000000
+ [4,] 0.000000000 0.000000000 0.000000000 0.003162278  0.000000000  0.000000000
+ [5,] 0.000000000 0.000000000 0.000000000 0.000000000  0.003162278  0.000000000
+ [6,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.003162278
+ [7,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+ [8,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+ [9,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+[10,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+[11,] 2.000000000 4.000000000 6.000000000 8.000000000 10.000000000 12.000000000
+              [,7]         [,8]         [,9]        [,10]
+ [1,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [2,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [3,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [4,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [5,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [6,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [7,]  0.003162278  0.000000000  0.000000000  0.000000000
+ [8,]  0.000000000  0.003162278  0.000000000  0.000000000
+ [9,]  0.000000000  0.000000000  0.003162278  0.000000000
+[10,]  0.000000000  0.000000000  0.000000000  0.003162278
+[11,] 14.000000000 16.000000000 18.000000000 20.000000000
+attr(,"gradient")
+             [,1]        [,2]        [,3]        [,4]         [,5]         [,6]
+ [1,] 0.003162278 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+ [2,] 0.000000000 0.003162278 0.000000000 0.000000000  0.000000000  0.000000000
+ [3,] 0.000000000 0.000000000 0.003162278 0.000000000  0.000000000  0.000000000
+ [4,] 0.000000000 0.000000000 0.000000000 0.003162278  0.000000000  0.000000000
+ [5,] 0.000000000 0.000000000 0.000000000 0.000000000  0.003162278  0.000000000
+ [6,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.003162278
+ [7,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+ [8,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+ [9,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+[10,] 0.000000000 0.000000000 0.000000000 0.000000000  0.000000000  0.000000000
+[11,] 2.000000000 4.000000000 6.000000000 8.000000000 10.000000000 12.000000000
+              [,7]         [,8]         [,9]        [,10]
+ [1,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [2,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [3,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [4,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [5,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [6,]  0.000000000  0.000000000  0.000000000  0.000000000
+ [7,]  0.003162278  0.000000000  0.000000000  0.000000000
+ [8,]  0.000000000  0.003162278  0.000000000  0.000000000
+ [9,]  0.000000000  0.000000000  0.003162278  0.000000000
+[10,]  0.000000000  0.000000000  0.000000000  0.003162278
+[11,] 14.000000000 16.000000000 18.000000000 20.000000000
+
+> cat("grad from Jacobian:")
+grad from Jacobian:
+> grj <- 2*as.vector(t(JJ)%*%fr)
+
+> print(grj)
+ [1]  1539  3078  4617  6156  7695  9234 10773 12312 13851 15390
+
+> library(minpack.lm)
+
+> library(optimx)
+
+> nvals <- c(50, 100, 150, 200, 250, 300)
+
+> #  nvals <- c(2, 10, 25, 50)
+> nn<-length(nvals)
+
+> TT <- matrix(NA, nrow=nn, ncol=4)
+
+> MM <- TT
+
+> for (i in 1:nn){
++ n <- nvals[i]
++ TT[i, 1] <- n
++ MM[i, 1] <- n
++ x0<-as.numeric(1:n)
++ tnlsr10<-bench::mark(nlsr10 = nlsr::nlfb(start = x0, resfn  .... [TRUNCATED] 
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>
+1 nlsr10      14.7   15.0      63.1    15.2MB     27.1     7     3       111. <nlsr>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result  
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>  
+1 nlslm10     7.90   7.95      125.    3.25MB     13.9     9     1       71.8 <nls.lm>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result      
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>      
+1 cg10        3.35   3.40      212.     497KB     23.5     9     1       42.5 <named list>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>
+1 nlsr10      92.1   96.7      9.49    69.9MB     16.1    10    17      1054. <nlsr>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result  
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>  
+1 nlslm10     39.7   40.1      24.8    12.6MB     10.6     7     3       282. <nls.lm>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result      
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>      
+1 cg10        94.2   96.4      10.4    18.2MB     6.92     6     4       578. <named list>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>
+1 nlsr10      282.   319.      2.91     156MB     13.4    10    46      3432. <nlsr>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result  
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>  
+1 nlslm10     126.   128.      7.26    28.2MB     8.71    10    12      1377. <nls.lm>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result      
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>      
+1 cg10        6.04   6.14      134.    1.13MB        0    10     0       74.9 <named list>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>
+1 nlsr10      596.   605.      1.61     259MB     14.5    10    90      6228. <nlsr>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result  
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>  
+1 nlslm10     285.   290.      3.46      50MB     5.88    10    17      2893. <nls.lm>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result      
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>      
+1 cg10        5.82   6.11      132.    1.19MB     14.7     9     1       68.0 <named list>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>
+1 nlsr10     1300.  1374.     0.728     471MB     12.3    10   169     13742. <nlsr>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result  
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>  
+1 nlslm10     527.   532.      1.88    77.9MB     5.45    10    29      5324. <nls.lm>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result      
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>      
+1 cg10        183.   183.      5.47    39.2MB     49.3     1     9       183. <named list>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>
+1 nlsr10     2662.  2732.     0.365     818MB     8.02    10   220     27416. <nlsr>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result  
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>  
+1 nlslm10     870.   875.      1.14     112MB     3.19    10    28      8764. <nls.lm>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+# A tibble: 1 × 13
+  expression   min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result      
+  <bch:expr> <dbl>  <dbl>     <dbl> <bch:byt>    <dbl> <int> <dbl>      <dbl> <list>      
+1 cg10        11.6   12.0      74.7    2.44MB     8.30     9     1       120. <named list>
+# ℹ 3 more variables: memory <list>, time <list>, gc <list>
+
+> colnames(TT)<-c("n","nlfb","nls.lm","Rcgmin")
+
+> colnames(MM)<-c("n","nlfb","nls.lm","Rcgmin")
+
+## On HP21 (Ryzen 7, 16GB)
+
+> print(TT)  # median times
+       n       nlfb    nls.lm     Rcgmin
+[1,]  50   15.02918   7.95267   3.399167
+[2,] 100   96.74012  40.05409  96.431357
+[3,] 150  319.44073 127.58728   6.143749
+[4,] 200  605.29889 290.00972   6.109964
+[5,] 250 1373.51954 532.36149 182.678074
+[6,] 300 2732.06920 874.97992  12.007694
+
+> print(MM)  # minimum times
+       n       nlfb     nls.lm     Rcgmin
+[1,]  50   14.69422   7.895639   3.345110
+[2,] 100   92.10252  39.718163  94.155118
+[3,] 150  281.62738 125.972404   6.042982
+[4,] 200  595.52840 284.833648   5.816762
+[5,] 250 1300.00651 526.563457 182.678074
+[6,] 300 2662.15242 869.606156  11.600069
+
+> sink()

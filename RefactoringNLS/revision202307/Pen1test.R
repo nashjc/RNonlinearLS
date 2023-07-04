@@ -66,11 +66,12 @@ cat("grad from Jacobian:")
 grj <- 2*as.vector(t(JJ)%*%fr)
 print(grj)
 
-
+library(nlsr)
 library(minpack.lm)
 library(optimx)
 
-nvals <- c(10, 25, 50, 100, 250, 500)
+nvals <- c(50, 100, 150, 200, 250, 300)
+#  nvals <- c(2, 10, 25, 50)
 nn<-length(nvals)
 TT <- matrix(NA, nrow=nn, ncol=4)
 MM <- TT
@@ -79,20 +80,21 @@ n <- nvals[i]
 TT[i, 1] <- n
 MM[i, 1] <- n
 x0<-as.numeric(1:n)
-tnlsr10<-bench::mark(nlsr10 = nlsr::nlfb(start = x0, resfn = fres, jacfn = fjac),  iterations = 10, time_unit='ms')
-print(tnlsr10)
+tnlsr10<-bench::mark(nlsr10 <- nlsr::nlfb(start = x0, resfn = fres, jacfn = fjac),  iterations = 10, time_unit='ms')
+pshort(nlsr10)
 TT[i,2] <- tnlsr10$median
 MM[i,2] <- tnlsr10$min
-tnlslm10<-bench::mark(nlslm10 = nls.lm(par = x0, fn = fres, jac = fjac),  iterations = 10, time_unit='ms')
-print(tnlslm10)
+tnlslm10<-bench::mark(nlslm10 <- nls.lm(par = x0, fn = fres, jac = fjac),  iterations = 10, time_unit='ms')
+pnlm0(nlslm10)
 TT[i,3] <- tnlslm10$median
 MM[i,3] <- tnlslm10$min
-tcg10<-bench::mark(cg10 = optimr(par = x0, fn = ffn, gr = fgr, method="Rcgmin"),  iterations = 10, time_unit='ms')
-print(tcg10)
+tcg10<-bench::mark(cg10 <- optimr(par = x0, fn = ffn, gr = fgr, method="Rcgmin"),  iterations = 10, time_unit='ms')
+proptimr(cg10)
 TT[i,4] <- tcg10$median
 MM[i,4] <- tcg10$min
 }
-
+colnames(TT)<-c("n","nlfb","nls.lm","Rcgmin")
+colnames(MM)<-c("n","nlfb","nls.lm","Rcgmin")
 print(TT)
 print(MM)
 sink()
