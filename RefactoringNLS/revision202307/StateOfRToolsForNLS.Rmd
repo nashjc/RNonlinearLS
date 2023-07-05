@@ -809,11 +809,15 @@ traditional "standard errors" are generally taken to imply symmetric intervals a
 the point estimate in which the parameter may be expected to be found with some
 probability under certain assumptions.
 Bounds change those assumptions. Hence, `nlsr::nlxb()` does not compute standard
-errors nor their derived statistics when bounds are active.
+errors nor their derived statistics when bounds are active. Transformations to
+implicitly enforce bounds avoid this issue, but at the cost of changing the 
+form of the model.
 
 ### Fixed parameters (masks)
 
-Let us try to fix (mask) the first parameter in the first two example problems.
+Let us try to fix (mask) the first parameter in the first two example problems. We might
+want to do this if it is considered that the asymptote is known from external sources,
+but we wish later to have it available to be estimated.
 
 ```{r ex10m, echo=TRUE}
 # Hobbsmaskx.R -- masks with formula specification of the problem
@@ -887,7 +891,10 @@ One of the referees pointed out that nlsr::nlfb() is quite slow on a
 "large" case of the Penalty 1 test problem of @More1981TUO. We agree. 
 However, we note that problems in large numbers of parameters
 will be problematic for Gauss-Newton methods because they create large
-computational matrices for the Jacobian or its inner product. The method
+computational matrices for the Jacobian or its inner product. This was
+confirmed by comparing `nlsr::nlfb()` and `minpack.lm::nls.lm()` on
+the Penalty 1 problem of various sizes, where the latter, which is 
+compiled Fortran internally, was moderately faster. However, the method
 "Rcgmin" from package `optimx` (@p-optimx) can be much 
 faster, despite being entirely written in R, and is a much more
 reliable conjugate gradient minimizer than method "CG" of `optim()`. One
@@ -952,7 +959,9 @@ name could
 be confusing.) Despite this, the model frame is used within the function code in 
 the form of the object
 `mf`. We feel that users could benefit from more extensive documentation and 
-examples of its use since it is used to implement features like `subset`.
+examples of its use since it is used to implement features like `subset`. Moreover,
+it provides access to resources that may be important in further calculations on
+models.
 
 ## Weights on observations
 
@@ -1017,7 +1026,7 @@ unfortunate for users.
 If `nls()` reaches a point where it cannot continue but has not found a point 
 where the relative offset convergence criterion is met, it may simply exit,
 especially if a "singular gradient" (singular Jacobian) is found. However, 
-this may occur AFTER the function has made considerable progress in reducing 
+this may occur **after** considerable progress has been made in reducing 
 the sum of squared residuals. 
 <!-- An example is to be found in the `Tetra_1.R` example from the `nlsCompare` package. -->
 <!-- ?? AB: Are we far enough along to include reference? -->
