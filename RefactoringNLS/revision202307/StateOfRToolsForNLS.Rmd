@@ -108,8 +108,6 @@ GitHub (https://github.com) and Gitlab (https://about.gitlab.com).
 
 ## Some other CRAN packages for nonlinear modeling
 
-?? check wording
-
 `onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
 is the vertical difference between the dependent variable and the functional
 model. `onls` minimizes the sum of **orthogonal** residuals. The objective is
@@ -232,26 +230,26 @@ Let us consider there are $n$ parameters and $m$ residuals.
 The loss function is 
 $$ S(p) = r' r = \sum_{i=1}^m { r_i^2 }$$
 The gradient of $S(p)$ is
-$$ 2 * J' r$$
+$$ g = 2 * J' r$$
 where the Jacobian $J$ is given by elements
 $$ J_{i,j} = \partial r_i / \partial p_j $$
 and the Hessian is defined by elements
 $$ H_{i,j} = \partial ^2 S(p) / {\partial p_i \partial p_j} $$
 If we expand the Hessian for nonlinear least squares problems, we find
-$$  H_{i,j} = \sum_{k = 1}^m{ J_{k,i} J_{k,j}}  + \sum_{k = 1}^m {r_k * \partial{r_k}/{\partial p_i \partial p_j}}$$
+$$  H_{i,j}/2 = \sum_{k = 1}^m{ J_{k,i} J_{k,j}}  + \sum_{k = 1}^m {r_k * \partial{r_k}/{\partial p_i \partial p_j}}$$
 Let us use $D_{i,j}$ for the elements of the second term of this expression.
 What is generally called **Newton's method** for function minimization tries
 to set the gradient to zero (to find a stationary point of the function $S(p)$).
 This leads to **Newton's equation**
-$$ H \delta = -g $$
+$$ H \delta  = -g $$
 Given a set of parameters $p$, we solve this equation for $\delta$, adjust $p$
 to $p + \delta$ and iterate, hopefully to converge on a solution. 
 Applying this to a sum of squares problem gives
-$$ H \delta = (J'J + D) \delta = - J' r$$
+$$ H \delta / 2 = (J'J + D) \delta = - J' r$$
 In this expression, only the elements of $D$ have second partial derivatives. 
 Gauss, attempting to model planetary orbits, had small residuals, and noted
 that these multiplied the second partial derivatives of $r$, so he approximated
-$$ H \approx J' J$$
+$$ H / 2 \approx J' J$$
 by assuming $D \approx 0$. This results in the Gauss-Newton method where we
 solve 
 $$ J' J \delta = - J' r$$
@@ -307,7 +305,9 @@ would avoid a singular Jacobian because $b$ and $d$ were equal in value.
 Program modifications to give a sequence like  1.0, 1.1, 1.2, 1.3 for the four 
 parameters are fairly obvious. 
 
-It is also possible to provide R functions for the residual and Jacobian. 
+It is also possible to provide R functions for the residual and Jacobian.
+`nls()` is not well-suited to using such a formulation, but `nlsr::nlfb()`
+and `minpack.lm::nls.lm()` work specifically with such a formulation.
 This is usually more work for the user if the formula setup is possible.
 To illustrate, we show the functions for the unscaled 3 parameter logistic.
 
@@ -341,9 +341,9 @@ Using a formula specification was a principal advantage made
 with `nls()` when it became available in S sometime in the 1980s. It uses a
 Gauss-Newton (i.e., unstabilized) iteration with a step reduction line
 search. This works very efficiently as long as $J$ is not ill-conditioned.
-Below we see `nls()` does poorly on the example problem. To save page space,
-we use 1-line result display functions from package `nlsr`, namely `pnls0()` 
-and `pshort()`.
+Below we see the default `nls()` algorithm does poorly on the example problem. 
+To save page space, we use 1-line result display functions from package `nlsr`, 
+namely `pnls()` and `pshort()`.
 
 ```{r shortforms, echo=FALSE}
 library(nlsr)
@@ -357,20 +357,22 @@ tnls1<-try(nls(formula=frmt, start=stt1, data=weeddf))
 ```
 
 Here we see the infamous "singular gradient" termination message of `nls()`. 
+Technically it is the Jacobian that is singular. A
+referee noted that R in this case cannot distinguish scalar and vector functions,
+which would yield partial derivatives that are a gradient or Jacobian respectively.
 
-However, `nls()` also offers the option of using the "port" library algorithm
+`nls()` also offers the option of using the "port" library algorithm
 choice (@FoxHallSchryer1978). There is a warning in the `nls()` documentation that
 this "appears unfinished", but it is successful in solving all three cases.
 
 ```{r ex02nlsport}
 unls1p<-try(nls(formula=frmu, start=stu1, data=weeddf, algorithm="port"))
-pnls0(unls1p)
+pnls(unls1p)
 snls1p<-try(nls(formula=frms, start=sts1, data=weeddf, algorithm="port"))
-pnls0(snls1p)
+pnls(snls1p)
 tnls1p<-try(nls(formula=frmt, start=stt1, data=weeddf, algorithm="port"))
-pnls0(tnls1p)
+pnls(tnls1p)
 ```
-
 
 
 ### Solution attempts with nlsr
@@ -396,11 +398,11 @@ whose row they appear; they are a property of the whole problem.
 
 ```{r ex02minpack}
 unlm1<-try(nlsLM(formula=frmu, start=stu1, data=weeddf))
-pnls0(unlm1)  # Short form of output
+pnls(unlm1)  # Short form of output
 snlm1<-try(nlsLM(formula=frms, start=sts1, data=weeddf))
-pnls0(snlm1)
+pnls(snlm1)
 tnlm1<-try(nlsLM(formula=frmt, start=stt1, data=weeddf))
-pnls0(tnlm1) # short form to give sum of squares, else use summary(tnlm1)
+pnls(tnlm1) # short form to give sum of squares, else use summary(tnlm1)
 ```
 
 ### Solution attempts with gslnls
@@ -408,21 +410,25 @@ pnls0(tnlm1) # short form to give sum of squares, else use summary(tnlm1)
 ```{r ex02gslnls}
 library(gslnls)
 ugslnls1<-try(gsl_nls(fn = frmu, data = weeddf,  start = stu1))
-pnls0(ugslnls1) # to get sum of squares
+pnls(ugslnls1) # to get sum of squares
 sgslnls1<-try(gsl_nls(fn = frms, data = weeddf,  start = sts1))
-pnls0(sgslnls1) # Use summary() to get display
+pnls(sgslnls1) # Use summary() to get display
 tgslnls1<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1))
-pnls0(tgslnls1) 
+pnls(tgslnls1) 
 ## Other algorithms
 ## tgslnls1a<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="lmaccel"))
-## pnls0(tgslnls1a) 
+## pnls(tgslnls1a) 
 ## tgslnls1d<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="dogleg"))
-## pnls0(tgslnls1d) 
+## pnls(tgslnls1d) 
 ## tgslnls1dd<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="ddogleg"))
-## pnls0(tgslnls1dd) 
+## pnls(tgslnls1dd) 
 ## tgslnls1s2<-try(gsl_nls(fn = frmt, data = weeddf,  start = stt1, algorithm="subspace2D"))
-## pnls0(tgslnls1s2) 
+## pnls(tgslnls1s2) 
 ```
+
+While default `gsl_nls()` gives much the same results as `nlsLM()`, uncommenting the
+calls to the alternative algorithms shows it can get the global minimum with any of
+these choices.
 
 ### Comparison notes for formula-setup solutions
 
@@ -445,7 +451,7 @@ very large sum of squares, which may suggest that these programs have failed.
 Since `nls()`, `nlsLM()`, and `gsl_nls()` do not 
 offer singular values, we need to extract the Jacobian and compute its
 singular values. The following script shows how to do this, using as Jacobian 
-what is called the `gradient` element in the returned solution for these solvers.
+the `gradient` element in the returned solution for these solvers.
 
 ```{r ex04singval, echo=TRUE, eval=TRUE}  
 # for nlsLM
@@ -483,13 +489,13 @@ badstart<-nlxb(formula=frmt, start=stspecial, data=weeddf)
 print(badstart)
 ```
 
-We consider the code inside package `nlsr` to be competently coded, with
-the advantage over `nls()` of the Levenberg-Marquardt
-stabilization in common with `minpack.lm` and `glsnls`. However, our principal 
-message is that we obtain diagnostic information in the form of the singular values
-of the Jacobian that allow us to try alternative starts, algorithms or programs in 
-cases where there are indications of early termination.
-
+We consider the code inside package `nlsr` to be competently coded, 
+with the advantage over `nls()` of the Levenberg-Marquardt stabilization 
+in common with `minpack.lm` and `glsnls`. The success rate is high,
+but `nlsr` has its premature terminations too. Our principal message is that we obtain 
+diagnostic information in the form of the singular values of the Jacobian 
+that allow us to try alternative starts, algorithms or programs in cases 
+where there are indications of early termination.
 
 ## Functional specification of problems
 
@@ -514,18 +520,18 @@ a function to define the residual. Note that `gsl_nls()` requires
 a vector `y` that is the expected value of what we have called the
 residual, but in this case, is actually the model. `gsl_nls` uses 
 a numerical approximation for the Jacobian if the argument `jac` 
-is missing. Note function `nlsr::pnls0()` for a 1-line display of
-the results of `minpack.lm::nls.lm()`.
+is missing. Note function `nlsr::pnls()` for a 1-line display of
+the results.
 
 ```{r exhobbsfn, eval=TRUE}
 hobnlfb<-nlfb(start=stu1, resfn=hobbs.res, jacfn=hobbs.jac)
 pshort(hobnlfb) # use print(hobnlfb) for more detail
 hobnlm<-nls.lm(par=stu1, fn=hobbs.res, jac=hobbs.jac)
-pnls0(hobnlm)  
+pnls(hobnlm)  
 hobgsln<-gsl_nls(start=stu1, fn=hobbs.res, y=rep(0,12))
-pnls0(hobgsln)
+pnls(hobgsln)
 hobgsl<-gsl_nls(start=stu1, fn=hobbs.res, y=rep(0,12), jac=hobbs.jac)
-pnls0(hobgsl) # using analytic Jacobian
+pnls(hobgsl) # using analytic Jacobian
 ```
 
 ## Design goals, termination tests, and output objects
@@ -535,7 +541,8 @@ by `nls()`, `nlsLM()`, and `gsl_nls()`. Package `nlsr` emphasizes the solution
 of the nonlinear least squares problem rather than the estimation of a nonlinear 
 model that fits or explains the data. The object of class `nls` allows for 
 a number of specialized modeling and diagnostic extensions. For compatibility, 
-the `nlsr` package has the function `wrapnlsr()`, for which `nlsr()` is an alias. 
+the `nlsr` package has the function `wrapnlsr()`, for which `nlsr()` is an alias,
+which is intended for problems specified as formulas.
 This uses `nlxb()` to find good parameters, then calls `nls()` to return the class 
 `nls` object. Unless particular modeling features are needed, the use of 
 `wrapnlsr()` is unnecessary and wasteful of resources.
@@ -563,11 +570,11 @@ small number -- 1.0 is a reasonable choice -- allows small-residual problems
 (i.e., near-exact fits) to be dealt with easily. We call this the
 **safeguarded relative offset convergence criterion**, and it has been in `nlsr`
 since it was introduced. The default value 
-gives the legacy behaviour. This improvement has been in the R distributed code 
+gives `nls()` its legacy behaviour. This improvement has been in the R distributed code 
 since version 4.1.0.
 
 Additional termination tests can be used. `nlsr` has a **small sum of 
-squares** test (**smallsstest**) that compares the latest evaluated sum of squared
+squares** test (`smallsstest`) that compares the latest evaluated sum of squared
 (weighted) residuals to `e4` times the initial sum of squares, where
 `e4 <- (100*.Machine$double.eps)^4` is approximately 2.43e-55.
 
@@ -591,8 +598,9 @@ via the syntax:
 ```
 eval(parse(text=result$data))
 ```
-However, a better approach is to make the call to `nls()` with `model=TRUE`, 
-which returns an element 
+However, since the evaluating environment might not exist (thanks to a referee
+for noting this possibility) a better approach is to make the call to `nls()` 
+with `model=TRUE`, which returns an element 
 `model` which contains the data, and we can list its contents using:
 ```
 ls(result$model)
@@ -618,7 +626,7 @@ lead to different consequences for performance and how features are
 provided. `nlsr` has antecedents in the methods of @cnm79, where storage for
 data and programs was at a ridiculous premium in the small computers of the era.
 Thus the code in `nlsr` is likely of value for workers to copy and modify
-for customized tools.
+for customized tools. Coding in R is intended to support such uses.
 
 ## Jacobian calculation
 
@@ -632,7 +640,7 @@ Package `nlsr` provides, via appropriate calling syntax, four numeric approximat
 options for the Jacobian, with a further control `ndstep` for the size of the
 step used in the approximation. 
 
-Using the "gradient" attribute of the output of the Jacobian function to hold
+Using the `gradient` attribute of the output of the Jacobian function to hold
 the Jacobian matrix lets us embed this in the **residual** function as well,
 so that the call to `nlsr::nlfb()` can be made with the same name used for 
 both residual and Jacobian function arguments. This programming trick saves a 
@@ -684,12 +692,12 @@ of `selfStart` models, but their construction is non-trivial. A number
 of such models are included with base R in `./src/library/stats/R/zzModels.R`,
 with package `nlraa` (@MiguezNLRAA2021) providing a richer set. 
 There are also some in the now-archived package `NRAIA`.
-These provide the Jacobian in the "gradient" attribute of the "one-sided" formula
+These provide the Jacobian in the `gradient` attribute of the "one-sided" formula
 that defines each model, and these Jacobians are often the analytic forms. 
 
 The `nls()` function, after
 computing the "right-hand side" or `rhs` of the residual, checks to see if the
-"gradient" attribute is defined, otherwise using `numericDeriv()` to compute a 
+`gradient` attribute is defined, otherwise using `numericDeriv()` to compute a 
 Jacobian into that attribute. This code is within the `nlsModel()` or
 `nlsModel.plinear()` functions. The use of analytic Jacobians
 almost certainly contributes to the good performance of `nls()` on `selfStart` 
@@ -707,10 +715,10 @@ is intended to solve problem **Logistic3T** above.  When this function is used
 via `getInitial()` to  find
 starting values, it actually calls `nls()` with the 'plinear' algorithm 
 and finds a (full) solution. It then passes the solution coefficients to the default 
-algorithm unnecessarily. Moreover, the implicit double call is, in our view, prone to creating 
-errors in code maintenance. 
-To provide simpler starting parameters, the function `SSlogisJN`
-is now part of the package `nlsr`, but is most useful for `nls()`.
+algorithm which converges in one iteration and builds the standard output. 
+We found the implicit double call a challenge to unravel. 
+A more conventional approach to starting parameters, following the lead of @Ratkowsky1983, 
+is in the function `SSlogisJN`, now part of the package `nlsr`.
 
 Users may also want to profit from the Jacobian code of `selfStart` models 
 but supply explicit starting values other than those suggested by `getInitial()`.
@@ -723,7 +731,7 @@ for the `nlxb()` call.
 <!-- tssx <-try(nls(weed ~ SSlogis(tt, Asym=1, xmid=1, scale=1),  data=weeddf)) -->
 <!-- tssx <-try(nls(weed ~ SSlogis(tt, Asym, xmid, scale),  data=weeddf))summary(tssx) -->
 
-We note that the analytic expressions for the Jacobian ("gradient") in the `SSLogis` 
+We note that the analytic expressions for the Jacobian (`gradient`) in the `SSLogis` 
 function and others save quantities by default in "hidden" variables, i.e., with 
 names preceded by ".".  A referee has indicated this behaviour is to avoid name 
 conflicts with user quantities. Hidden variables are not displayed by the `ls()` 
@@ -780,14 +788,14 @@ specify where the solution will be.
 # Start MUST be feasible i.e. on or within bounds
 anlshob1b <- nls(frms, start=sts1, data=weeddf, lower=c(0,0,0),
              upper=c(2,6,3), algorithm='port')
-pnls0(anlshob1b) #  check the answer (short form)
+pnls(anlshob1b) #  check the answer (short form)
 # nlsLM seems not to work with bounds in this example
 anlsLM1b <- nlsLM(frms, start=sts1, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
-pnls0(anlsLM1b)
+pnls(anlsLM1b)
 # also no warning if starting out of bounds, but gets a good answer!!
 st4<-c(c1=4, c2=4, c3=4)
 anlsLMob <- nlsLM(frms, start=st4, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
-pnls0(anlsLMob)
+pnls(anlsLMob)
 # Try nlsr::nlxb()
 anlx1b <- nlxb(frms, start=sts1, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
 pshort(anlx1b)
@@ -818,20 +826,20 @@ anxbmsk1 <- try(nlxb(frmu, start=stu, data=weeddf, lower=c(200,0,0),
 print(anxbmsk1)
 anlM1 <- try(nlsLM(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
 			upper=c(200, 60, 3), trace=traceval))
-pnls0(anlM1)
+pnls(anlM1)
 anlsmsk1 <- try(nls(frmu, start=stu, data=weeddf, lower=c(200,0,0), 
 		upper=c(200, 60, 3),  algorithm="port", trace=traceval))
-pnls0(anlsmsk1)
+pnls(anlsmsk1)
 # Hobbs scaled problem with bounds, formula specification
 anlxmsks1 <- nlxb(frms, start=sts, data=weeddf, lower=c(2,0,0),
                   upper=c(2,6,30))
 print(anlxmsks1)
 anlshmsk1 <- nls(frms, start=sts, trace=traceval, data=weeddf, lower=c(2,0,0),
              upper=c(2,6,30), algorithm='port')
-pnls0(anlshmsk1)
+pnls(anlshmsk1)
 anlsLMmsks1 <- nlsLM(frms, start=sts, data=weeddf, lower=c(2,0,0),
                  upper=c(2,6,30))
-pnls0(anlsLMmsks1)
+pnls(anlsLMmsks1)
 
 # Test with all parameters masked
 anlxmskall<- try(nlxb(frms, start=sts, data=weeddf, lower=sts, upper=sts))
@@ -877,14 +885,14 @@ which can cause more iterations to be used.
 
 One of the referees pointed out that nlsr::nlfb() is quite slow on a
 "large" case of the Penalty 1 test problem of @More1981TUO. We agree. 
-However, we would suggest that problems in large numbers of parameters
+However, we note that problems in large numbers of parameters
 will be problematic for Gauss-Newton methods because they create large
 computational matrices for the Jacobian or its inner product. The method
-"Rcgmin" from package `optimx` (@p-optimx) can be orders of magnitude
-faster, but is entirely written in R. Note that "Rcgmin" is a much more
+"Rcgmin" from package `optimx` (@p-optimx) can be much 
+faster, despite being entirely written in R, and is a much more
 reliable conjugate gradient minimizer than method "CG" of `optim()`. One
-of us created both, but now deprecates the latter. It should be noted
-that timings of CG methods are more sensitive to small differences in
+of us created both, but now deprecates the latter. 
+Timings of CG methods are more sensitive to small differences in
 setup and arithmetic than Gauss-Newton methods.
 
 ## Data sources for problems

@@ -8,6 +8,11 @@ reports and edited our responses to comments under headings
 where X indicates the referee (1 or 2) and YY is an identifying
 number.
 
+Response 0:01  We noticed a factor of 2 error in the equations
+    in the discussion of the background to methods and have
+    (hopefully!) corrected them. 
+
+
 Review 1
 
 Referee report of “A Comparison of R Tools for Nonlinear Least
@@ -108,6 +113,9 @@ scalar is represented as a vector of length 1. Even if it were desirable
 to distinguish between scalars and vectors, internally it is impossible 
 to determine if a vector of length 1 is intended to be a scalar or to 
 be a vector that just happens to have length 1.
+
+Response 1:07 Thanks for explaining this so clearly. We have added a
+    note in section "Estimation of models specified as formulas".
 
 The legacy is also the reason that initial data manipulation, such as 
 evaluating a subset or na.action, is performed by non-standard evaluation 
@@ -320,7 +328,11 @@ always declare convergence immediately.
 Response 1:03 Can we have a pointer to the documentation of the immediate 
       convergence? We have checked the documentation ?SSlogis, as well as 
       selfStart and getInitial, but do not see a mention in R 4.3.1.
-      ??Interim response -- 
+      
+      Interim response: We have reworded the paragraph starting
+	"In considering `selfStart` models,"
+      to reflect the comments of the referee and to provide a reference
+      to the source of the starting approximations we used in SSlogisJN().
 
 
 Also in that section it is claimed that deriv creates “hidden variables” 
@@ -431,21 +443,18 @@ Response 2:04 We have added a paragraph
 	We consider the code inside package `nlsr` to be competently coded, 
 	with the advantage over `nls()` of the Levenberg-Marquardt stabilization 
 	in common with `minpack.lm` and `glsnls`. The success rate is high,
-        but is not perfect. However, our principal message is that we obtain 
-        diagnostic information in the form of the singular values of the Jacobian 
-	that allow us to try alternative starts, algorithms or programs in cases 
-	where there are indications of early termination.
+        but `nlsr` has its premature terminations failures too. Our principal 
+        message is that we obtain diagnostic information in the form of the 
+        singular values of the Jacobian that allow us to try alternative starts, 
+        algorithms or programs in cases where there are indications of early termination.
 
    We appreciate the pointers on other examples. However, a substantive comparison
    would make for a very long and likely boring paper. The BoxBOD example is, in
    many ways, similar to the Hobbs example in its nasty characteristics. 
-   Some years ago, one of us created a package NISTopt to use the NIST examples 
-   on function minimization tools (as per package NISTnls). See, for example, 
-   https://rdrr.io/rforge/NISTopt/ 
    Experiences with these problems have led to an opinion (i.e., open to debate)
-   as to the usefulness of such extreme cases. They underline a point of view that
-   good diagnostics are more helpful than a "usually succeeds" level of reliability.
-
+   as to the usefulness of such extreme cases in measuring performance. We want 
+   to underline a point of view that good diagnostics are more helpful than a 
+   "usually succeeds" level of reliability.
 
 The section Returned results of nls() and other tools discusses the complexity 
 of S3-objects of class nls, illustrated by the retrieval of the input data 
@@ -481,7 +490,10 @@ Response 2:06 The referee's comments point out that we have not explained
     and minimizing a nonlinear sum of squares. We have added a short 
     exposition using the Rosenbrock problem. The difference in context
     is important and we thank the referee, as other readers would surely
-    have had similar concerns.
+    have had similar concerns. We have also added a comment to the 
+    "Problem setup" section to note that `nls()` is not suited to this
+    approach. Also a minor amendment to indicate `wrapnlsr()` is intended
+    for problems specified by formula.
 
 4. The section Philosophical considerations hints at the challenge of 
 performing inference when parameter bound-constraints are involved in 
@@ -542,9 +554,30 @@ Response 2:08  In that we are in general agreement with this comment, we have ad
     The referee's commends ant Illustrating Code led us to try the Pen1 problem
     (it is part of the funconstrain package https://github.com/jlmelville/funconstrain
     to which one of us recently added Hessian code). This showed that the R code
-    of nlsr::nlfb() was sometimes faster than the compiled Fortran of minpack.lm::nls.lm.
-    Moreover, the all-R code optimx::Rcgmin was much faster for larger problems --
-    it does not build a matrix! 
+    of nlsr::nlfb() was generally slower by a small factor than the compiled 
+    Fortran of minpack.lm::nls.lm. However, the all-R code optimx::Rcgmin was 
+    much faster for larger problems -- it does not build a matrix! 
+
+	## On HP21 (Ryzen 7, 16GB)
+
+	> print(TT)  # median times
+	       n       nlfb    nls.lm     Rcgmin
+	[1,]  50   15.02918   7.95267   3.399167
+	[2,] 100   96.74012  40.05409  96.431357
+	[3,] 150  319.44073 127.58728   6.143749
+	[4,] 200  605.29889 290.00972   6.109964
+	[5,] 250 1373.51954 532.36149 182.678074
+	[6,] 300 2732.06920 874.97992  12.007694
+
+	> print(MM)  # minimum times
+	       n       nlfb     nls.lm     Rcgmin
+	[1,]  50   14.69422   7.895639   3.345110
+	[2,] 100   92.10252  39.718163  94.155118
+	[3,] 150  281.62738 125.972404   6.042982
+	[4,] 200  595.52840 284.833648   5.816762
+	[5,] 250 1300.00651 526.563457 182.678074
+	[6,] 300 2662.15242 869.606156  11.600069
+
 
 
 Minor comments

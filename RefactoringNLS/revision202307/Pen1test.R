@@ -1,5 +1,5 @@
 # Penalty function I [More, Garbow, Hillstrom 1981]
-sink("Pen1Times.txt", split=TRUE)
+# sink("Pen1Times.txt", split=TRUE)
 alpha <- 1e-5
 a <- 1e-5
 sqrta <- sqrt(alpha)
@@ -85,7 +85,7 @@ pshort(nlsr10)
 TT[i,2] <- tnlsr10$median
 MM[i,2] <- tnlsr10$min
 tnlslm10<-bench::mark(nlslm10 <- nls.lm(par = x0, fn = fres, jac = fjac),  iterations = 10, time_unit='ms')
-pnlm0(nlslm10)
+pnlslm(nlslm10)
 TT[i,3] <- tnlslm10$median
 MM[i,3] <- tnlslm10$min
 tcg10<-bench::mark(cg10 <- optimr(par = x0, fn = ffn, gr = fgr, method="Rcgmin"),  iterations = 10, time_unit='ms')
