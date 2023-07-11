@@ -1,3 +1,36 @@
+Arkajyoti responses -- delete before submission:
+
+I have read through your comments on the suggestions of the two referees and I agree with them. As usual, the document is well-organized, methodical, and nice way to check all the boxes.
+
+For “Response 2:10“, I don’t think any link would be a good choice based on the referees’ concern. An alternative article (maybe the reference manual or vignette of the corresponding package  in question, like for unit testing) may serve as a viable replacement.
+    Agree that no link is likely to be satisfactory. Modified to suggest search to find
+    articles.
+
+Some comments:
+
+    Maybe cite your nlsr package, as “our” nlsr seems confusing? -- DONE
+
+    There is some overlap between the Abstract and scope of our comparison, and I suggest making the 
+        latter more succinct (for example the paragraph before TOOLS CONSIDERED)?
+        DONE -- simplified.
+
+    Maybe talking about referees’ suggestions can go in the acknowledgements? DONE
+
+    I suggest common website links, like github.com, gitlab.com and cran be removed?
+        Agreed. 
+
+    “Some other CRAN  packages…” can go later, after the main material of the paper?
+        DONE -- before unit tests paragraph.
+
+    Documentation and resources seem tangential to the main material and maybe removed?
+        DONE -- this was when we were talking more about the GSoC project.
+
+    Maybe add 5, 6 above in a separate r blog post or the main article’s supplementary article?
+       ??? What supplementary article? If we want to reference blog posts, they should
+       be available now. Perhaps set aside and focus on getting this published. Thoughts?
+
+  
+=========================================================================
 Revew Responses to first review of R Journal paper 2023-15.
 
 We have created a text file with the content of both referees'
@@ -412,7 +445,12 @@ Response 2:02
 
 Both referees have requested revisions to the introduction, and we hope that 
 we have addressed the comments, essentially by clarifying the goals and how
-they arose.
+they arose. In reconsidering the focus of the article, we have removed the 
+"Documentation and Resources" section that was primarily reporting outputs 
+of our Google Summer of Code project. We have also moved the section 
+"Some other CRAN packages for nonlinear modeling" towards the end of the
+paper.
+
 
 Detailed comments
 
@@ -551,7 +589,7 @@ Response 2:08  In that we are in general agreement with this comment, we have ad
     some clarification to advise that it is worthwhile being aware of how long
     calculations are taking.
 
-    The referee's commends ant Illustrating Code led us to try the Pen1 problem
+    The referee's commends and Illustrating Code led us to try the Pen1 problem
     (it is part of the funconstrain package https://github.com/jlmelville/funconstrain
     to which one of us recently added Hessian code). This showed that the R code
     of nlsr::nlfb() was generally slower by a small factor than the compiled 
@@ -578,6 +616,7 @@ Response 2:08  In that we are in general agreement with this comment, we have ad
 	[5,] 250 1300.00651 526.563457 182.678074
 	[6,] 300 2662.15242 869.606156  11.600069
 
+    Pen1test.R is appended at the bottom of this file.
 
 
 Minor comments
@@ -591,9 +630,10 @@ Response 2:09  Fair enought. Done.
 • The link https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211 (as well 
 as the links to github) may be subject to change or become unavailable in the future.
 
-Response 2:10  We are not sure how to answer this, though we agree with the sentiment. Does
-     the editor have any advice?
-
+Response 2:10  We agree with this opinion. 
+    We have replaced the link with 'a number of blog posts found by searching "unit 
+    testing in R"' as there are several possibilities, of which we felt that of 
+    André Müller was helpful.
 
 
 Illustrating code
@@ -659,3 +699,106 @@ References
 Moré, Jorge J., Burton S. Garbow, and Kenneth E. Hillstrom. 1981. “Testing Unconstrained Optimization Software.” ACM Transactions on Mathematical Software 7: 17–41.
 
 
+-----------------------------------------------------------------
+Pen1test.R code
+
+# Penalty function I [More, Garbow, Hillstrom 1981]
+# sink("Pen1Times.txt", split=TRUE)
+alpha <- 1e-5
+a <- 1e-5
+sqrta <- sqrt(alpha)
+### residuals
+fres <- function(x) {
+  c(sqrt(alpha) * (x - 1), sum(x^2) - 0.25)
+}
+### jacobian
+fjac <- function(x) {
+  jj <- rbind(diag(sqrt(alpha), nrow = length(x)), 2 * t(x))
+  attr(jj, "gradient") <- jj
+  jj
+}
+
+ffn = function(par) {
+  n <- length(par)
+  if (n < 1) {
+    stop("Penalty Function I: n must be positive")
+  }
+  fsum <- 0
+  fn1 <- 0
+  for (i in 1:n) {
+    fi <- sqrta * (par[i] - 1)
+    fsum <- fsum + fi * fi
+    fn1 <- fn1 + par[i] * par[i]
+  }
+  
+  fn1 <- fn1 - 0.25
+  fsum <- fsum + fn1 * fn1
+  fsum
+}
+
+fgr = function(par) {
+  n <- length(par)
+  if (n < 1) {
+    stop("Penalty Function I: n must be positive")
+  }
+  grad <- rep(0, n)
+  fn1 <- 0
+  
+  for (i in 1:n) {
+    fi <- sqrta * (par[i] - 1)
+    grad[i] <- grad[i] + 2 * sqrta * fi
+    fn1 <- fn1 + par[i] * par[i]
+  }
+  fn1 <- fn1 - 0.25
+  grad <- grad + 4 * par * fn1
+  grad
+}
+n<-10
+# ftest
+x0<-1:n
+cat("ffn=",ffn(x0),"\n")
+cat("fres:")
+fr<-fres(x0)
+print(fr)
+cat("sum(fr^2)=", sum(fr^2), "\n")
+cat("fgr:")
+print(fgr(x0))
+cat("Jacobian:\n")
+JJ<-fjac(x0)
+print(JJ)
+cat("grad from Jacobian:")
+grj <- 2*as.vector(t(JJ)%*%fr)
+print(grj)
+
+library(nlsr)
+library(minpack.lm)
+library(optimx)
+
+nvals <- c(50, 100, 150, 200, 250, 300)
+#  nvals <- c(2, 10, 25, 50)
+nn<-length(nvals)
+TT <- matrix(NA, nrow=nn, ncol=4)
+MM <- TT
+for (i in 1:nn){
+n <- nvals[i]
+TT[i, 1] <- n
+MM[i, 1] <- n
+x0<-as.numeric(1:n)
+tnlsr10<-bench::mark(nlsr10 <- nlsr::nlfb(start = x0, resfn = fres, jacfn = fjac),  iterations = 10, time_unit='ms')
+pshort(nlsr10)
+TT[i,2] <- tnlsr10$median
+MM[i,2] <- tnlsr10$min
+tnlslm10<-bench::mark(nlslm10 <- nls.lm(par = x0, fn = fres, jac = fjac),  iterations = 10, time_unit='ms')
+pnlslm(nlslm10)
+TT[i,3] <- tnlslm10$median
+MM[i,3] <- tnlslm10$min
+tcg10<-bench::mark(cg10 <- optimr(par = x0, fn = ffn, gr = fgr, method="Rcgmin"),  iterations = 10, time_unit='ms')
+proptimr(cg10)
+TT[i,4] <- tcg10$median
+MM[i,4] <- tcg10$min
+}
+colnames(TT)<-c("n","nlfb","nls.lm","Rcgmin")
+colnames(MM)<-c("n","nlfb","nls.lm","Rcgmin")
+print(TT)
+print(MM)
+sink()
