@@ -8,9 +8,8 @@ author:
 date: "2023-3-2"
 output: 
   pdf_document:
-    pandoc_args: --listings
-    includes:
-      in_header: preamble.tex
+    keep_tex: yes
+    toc: no
   word_document:
     toc: no
 bibliography: ./StateOfRToolsForNLS.bib
@@ -965,7 +964,7 @@ NLSdata <- data.frame(time,conc)
 NLSstart <- c(lrc1 = -2, lrc2 = 0.25, A1 = 150, A2 = 50) # a starting vector (named!)
 NLSformula <- conc ~ A1 * exp(-exp(lrc1) * time) + A2 * exp(-exp(lrc2) * time)
 tryit <- try(nls(NLSformula, data = NLSdata, start = NLSstart, trace = TRUE))
-print(tryit)
+# print(tryit) # gives no information on best sumsquares or model parameters
 ```
 
 Note that the sum of squares has been reduced from 61216 to 1.6211, but 
