@@ -1,0 +1,38 @@
+
+
+Hi Dr. Nash,
+
+ 
+
+I have reviewed the paper and have suggested some changes. Please have a look at them.
+
+ 
+
+Some more comments:
+
+    “Given a set of parameters p, we solve this” – will this be p or m?
+
+    “the Penalty 1 problem of various sizes, where the latter, which is compiled Fortran internally, was moderately”-----will there be an “in” in between?
+
+    The output of “print(tryit)” goes outside the paper’s margin. I suggest modifying the YAML based on this link: https://stackoverflow.com/questions/48642331/rmarkdown-pdf-document-chunk-output-exceeds-page-margins
+    “The Wikipedia article https://en.wikipedia.org/wiki/Total_least_squares presents an overview of some ideas, with references to the literature.” Can this line be removed? One less link to worry about.
+
+ 
+
+I am attaching the paper, with yellow highlights of the comments I mention above for your reference.
+
+ 
+
+Best regards,
+
+Arkajyoti Bhattacharjee
+
+Ph.D Student
+
+Department of Statistics
+
+The Ohio State University
+
+https://arkab-ds.github.io
+
+ 

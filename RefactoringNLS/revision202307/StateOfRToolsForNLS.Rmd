@@ -6,10 +6,11 @@ author:
 - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian
   Institute of Technology, Kanpur}
 date: "2023-3-2"
-output:
+output: 
   pdf_document:
-    keep_tex: yes
-    toc: no
+    pandoc_args: --listings
+    includes:
+      in_header: preamble.tex
   word_document:
     toc: no
 bibliography: ./StateOfRToolsForNLS.bib
@@ -162,7 +163,7 @@ What is generally called **Newton's method** for function minimization tries
 to set the gradient to zero (to find a stationary point of the function $S(p)$).
 This leads to **Newton's equation**
 $$ H \delta  = -g $$
-Given a set of parameters $p$, we solve this equation for $\delta$, adjust $p$
+Given a set of parameters $p$, which provide $H$ and $g$, we solve this equation for $\delta$, adjust $p$
 to $p + \delta$ and iterate, hopefully to converge on a solution. 
 Applying this to a sum of squares problem gives
 $$ H \delta / 2 = (J'J + D) \delta = - J' r$$
@@ -817,7 +818,7 @@ noticeable time to solve. Problems in large numbers of parameters
 create large computational matrices for the Jacobian or its inner product,
 which Gauss-Newton methods create and process. 
 This is confirmed by comparing `nlsr::nlfb()` and `minpack.lm::nls.lm()` on
-the Penalty 1 problem of various sizes, where the latter, which is 
+the Penalty 1 problem of various sizes, where the latter, which uses 
 compiled Fortran internally, was moderately faster. However, the method
 "Rcgmin" from package `optimx` (@p-optimx) proved to be much 
 faster than either, despite being entirely written in R, and is a much more
