@@ -5,7 +5,7 @@ author:
   of Ottawa}
 - Arkajyoti Bhattacharjee \thanks{Department of Mathematics and Statistics, Indian
   Institute of Technology, Kanpur}
-date: "2023-3-2"
+date: "2023-7-16"
 output: 
   pdf_document:
     keep_tex: yes
@@ -32,7 +32,7 @@ of improving and rationalizing R tools for nonlinear regression.
 The rich features of `nls()` are weakened by several deficiencies and
 inconsistencies such as a lack of stabilization of the Gauss-Newton solver.
 Further considerations are the usability and  maintainability of
-the code base that provides the functionality `nls()` claims to offer.
+the code base that provides the functionality `nls()` offers.
 Various packages, in particular `nlsr` (@nlsr2023manual), provide alternative capabilities.
 We consider the differences in goals, approaches, and features of
 different tools for nonlinear least squares modeling in R. Discussion of 
@@ -93,7 +93,7 @@ new packages than to bring together and simplify existing ones.
 ### Tools considered
 
 Besides the base-R `nls()` function, we consider some packages that 
-are available on the CRAN repository. Of these, we will pay particular 
+are available in the CRAN repository. Of these, we will pay particular 
 attention to **nlsr** (@nlsr2023manual),
 **minpack.lm** (@minpacklm12), and **gslnls** (@gslnls23) which are
 general nonlinear least-squares solvers. We will 
@@ -503,7 +503,9 @@ Termination after what may be considered excessive computation is also important
 examination of the code. `nlsr` terminates when the number of residual or 
 Jacobian evaluations (`feval` and `jeval`) exceed set limits, and we prefer larger 
 limits (`jemax = 5000` is the default) than the `maxiter = 50` of `nls()` to avoid 
-stopping early. This may cause overly long run-times for `nlsr`.
+stopping early. This may cause overly long run-times for `nlsr`, but our work often
+involves problems that are sufficiently difficult that we want to be sure we do not
+terminate early.
 
 ### Returned results of nls() and other tools
 
@@ -704,7 +706,7 @@ Bounds can also be helpful to avoid unanticipated excursions of the minimization
 trajectory into inadmissible parameter regions. Such bounds should not be too
 tight, as this may hinder progress to an optimum by causing the methods to 
 bump along the constraint in many cycles. Our aim is to avoid rubbish, not
-specify where the solution will be, and we hope the solution is complicated
+specify where the solution will be, and we hope the solution is not complicated
 by having a parameter on a bound.
 
 ```{r ex10, echo=TRUE} 
@@ -785,12 +787,13 @@ All four major tools illustrated solve some variant of the Gauss-Newton
 equations. `nls()` uses a modification of an approach suggested by @Hartley1961,
 while `nlsr`, `gslnls`, and `minpack.lm` use flavours of @Marquardt1963. `gslnls`
 offers an accelerated Marquardt method and three alternative methods which we
-have not investigated.
+have not investigated beyond one example.
 Control settings for `nlxb()` or `nlfb()` allow exploration of Hartley and Marquardt 
-algorithm variants. In general, the Levenberg-Marquardt stabilization 
+algorithm variants, principally for the benefit of program developers. 
+In general, the Levenberg-Marquardt stabilization 
 is important in obtaining 
 solutions in methods of the Gauss-Newton family, as `nls()` terminates 
-too frequently and unnecessarily with `singular gradient` errors. Successful
+too frequently and unnecessarily with `singular gradient` errors. A tidy
 incorporation of Marquardt stabilization into `nls()` would be a major improvement.
 
 ## Programming language
@@ -811,7 +814,7 @@ may now offer acceptable performance. In `nlsr`, the use of R may be a
 smaller performance cost than the aggressive approach to a solution,
 such as large computational limits for residuals and Jacobians.
 
-There are problems where use of R will be slower. For example, a
+There are, of course, problems where use of R code will be slower. For example, a
 "large" case of the Penalty 1 test problem of @More1981TUO will take
 noticeable time to solve. Problems in large numbers of parameters
 create large computational matrices for the Jacobian or its inner product,
@@ -1044,7 +1047,7 @@ This is no doubt because programming for indexed parameters is challenging.
 <!-- However, we believe the current structure could cause confusion and error, and  -->
 <!-- propose an alternative approach below. -->
 We note that there are capabilities in packages for mixed-effects modeling
-such as `nlme` (@p-nlme), `bbmle` (@p-bbmle), and `lme4` (p-lme4) for 
+such as `nlme` (@p-nlme), `bbmle` (@p-bbmle), and `lme4` (@p-lme4) for 
 estimating models of such type.
 
 
@@ -1137,7 +1140,7 @@ results comparable to or better than the functions they are to replace.
 Such goals align with the aims of **unit testing** 
 (@HWtestthat11, @HWdevtools21, the conventional R package testing tools, and 
 a number of blog posts found by searching "unit testing in R").
-In our work, one of us has developed a working prototype package at *https://github.com/ArkaB-DS/nlsCompare* .
+In our work, one of us has developed a working prototype package at *https://github.com/ArkaB-DS/nlsCompare*.
 A primary design objective of this is to allow the summarisation of multiple tests in
 a compact output. The prototype has a vignette to illustrate its use.
 
