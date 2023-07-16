@@ -1,0 +1,775 @@
+=========================================================================
+Revew Responses for R Journal paper 2023-15.
+
+We have created this text file with the content of both referees'
+reports and edited our responses to comments under headings
+
+   Response X:YY  
+   
+where X indicates the referee (1 or 2) and YY is an identifying
+number. If X=0, the response is something we felt should be corrected.
+
+Response 0:01  We noticed a factor of 2 error in the equations
+    in the discussion of the background to methods and have
+    (hopefully!) corrected them. 
+
+
+Review 1
+
+Referee report of “A Comparison of R Tools for Nonlinear Least
+Squares Modeling”.
+ID: 2023-15
+General
+This is a long paper that covers many topics related to nonlinear least 
+squares fitting with R. This mixture of many topics can be confusing and 
+I think the paper would benefit from a clearer definition of its purpose 
+and focus. Once a clearer focus is established it will be easier to decide 
+which topics are relevant to that purpose.
+
+Please see Response 2:02 which responds to a similar concern.
+
+The paper’s title indicates that the purpose is to compare and contrast 
+facilities in base R, meaning the nls function and related facilities 
+in the stats package, and several external packages for nonlinear
+least-squares modeling that are available on CRAN. There is a listing 
+of packages related to nonlinear least squares on page 2 but the majority 
+of the discussion is focussed on nls, in the stats package that is part 
+of base R, and the nlsr package (Nash and Murdoch 2023), written by this 
+paper’s authors and others (on CRAN this package is said to be the work 
+of four authors but only two of them are cited in the paper). 
+
+Response 1:01
+
+    Fernando Miguez and Arkajyoti Bhattacharjee, who are listed as contributors,
+    provided comments that were very helpful in revising package nlsr, but Nash 
+    and Murdoch provided all the code to our knowledge.
+
+There are 
+also indications that the paper is about replacing nls in base R with 
+functions from nlsr. The abstract begins by citing the Google Summer 
+of Code project “Improvements to nls()” and the first sentence in the 
+“Principal messages”” section indicates that the purpose is to create 
+a refactored nls() based on the work described here. Toward the end of 
+the paper, the section on “Future of nonlinear model estimation in R” 
+also indicates that the goal is to enhance or replace nls() and related parts
+of base R. 
+
+So is the purpose of the paper:
+• To introduce the nlsr package and describe its capabilities?
+• To compare and contrast several available packages for nonlinear least-squares?
+• To advocate that the authors’ code replace nls in base R?
+
+I would recommend concentrating on the first objective — introducing 
+the nlsr package and demonstrating the advantages that it provides 
+relative to nls — and I will address my comments to that purpose. I
+hope this approach will be of use to the authors and the editor.
+It is certainly appropriate when describing the nlsr package to 
+contrast it with facilities like nls() in base R. To help with this 
+I will provide some background on the development of nls() and the stats
+package in general.
+
+Response 1:02
+     This overlaps with comments by the second referee. See Response 2:02.
+
+
+Detailed comments
+
+nls is S and in R
+
+Although nls() has been part of R for over 25 years, it originated 
+much earlier in the “Statistical Models in S” project, documented 
+in Chambers and Hastie (1992), and based on work starting in the mid-1980’s.
+The purpose was to create a unified set of tools for fitting statistical 
+models, including nonlinear models with a scalar objective, such as a 
+log-likelihood, or as a nonlinear regression model. Many capabilities for
+R, including S3 classes and methods, the formula language for linear 
+predictors, and model frames and model matrices, were based directly on 
+the results of this project in S. (As described by Ross Ihaka, one of the 
+two original developers of R, their goal was to produce a language that 
+was “not unlike S” so the resemblance was not accidental.)
+
+What was called QPE (quantitative programming environment), then “The New 
+S Language”, then “S3” represented a huge step forward for nonlinear 
+modeling because it could represent model functions as expressions 
+(i.e. abstract syntax trees) that could be manipulated in the system 
+itself. This allowed for symbolic differentiation.
+
+The original implementation of the deriv function for symbolic 
+differentiation was written in S. When porting deriv to R in the 
+mid-1990’s Ross Ihaka moved quite a bit of the functionality to C code 
+because it was comparatively easy to do so and, on the hardware of the 
+day, the C implementation provided a considerable speed advantage. The 
+speed of the differentiation itself isn’t usually a problem - it’s the
+common-sub-expression elimination that can be the bottleneck.
+
+This legacy is also the reason that the Jacobian matrix is the "gradient" 
+attribute of the returned value of the model function. For a nonlinear 
+least squares problem, where the model function returns a vector, this 
+deriv attribute should be called "Jacobian" but the version for the 
+scalar objective, for which the vector of partial derivatives is the 
+gradient, was written first. Because deriv only has access to the 
+expression and not to the model frame it is not possible to determine 
+if the value will be a scalar or a vector and the name of the attribute 
+was left as "gradient". A further complication is that numerical values 
+in S and R are always stored as vectors, with the understanding that a 
+scalar is represented as a vector of length 1. Even if it were desirable 
+to distinguish between scalars and vectors, internally it is impossible 
+to determine if a vector of length 1 is intended to be a scalar or to 
+be a vector that just happens to have length 1.
+
+Response 1:07 Thanks for explaining this so clearly. We have added a
+    note in section "Estimation of models specified as formulas".
+
+The legacy is also the reason that initial data manipulation, such as 
+evaluating a subset or na.action, is performed by non-standard evaluation 
+of a model.frame. The non-standard evaluation means that, within the 
+nls function evaluation, the code accesses its own call (with match.call) 
+and re-writes the function name to be stats::model.frame then evaluates 
+the rewritten call (around line 580 of nls.R). Handling all the special 
+cases is complicated but the purpose is so that arguments like subset 
+or na.action and conversion of formulas to model frames to model matrices 
+are handled consistently across the modeling functions in the stats 
+package and without code duplication.
+
+Thomas Lumley has called this “replace the function name in my own call” 
+approach the “standard, non-standard evaluation idiom” in R.
+
+Another aspect of this legacy is the expected behavior of print, summary, 
+plot, etc. applied to an object representing a fitted model. Peculiarities 
+like summary producing longer descriptions than print or the choice of 
+printing the sum of squared residuals or the estimated standard deviation 
+of the residuals are for consistency with the other model output.
+
+Response 1:06 We now mention the background to summary/print.
+
+It is also why the extractor for the parameter values is coef, even though 
+the parameters in a nonlinear regression model are not necessarily 
+coefficients, and why they are shown in the summary using print.coefmat.
+
+These choices, which allow users to transfer experience from one modelling 
+situation to another, are neither arbitrary nor trivial.
+
+Function closure with a shared environment
+
+One of the major differences between the S and R implementations of nls is 
+the use of function closures in R to allow several functions in the m field 
+of an nls model (see below for an example) shared access to parameter values, 
+covariate values, the response vector and various pieces of auxillary 
+information.
+
+In R if a function is defined during the evaluation of another function its 
+“closure” includes the evaluation environment of its parent. If several 
+functions are defined and returned, say in a list, then they have access 
+to this common environment. This shared environment is where parameter 
+updates and subsequent evaluation of the model function, the Jacobian and 
+various decompositions occur.
+
+Self-starting models in S and R
+
+Self-starting models were developed for nlme package for S, Pinheiro and 
+Bates (2000), to automate the fitting of nonlinear regression models to 
+repeated measures data collected on several observational units, e.g. 
+several different subjects. Rather than requiring the analyst to provide 
+starting values for each subject’s data, the steps of formulating and 
+refining such starting values were encapsulated in functions. These 
+functions also used symbolic derivatives to provide Jacobian evaluations 
+and frequently fit a reduced form of the model using the plinear algorithm 
+to refine the starting values, resulting in the “starting values” being 
+the actual parameter estimates. These are fed into the default algorithm 
+to produce a summary but with the understanding that the default algorithm 
+will converge at the first evaluation (i.e. 0 iterative steps) if the 
+convergence criterion is the relative offset. The point here is that the 
+relative offset criterion depends only on the current parameter values 
+and not on changes in the parameter values so there is only one additional 
+evaluation required after the plinear algorithm converges.
+
+For the illustrative example starting at the bottom of page 2 of this 
+paper the SSlogis self-starting model can be used.
+
+weeddf <- data.frame(
+tt = 1:12,
+weed = c(
+5.308, 7.24, 9.638, 12.866, 17.069, 23.192,
+31.443, 38.558, 50.156, 62.948, 75.995, 91.972
+)
+)
+summary(hobbsm1 <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weeddf))
+Formula: weed ~ SSlogis(tt, Asym, xmid, scal)
+Parameters:
+Estimate Std. Error t value Pr(>|t|)
+Asym 196.1862
+11.3069
+17.35 3.17e-08 ***
+xmid 12.4173
+0.3346
+37.11 3.72e-11 ***
+scal
+3.1891
+0.0698
+45.69 5.77e-12 ***
+---
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Residual standard error: 0.5362 on 9 degrees of freedom
+Number of iterations to convergence: 0
+Achieved convergence tolerance: 1.118e-06
+str(hobbsm1)
+List of 6
+$ m
+:List of 16
+..$ resid
+:function ()
+..$ fitted
+:function ()
+..$ formula
+:function ()
+..$ deviance :function ()
+..$ lhs
+:function ()
+..$ gradient :function ()
+..$ conv
+:function ()
+..$ incr
+:function ()
+..$ setVarying:function (vary = rep_len(TRUE, np))
+..$ setPars
+:function (newPars)
+..$ getPars
+:function ()
+..$ getAllPars:function ()
+..$ getEnv
+:function ()
+3..$ trace
+:function ()
+..$ Rmat
+:function ()
+..$ predict
+:function (newdata = list(), qr = FALSE)
+..- attr(*, "class")= chr "nlsModel"
+$ convInfo
+:List of 5
+..$ isConv
+: logi TRUE
+..$ finIter
+: int 0
+..$ finTol
+: num 1.12e-06
+..$ stopCode
+: int 0
+..$ stopMessage: chr "converged"
+$ data
+: symbol weeddf
+$ call
+: language nls(formula = weed ~ SSlogis(tt, Asym, xmid, scal), data = weeddf, algorithm
+$ dataClasses: Named chr "numeric"
+..- attr(*, "names")= chr "tt"
+$ control
+:List of 7
+..$ maxiter
+: num 50
+..$ tol
+: num 1e-05
+..$ minFactor : num 0.000977
+..$ printEval : logi FALSE
+..$ warnOnly
+: logi FALSE
+..$ scaleOffset: num 0
+..$ nDcentral : logi FALSE
+- attr(*, "class")= chr "nls"
+This only takes a few milliseconds on a laptop computer
+microbenchmark::microbenchmark(nls(weed ~ SSlogis(tt, Asym, xmid, scal), weeddf), times=100L)
+Unit: milliseconds
+expr
+min
+lq
+mean
+nls(weed ~ SSlogis(tt, Asym, xmid, scal), weeddf) 3.483984 3.624459 4.599596
+median
+uq
+max neval
+3.92275 5.035838 13.76178
+100
+although it turns out that the SSlogisJN formulation is slightly faster in this case
+summary(hobbsm2 <- nls(weed ~ nlsr::SSlogisJN(tt, Asym, xmid, scal), weeddf))
+Formula: weed ~ nlsr::SSlogisJN(tt, Asym, xmid, scal)
+Parameters:
+Estimate Std. Error t value Pr(>|t|)
+Asym 196.1862
+11.3069
+17.35 3.17e-08 ***
+xmid 12.4173
+0.3346
+37.11 3.72e-11 ***
+scal
+3.1891
+0.0698
+45.69 5.77e-12 ***
+---
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Residual standard error: 0.5362 on 9 degrees of freedom
+Number of iterations to convergence: 3
+Achieved convergence tolerance: 2.419e-06
+microbenchmark::microbenchmark(nls(weed ~ nlsr::SSlogisJN(tt, Asym, xmid, scal), weeddf), times=10
+4Unit: milliseconds
+expr
+min
+lq
+nls(weed ~ nlsr::SSlogisJN(tt, Asym, xmid, scal), weeddf) 1.960326 2.069342
+mean
+median
+uq
+max neval
+2.492946 2.184441 2.554391 11.43154
+100
+
+Some of the discussion in the “Jacobian code in selfStart models” section 
+(p. 9) of this paper claims that the plinear fit followed by a fit using 
+the default approach would be difficult to maintain and could be very slow
+but that has not been the case. It is known (and, in fact, stated in the 
+documentation for SSlogis) that the call to the default nls algorithm will 
+always declare convergence immediately.
+
+Response 1:03 Can we have a pointer to the documentation of the immediate 
+      convergence? We have checked the documentation ?SSlogis, as well as 
+      selfStart and getInitial, but do not see a mention in R 4.3.1.
+      
+      Interim action: We have reworded the paragraph starting
+	"In considering `selfStart` models,"
+      to reflect the comments of the referee and to provide a reference
+      to the source of the starting approximations we used in SSlogisJN().
+
+
+Also in that section it is claimed that deriv creates “hidden variables” 
+because the default for the tag argument to deriv is .expr. This tag is 
+only used in bindings within the evaluation environment of the model 
+function, which is never visible to the user unless they are inspecting 
+the function evaluation with a symbolic debugger. The only reason for 
+the default tag starting with "." is to avoid conflicts with parameter 
+or covariate names in the model expression. But it is only the default.
+
+Response 1:04 Thanks. Reworded to explain the "why". 
+
+Recommendations
+
+As stated in the “General” section, I think the purpose of the paper 
+should be clarified. If the purpose is to introduce the nlsr package 
+and contrast it with the existing implementation of nls in the stats
+package, then it might be helpful to understand why nls was implemented 
+the way it was.
+
+I hope that this unconventional referee’s report is of use to the authors 
+and the editor.
+
+Response 1:05 The historical context given in the referee's report could 
+    be very useful to the R community.
+    Would the editors consider asking that Referee 1 consider recasting
+    the material as a companion note?
+
+    See also 2:01 and 2:02 for clarification of purpose.
+
+References
+
+Chambers, John M., and Trevor J. Hastie, eds. 1992. Statistical Models 
+in S. Routledge. https://doi.org/10.1201/9780203738535.
+
+Nash, John C, and Duncan Murdoch. 2023. Nlsr: Functions for Nonlinear 
+Least Squares Solutions - Updated 2022. https://CRAN.R-project.org/package=nlsr.
+
+Pinheiro, José, and Douglas Bates. 2000. Mixed-Effects Models in S and 
+S-PLUS. Springer New York.
+
+
+Review 2
+
+Referee report: A Comparison of R Tools for Nonlinear Least
+Squares Modeling
+Id: 2023-15
+2023-06-28
+
+General
+
+This article provides a vignette-style overview of the nlsr-package and 
+highlights its design choices and behavior in comparison to base R’s nls() 
+function as well as the nonlinear least squares solvers provided by the 
+R-packages minpack.lm and gslnls. The article’s main contribution is to 
+make R users (more) aware of the historic shortcomings and pitfalls in 
+using R’s nls() function and how the nlsr-package is able to serve as a 
+more reliable alternative. Overall, the article is well-written and 
+structured into coherent subthemes and sections. Given that nls() is 
+the de facto standard for solving nonlinear least squares problems in R, I
+believe this article provides valuable insights and is well-suited for 
+publication in the R Journal after some revisions and minor clarifications.
+
+My main advice is to revise the title and introduction of the article. As 
+it currently stands, it is suggested that the article provides an 
+(objective) comparison of nonlinear least squares solvers available in R. 
+The body of the article reads more like a vignette for the nlsr-package, 
+explaining its design choices and comparing its behavior to nls() and other 
+NLS solvers based on a few selected examples. As such, a more appropriate title
+could be, for instance, The current state of R tools for nonlinear least 
+squares modeling or similar.
+
+Response 2:01
+
+We appreciate the positive comments and agree with the suggested title change.
+
+Response 2:02
+
+Both referees have requested revisions to the introduction, and we hope that 
+we have addressed the comments, essentially by clarifying the goals and how
+they arose. In reconsidering the focus of the article, we have removed the 
+"Documentation and Resources" section that was primarily reporting outputs 
+of our Google Summer of Code project. We have also moved the section 
+"Some other CRAN packages for nonlinear modeling" towards the end of the
+paper.
+
+
+Detailed comments
+
+1. The Hobbs weed example as an illustration of the performance of different 
+NLS solvers is lacking a thorough comparison. I understand that the aim of 
+the authors is to provide a data example that demonstrates the reliability 
+of nlsr in favor of nls(), but nls() converges to the same solution as nlsr 
+for all model setups when using the Port algorithm. This goes unnoticed in 
+the text. 
+
+Response 2:03 "port" cases added. The "appears unfinished" comment in the 
+       documentation led us to avoid its use. This is the sort of issue we 
+       would very much like to see resolved, since "port" is the only tool
+       for bounds constraints.
+
+Also, the model setup (Logistic3T) for which gsl_nls() fails can easily be 
+made to converge correctly by changing either the algorithm or the scaling 
+method, see the Illustrating code section. My advice is to provide a more 
+comprehensive comparison of the available NLS solvers, or to pick a different
+data example that better highlights the benefits of nlsr. For instance, trying 
+to solve the BoxBOD regression problem 
+(https://www.itl.nist.gov/div898/strd/nls/data/boxbod.shtml), 
+nls() fails with starting values θ1 = 1, θ2 = 1 using both the Gauss-Newton 
+and Port algorithm, whereas nlsr::nlxb() converges correctly.
+
+Response 2:04 We have added a paragraph
+
+	We consider the code inside package `nlsr` to be competently coded, 
+	with the advantage over `nls()` of the Levenberg-Marquardt stabilization 
+	in common with `minpack.lm` and `glsnls`. The success rate is high,
+        but `nlsr` has its premature terminations failures too. Our principal 
+        message is that we obtain diagnostic information in the form of the 
+        singular values of the Jacobian that allows us to try alternative starts, 
+        algorithms or programs in cases where there are indications of early termination.
+
+   We appreciate the pointers on other examples. However, a substantive comparison
+   would make for a very long and likely boring paper. The BoxBOD example is, in
+   many ways, similar to the Hobbs example in its nasty characteristics. 
+   Experiences with these problems have led to an opinion (i.e., open to debate)
+   as to the usefulness of such extreme cases in measuring performance. We want 
+   to underline a point of view that good diagnostics are more helpful than a 
+   "usually succeeds" level of reliability.
+
+The section Returned results of nls() and other tools discusses the complexity 
+of S3-objects of class nls, illustrated by the retrieval of the input data 
+from an nls-object. It seems ill-advised to run eval(parse(text=result$data)), 
+since it evaluates the name of the data object in the user’s environment, 
+which may not exist. Instead, one should use model = TRUE to store the input 
+data in the returned nls-object. This behavior is consistent with lm(), so 
+perhaps less confusing than currently presented in the manuscript. The 
+authors mention that nlxb() returns a much simpler structure of 11
+items in one level, but I did not manage to find the input data object in 
+the nlsr-object returned by nlxb().
+
+Response 2:05 The section has been reworded to reflect the comments. I (JN) 
+   confess to having used `lm()` only a few times in a whole career, so
+   missed the parallel to that function. My work has focused on developing 
+   computational tools or diagnosing extreme cases where conventional 
+   statistical calculations seem to have misfired, and also do not work 
+   exclusively in R.
+
+The section Functional specification of problems mentions the use of 
+nlsr::nlfb() to solve nonlinear least squares problems using a function 
+to define the residuals. Since nlsr::nlfb() only has a notion of the 
+residuals, how is it able to disentangle model and response, for the 
+purpose of e.g. generating model predictions? The authors mention that 
+the function wrapnlsr() can be used to return an object of class nls, 
+but this does not seem to work for problems defined through a residual 
+function as in nlsr::nlfb()? If indeed the case, how does one evaluate 
+e.g. model predictions, parameter confidence intervals, etc. when using 
+nlsr::nlfb()? This remains unclear to me.
+
+Response 2:06 The referee's comments point out that we have not explained
+    clearly enough the important differences that arise between modeling
+    and minimizing a nonlinear sum of squares. We have added a short 
+    exposition using the Rosenbrock problem. The difference in context
+    is important and we thank the referee, as other readers would surely
+    have had similar concerns. We have also added a comment to the 
+    "Problem setup" section to note that `nls()` is not suited to this
+    approach. Also a minor amendment to indicate `wrapnlsr()` is intended
+    for problems specified by formula.
+
+4. The section Philosophical considerations hints at the challenge of 
+performing inference when parameter bound-constraints are involved in 
+the optimization. In case of physical or model constraints on the
+parameters, a common approach is to reparametrize the model to be 
+unconstrained in the parameters. Perhaps the authors can highlight an 
+example scenario where imposing parameter constraints is preferable to 
+model reparametrization (the included data examples with parameter 
+constraints appear somewhat artificial), or elaborate further on 
+the possible downsides of reparametrizing the model, if any.
+
+Response 2:07 Reparametrization is likely the appropriate approach if
+    traditional measures of dispersion are wanted. 
+
+    Opinion: One of us (JN) has been interested for > 25 years in 
+    comparing the approaches of numerical analysts and statisticians.
+    The former are insterested in the nonlinear LS problem, for which
+    constraints are a natural characteristic of some problems, while the
+    latter want nonlinear models, where bounds constraints can be a
+    nuisance to the dispersion ideas. I'll not pretend my knowledge is
+    sufficiently broad to be able to capture all the nuances, but I
+    believe a dialog on these matters could be very fruitful in long
+    term better understanding. As far as I am aware, the literature on
+    this area from a statistical viewpoint is quite thin.
+
+    For the paper: We agree the examples are essentially artificial. They
+    are intended to show how to use the features. A discussion of an upper 
+    limit on the Asym parameter (i.e., weed density in some units) or the 
+    scal parameter (measuring how fast this is reached) might be possible, 
+    but the people who provided the problem are no longer available. 
+
+    We have added two small comments on recommended usage of bounds. One
+    is to control for wild excursions in the optimization trajectory, as 
+    we believe this is sensible when bounds constraints are available, 
+    as in nlsr::nlxb. We also note that in cases where a simple and 
+    obvious transformation is available, such as squaring a parameter to 
+    ensure positivity, this is likely a better approach than imposing bounds.
+    However, when there are more general bounds, transformations become more
+    tricky to apply, and may de-scale a problem. We have considered the
+    transfinite function used in CRAN package `adagio`, but consider that
+    this needs more extensive investigation before recommending in general.
+
+5. The section Programming language makes the argument that keeping to a 
+single programming language can allow for easier maintenance and upgrades, 
+and that the performance penalty for using code entirely in R has been 
+much reduced in recent years. I agree that there is not much of a 
+performance penalty when solving small problems, such as the data examples 
+included in the article. However, when solving problems using a large amount 
+of data or a large number of parameters, I have experienced that the run-time 
+(as well as memory usage) can become an actual bottleneck. As an example, 
+consider the Penalty function I problem (Moré, Garbow, and Hillstrom (1981)) 
+included in the Illustrating code section.
+
+Response 2:08  In that we are in general agreement with this comment, we have added
+    some clarification to advise that it is worthwhile being aware of how long
+    calculations are taking.
+
+    The referee's comments and Illustrating Code led us to try the Pen1 problem
+    (it is part of the funconstrain package https://github.com/jlmelville/funconstrain
+    to which one of us recently added Hessian code). This showed that the R code
+    of nlsr::nlfb() was generally slower by a small factor than the compiled 
+    Fortran of minpack.lm::nls.lm. However, the all-R code optimx::Rcgmin was 
+    much faster for larger problems -- it does not build a matrix! 
+
+	## On HP21 (Ryzen 7, 16GB)
+
+	> print(TT)  # median times
+	       n       nlfb    nls.lm     Rcgmin
+	[1,]  50   15.02918   7.95267   3.399167
+	[2,] 100   96.74012  40.05409  96.431357
+	[3,] 150  319.44073 127.58728   6.143749
+	[4,] 200  605.29889 290.00972   6.109964
+	[5,] 250 1373.51954 532.36149 182.678074
+	[6,] 300 2732.06920 874.97992  12.007694
+
+	> print(MM)  # minimum times
+	       n       nlfb     nls.lm     Rcgmin
+	[1,]  50   14.69422   7.895639   3.345110
+	[2,] 100   92.10252  39.718163  94.155118
+	[3,] 150  281.62738 125.972404   6.042982
+	[4,] 200  595.52840 284.833648   5.816762
+	[5,] 250 1300.00651 526.563457 182.678074
+	[6,] 300 2662.15242 869.606156  11.600069
+
+    Pen1test.R is appended at the bottom of this file.
+
+
+Minor comments
+
+
+• Avoid emphasizing words by writing in all capitals. Examples: NOT (pg. 14, 15), 
+WEIGHTED (pg. 13) and more.
+
+Response 2:09  Fair enough. Done.
+
+• The link https://towardsdatascience.com/unit-testing-in-r-68ab9cc8d211 (as well 
+as the links to github) may be subject to change or become unavailable in the future.
+
+Response 2:10  We agree with this opinion. 
+    We have replaced the link with 'a number of blog posts found by searching "unit 
+    testing in R"' as there are several possibilities, of which we felt that of 
+    André Müller was helpful.
+
+
+Illustrating code
+
+
+## Hobbs weed example
+weeddf <- data.frame(
+tt = 1:12,
+weed = c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443, 38.558, 50.156, 62.948, 75.995,
+ 91.972)
+)
+### nls-port all setups
+nls(formula = weed ~ b1 / (1 + b2 * exp(-b3 * tt)), data = weeddf,
+     start = c(b1 = 1, b2 = 1, b3 = 1), algorithm = "port")
+nls(formula = weed ~ 100 * c1 / (1 + 10 * c2 * exp(-0.1 * c3 * tt)),
+     data = weeddf, start = c(c1 = 1, c2 = 1, c3 = 1), algorithm = "port")
+nls(formula = weed ~ Asym /(1 + exp((xmid - tt) / scal)),data = weeddf,
+     start = c(Asym = 1, xmid = 1, scal = 1), algorithm = "port")
+### gsl_nls Logistic3T setup
+gslnls::gsl_nls(fn = weed ~ Asym / (1 + exp((xmid - tt) / scal)),data = weeddf,
+    start = c(Asym = 1, xmid = 1, scal = 1), algorithm = "lmaccel")
+gslnls::gsl_nls(fn = weed ~ Asym / (1 + exp((xmid - tt) / scal)),data = weeddf,
+    start = c(Asym = 1, xmid = 1, scal = 1),algorithm = "dogleg")
+gslnls::gsl_nls(fn = weed ~ Asym / (1 + exp((xmid - tt) / scal)),data = weeddf,
+    start = c(Asym = 1, xmid = 1, scal = 1), algorithm = "ddogleg")
+gslnls::gsl_nls(fn = weed ~ Asym / (1 + exp((xmid - tt) / scal)),data = weeddf,
+    start = c(Asym = 1, xmid = 1, scal = 1),algorithm = "subspace2D")
+gslnls::gsl_nls(fn = weed ~ Asym / (1 + exp((xmid - tt) / scal)),data = weeddf,
+    start = c(Asym = 1, xmid = 1, scal = 1),control = list(scale = "levenberg")
+
+
+Response 2:11  We had missed the "scale" setting i.e., had looked at the documentation
+    of `gsl_nls()` but not `gsl_nls_control()`, and in particular the original
+    Gnu Scientific Library documentation. It turns out the default scaling for the
+    `gsl_nls()` code is the value of the maximum diagonal element of J'J. (J. Mor'e).
+    Marquardt scaling is the diagonal of J'J, while Levenberg is a unit matrix.
+    nlsr uses a linear combination of Levenberg and Marquardt as described in 
+    Nash, John C., Minimizing a nonlinear sum of squares function on a small computer,
+    Journal of the Institute for Mathematics and its Applications, 1977,
+    volume 19, pages 231-237. Details are unfortunately important.    
+
+
+## Penalty function I [More, Garbow, Hillstrom 1981]
+alpha <- 1e-5
+n <- 1000
+### residuals
+fres <- function(x) {
+c(sqrt(alpha) * (x - 1), sum(xˆ2) - 0.25)
+}
+### jacobian
+fjac <- function(x) {
+jj <- rbind(diag(sqrt(alpha), nrow = length(x)), 2 * t(x))
+attr(jj, "gradient") <- jj
+jj
+}
+bench::mark(
+"large problem" = nlsr::nlfb(start = 1:n, resfn = fres, jacfn = fjac),
+iterations = 1
+)
+
+References
+
+Moré, Jorge J., Burton S. Garbow, and Kenneth E. Hillstrom. 1981. “Testing Unconstrained Optimization Software.” ACM Transactions on Mathematical Software 7: 17–41.
+
+
+-----------------------------------------------------------------
+Pen1test.R code
+
+# Penalty function I [More, Garbow, Hillstrom 1981]
+# sink("Pen1Times.txt", split=TRUE)
+alpha <- 1e-5
+a <- 1e-5
+sqrta <- sqrt(alpha)
+### residuals
+fres <- function(x) {
+  c(sqrt(alpha) * (x - 1), sum(x^2) - 0.25)
+}
+### jacobian
+fjac <- function(x) {
+  jj <- rbind(diag(sqrt(alpha), nrow = length(x)), 2 * t(x))
+  attr(jj, "gradient") <- jj
+  jj
+}
+
+ffn = function(par) {
+  n <- length(par)
+  if (n < 1) {
+    stop("Penalty Function I: n must be positive")
+  }
+  fsum <- 0
+  fn1 <- 0
+  for (i in 1:n) {
+    fi <- sqrta * (par[i] - 1)
+    fsum <- fsum + fi * fi
+    fn1 <- fn1 + par[i] * par[i]
+  }
+  
+  fn1 <- fn1 - 0.25
+  fsum <- fsum + fn1 * fn1
+  fsum
+}
+
+fgr = function(par) {
+  n <- length(par)
+  if (n < 1) {
+    stop("Penalty Function I: n must be positive")
+  }
+  grad <- rep(0, n)
+  fn1 <- 0
+  
+  for (i in 1:n) {
+    fi <- sqrta * (par[i] - 1)
+    grad[i] <- grad[i] + 2 * sqrta * fi
+    fn1 <- fn1 + par[i] * par[i]
+  }
+  fn1 <- fn1 - 0.25
+  grad <- grad + 4 * par * fn1
+  grad
+}
+n<-10
+# ftest
+x0<-1:n
+cat("ffn=",ffn(x0),"\n")
+cat("fres:")
+fr<-fres(x0)
+print(fr)
+cat("sum(fr^2)=", sum(fr^2), "\n")
+cat("fgr:")
+print(fgr(x0))
+cat("Jacobian:\n")
+JJ<-fjac(x0)
+print(JJ)
+cat("grad from Jacobian:")
+grj <- 2*as.vector(t(JJ)%*%fr)
+print(grj)
+
+library(nlsr)
+library(minpack.lm)
+library(optimx)
+
+nvals <- c(50, 100, 150, 200, 250, 300)
+#  nvals <- c(2, 10, 25, 50)
+nn<-length(nvals)
+TT <- matrix(NA, nrow=nn, ncol=4)
+MM <- TT
+for (i in 1:nn){
+n <- nvals[i]
+TT[i, 1] <- n
+MM[i, 1] <- n
+x0<-as.numeric(1:n)
+tnlsr10<-bench::mark(nlsr10 <- nlsr::nlfb(start = x0, resfn = fres, jacfn = fjac),  iterations = 10, time_unit='ms')
+pshort(nlsr10)
+TT[i,2] <- tnlsr10$median
+MM[i,2] <- tnlsr10$min
+tnlslm10<-bench::mark(nlslm10 <- nls.lm(par = x0, fn = fres, jac = fjac),  iterations = 10, time_unit='ms')
+pnlslm(nlslm10)
+TT[i,3] <- tnlslm10$median
+MM[i,3] <- tnlslm10$min
+tcg10<-bench::mark(cg10 <- optimr(par = x0, fn = ffn, gr = fgr, method="Rcgmin"),  iterations = 10, time_unit='ms')
+proptimr(cg10)
+TT[i,4] <- tcg10$median
+MM[i,4] <- tcg10$min
+}
+colnames(TT)<-c("n","nlfb","nls.lm","Rcgmin")
+colnames(MM)<-c("n","nlfb","nls.lm","Rcgmin")
+print(TT)
+print(MM)
+sink()
