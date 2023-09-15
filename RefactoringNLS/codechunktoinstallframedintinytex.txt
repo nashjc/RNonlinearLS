@@ -1,0 +1,6 @@
+```{r framed}
+# attempt to install framed.sty
+tinytex::parse_install(
+  text = "! LaTeX Error: File `framed.sty' not found."
+)
+```

@@ -1,0 +1,15 @@
+Msg for R Journal editors (i.e., Rob Hyndman)
+
+Herewith our revision based on referee's reports, which we appreciate
+for their thoughtful and useful comments.
+
+The file ReviewResponses.txt contains text forms of the two reviews and
+our responses. We hope that we have provided suitable explanations and/or
+revisions.
+
+Queries:
+
+1) Should Arkajyoti Bhattacharjee's current location be mentioned?
+  He is now a Ph. D. student at Ohio State University.
+
+2) 
