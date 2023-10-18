@@ -1,0 +1,3 @@
+Laplace 1788 from Stigler 1986 History of Statistics
+
+Resuduals are fitted values minus observed values.
