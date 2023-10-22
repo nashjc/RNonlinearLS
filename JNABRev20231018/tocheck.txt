@@ -1,0 +1,4 @@
+Need to look at bibliography -- why not alphabetic?? -- Bates and Watts 1981 for example, and
+in wrong format.
+
+Problem getting output with rjournal_web_article output format. -- resolved with new rjtools
