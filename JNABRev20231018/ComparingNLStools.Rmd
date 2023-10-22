@@ -35,6 +35,7 @@ output:
   rjtools::rjournal_web_article:
       self_contained: yes
       toc: no
+  # pdf_document
 bibliography: ./ComparingNLStools.bib
 ---
 
@@ -131,7 +132,7 @@ vignette, provides a few utilities for summarizing, testing, and plotting
 non-linear regression models estimated with nls(), nlsList() or nlme() that
 are linked or grouped in some way. 
 
-`nlsic` (@nlsic-manual) -- This solves nonlinear least squares problems with optional
+`nlsic` (@nlsic22) -- This solves nonlinear least squares problems with optional
 equality and/or inequality constraints. It is clearly **not** about modeling, and
 the input and output are quite different from class `nls` methods. However, there do
 not appear to be other R packages with these capabilities.
@@ -195,7 +196,8 @@ We thank one of the referees for expressing the viewpoint that a nonlinear regre
 approach would use background knowledge and graphs to obtain an understanding of
 the general magnitude of the parameters. Indeed, the "visual fitting" approach
 (@nash1996nonlinear) mentioned later accords with this viewpoint, as does use
-of the **Logistic3T** variant of the model. 
+of the **Logistic3T** variant of the model, as well as discussions in @Ross90, 
+@Seber89Wild, @bateswatts, and @Gallant87.
 
 Our emphasis on the software resilience to starting parameters that are, in the
 sense of statistical modeling, "silly" comes from over half a century of dealing

@@ -27,7 +27,8 @@ the model, doesn’t make sense to me.
 >> approach would use background knowledge and graphs to obtain an understanding of
 >> the general magnitude of the parameters. Indeed, the "visual fitting" approach
 >> (@nash1996nonlinear) mentioned later accords with this viewpoint, as does use
->> of the **Logistic3T** variant of the model. 
+>> of the **Logistic3T** variant of the model, as well as discussions in @Ross90, 
+>> @Seber89Wild, @bateswatts, and @Gallant87.
 >> 
 >> Our emphasis on the software resilience to starting parameters that are, in the
 >> sense of statistical modeling, "silly" comes from over half a century of dealing
@@ -122,8 +123,6 @@ On page 4 the authors state that if a selfStart model is not available nls() set
 values to 1. That may be the case now but the original intention was certainly that a user
 calling nls() would provide starting estimates suitable to the model and data.
 
->> To editor: Referee may be revealing their identity!
-
 Also on page 4 I don’t understand the comment in the hobbs.res function that This variant
 uses looping. I don’t see any explicit loops. There will naturally be looping in the C code
 that implements the arithmetic operations on vectors but that is inevitable.
@@ -131,7 +130,7 @@ that implements the arithmetic operations on vectors but that is inevitable.
 >> The comment was a left-over from an earlier variant of the functions and should have been
 >> removed. Done. Thanks for spotting this.
 >> We also noted that the model is UNscaled, and edited the comment.
->> An explanatory comment has been added
+>> An explanatory comment has been added.
 >> 
 >> The particular form of these explicit residual and Jacobian functions comes from
 >> their translation from BASIC codes of the 1970s, as adapted in @jnmws87. The use

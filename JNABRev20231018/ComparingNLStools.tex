@@ -99,7 +99,7 @@ method discussed in Josef Tvrdík and Ivan Křivý and Ladislav Mišík (2007) c
 than a Levenberg-Marquardt code (actually from Matlab), but the tests were conducted
 on the extreme NIST examples mentioned next.
 
-\texttt{NISTnls} (National Institutes for Standards and R port by Douglas Bates (2012)) -- This package provides R code and data for a set of
+\texttt{NISTnls} ((ed.) (2012)) -- This package provides R code and data for a set of
 (numerically ill-conditioned) nonlinear least squares problems from the U.S. National
 Institute for Standards and Technology. These may not represent real-world situations.
 
@@ -135,7 +135,7 @@ motivations to \texttt{nls.multstart}, but uses \texttt{nls()} within multiple t
 has extensive expertise in R.
 
 \texttt{nlstac} (Rodriguez-Arias et al. (2020)) -- A set of functions implementing the algorithm described in
-Torvisco, Fernandez, and Sanchez (2018) for fitting separable nonlinear regression curves. The
+Torvisco, Rodrıguez-Arias, and Sanchez (2018) for fitting separable nonlinear regression curves. The
 special class of problem for which this package is intended is an important and
 difficult one. No vignette is provided, unfortunately.
 
@@ -173,7 +173,8 @@ We thank one of the referees for expressing the viewpoint that a nonlinear regre
 approach would use background knowledge and graphs to obtain an understanding of
 the general magnitude of the parameters. Indeed, the ``visual fitting'' approach
 (John C. Nash and Velleman (1996)) mentioned later accords with this viewpoint, as does use
-of the \textbf{Logistic3T} variant of the model.
+of the \textbf{Logistic3T} variant of the model, as well as discussions in Ross (1990),
+Seber and Wild (1989), D. M. Bates and Watts (1988), and Gallant (1987).
 
 Our emphasis on the software resilience to starting parameters that are, in the
 sense of statistical modeling, ``silly'' comes from over half a century of dealing
@@ -1319,11 +1320,17 @@ Chau, Joris. 2023. \emph{Gslnls: GSL Nonlinear Least-Squares Fitting}. \url{http
 \bibitem[\citeproctext]{ref-nlshelper-manual}
 Duursma, Remko. 2017. \emph{Nlshelper: Convenient Functions for Non-Linear Regression}. \url{https://CRAN.R-project.org/package=nlshelper}.
 
+\bibitem[\citeproctext]{ref-NISTnls-manual}
+(ed.), Douglas Bates. 2012. \emph{NISTnls: Nonlinear Least Squares Examples from NIST}. \url{https://CRAN.R-project.org/package=NISTnls}.
+
 \bibitem[\citeproctext]{ref-minpacklm12}
 Elzhov, Timur V., Katharine M. Mullen, Andrej-Nikolai Spiess, and Ben Bolker. 2012. \emph{Minpack.lm: R Interface to the Levenberg-Marquardt Nonlinear Least-Squares Algorithm Found in MINPACK, Plus Support for Bounds}. R Project for Statistical Computing. \url{http://CRAN.R-project.org/package=minpack.lm}.
 
 \bibitem[\citeproctext]{ref-GSL-manual}
 Galassi, Mark, Jim Davies, James Theiler, Brian Gough, and Gerard Jungman. 2009. \emph{GNU Scientific Library - Reference Manual, Third Edition, for GSL Version 1.12 (3. Ed.).}
+
+\bibitem[\citeproctext]{ref-Gallant87}
+Gallant, A. Ronald. 1987. \emph{Nonlinear Statistical Models}. Wiley.
 
 \bibitem[\citeproctext]{ref-Bioconductor}
 Gentleman, Robert C., Vincent J. Carey, Douglas M. Bates, Ben Bolstad, Marcel Dettling, Sandrine Dudoit, Byron Ellis, et al. 2004. {``Bioconductor: Open Software Development for Computational Biology and Bioinformatics.''} \emph{{Genome Biology}} 5 (R80). \url{https://doi.org/10.1186/gb-2004-5-10-r80}.
@@ -1376,9 +1383,6 @@ Nash, John C., and Paul Velleman. 1996. {``Nonlinear Estimation Combining Visual
 \bibitem[\citeproctext]{ref-jnmws87}
 Nash, John C., and Mary Walker-Smith. 1987. \emph{Nonlinear Parameter Estimation: An Integrated System in BASIC}. Book. New York: Marcel Dekker.
 
-\bibitem[\citeproctext]{ref-NISTnls-manual}
-National Institutes for Standards, original from, and Technology http://www.itl.nist.gov/div898/strd/nls/nls\_main.shtml R port by Douglas Bates. 2012. \emph{NISTnls: Nonlinear Least Squares Examples from NIST}. \url{https://CRAN.R-project.org/package=NISTnls}.
-
 \bibitem[\citeproctext]{ref-OlearyRust13}
 O'Leary, Dianne P., and Bert W. Rust. 2013. {``Variable Projection for Nonlinear Least Squares Problems.''} \emph{Computational Optimization and Applications} 54 (3): 579--93.
 
@@ -1397,14 +1401,20 @@ Ratkowsky, David A. 1983. \emph{Nonlinear Regression Modeling: A Unified Practic
 \bibitem[\citeproctext]{ref-m-nlstac}
 Rodriguez-Arias, Mariano, Juan Antonio Fernandez, Javier Cabello, and Rafael Benitez. 2020. \emph{Nlstac: An r Package for Fitting Separable Nonlinear Models}. \url{https://CRAN.R-project.org/package=nlstac}.
 
-\bibitem[\citeproctext]{ref-nlsic-manual}
+\bibitem[\citeproctext]{ref-Ross90}
+Ross, Gavin J. S. 1990. \emph{Nonlinear Estimation.} New York etc.: Springer-Verlag.
+
+\bibitem[\citeproctext]{ref-Seber89Wild}
+Seber, G. A. F., and C. J. Wild. 1989. \emph{{Nonlinear regression}}. New York: Wiley.
+
+\bibitem[\citeproctext]{ref-nlsic22}
 Sokol, Serguei. 2022. \emph{Nlsic: Non Linear Least Squares with Inequality Constraints}. \url{https://CRAN.R-project.org/package=nlsic}.
 
 \bibitem[\citeproctext]{ref-Torvisco2018}
-Torvisco, Juan Antonio Fernandez, Mariano Rodrıguez-Arias Fernandez, and Javier Cabello Sanchez. 2018. {``A New Algorithm to Fit Exponential Decays Without Initial Guess.''} {Faculty of Sciences and Mathematics, University of Niˇs, Serbia}. \url{https://doi.org/doi.org/10.2298/FIL1812233T}.
+Torvisco, Juan Antonio Fernandez, Mariano Rodrıguez-Arias, and Javier Cabello Sanchez. 2018. {``A New Algorithm to Fit Exponential Decays Without Initial Guess.''} {Faculty of Sciences and Mathematics, University of Niˇs, Serbia}. \url{https://doi.org/doi.org/10.2298/FIL1812233T}.
 
 \bibitem[\citeproctext]{ref-R-crsnls-manual}
-Tvrdík, Josef. 2016. \emph{Crsnls: Nonlinear Regression Parameters Estimation by 'CRS4HC' and 'CRS4HCe'}. \url{https://CRAN.R-project.org/package=crsnls}.
+Tvrdík, Josef. 2016. \emph{{crsnls: Nonlinear Regression Parameters Estimation by 'CRS4HC' and 'CRS4HCe'}}. \url{https://CRAN.R-project.org/package=crsnls}.
 
 \bibitem[\citeproctext]{ref-HWtestthat11}
 Wickham, Hadley. 2011. {``{testthat: Get Started with Testing}.''} \emph{The R Journal} 3: 5--10. \url{https://journal.r-project.org/archive/2011-1/RJournal_2011-1_Wickham.pdf}.

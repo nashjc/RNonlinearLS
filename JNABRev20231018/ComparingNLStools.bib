@@ -1,8 +1,36 @@
 % Encoding: UTF-8
 
+@article{BatesWatts81,
+  author = {{Douglas M. Bates and Donald G. Watts}},
+  title = {{A Relative Offset Orthogonality Convergence Criterion for Nonlinear least Squares}},
+  journal = {Technometrics},
+  year = {1981},
+  volume = {23},
+  number = {2},
+  pages = {179-183}
+}
+
+@Manual{NISTnls-manual,
+    title = {NISTnls: Nonlinear least squares examples from NIST},
+    author = {Douglas M. Bates},
+    year = {2012},
+    note = {R package version 0.9-13. Original source from National Institutes for 
+            Standards and Technology http://www.itl.nist.gov/div898/strd/nls/nls_main.shtml 
+            with R port by Douglas Bates},
+    url = {https://CRAN.R-project.org/package=NISTnls},
+  }
+
+@Manual{R-onls-manual,
+    author = {{ Spiess, Andrej-Nikolai }},
+    title = {onls: Orthogonal Nonlinear Least-Squares Regression},
+    year = {2022},
+    note = {R package version 0.1-2},
+    url = {https://CRAN.R-project.org/package=onls},
+}
+
 @TechReport{Torvisco2018,
     title = {A New Algorithm to Fit Exponential Decays without Initial Guess},
-    author = {Juan Antonio Fernandez Torvisco and Mariano Rodrıguez-Arias Fernandez and Javier Cabello Sanchez},
+    author = {Juan Antonio Fernandez Torvisco and Mariano Rodrıguez-Arias and Javier Cabello Sanchez},
     institution = {{Faculty of Sciences and Mathematics, University of Niˇs, Serbia}},
     doi = {doi.org/10.2298/FIL1812233T},
     year = 2018
@@ -71,14 +99,6 @@ Distributions},
     note = {R package version 0.0-1}
 }
 
-@Manual{nlsic-manual,
-    title = {nlsic: Non Linear Least Squares with Inequality Constraints},
-    author = {Serguei Sokol},
-    year = {2022},
-    note = {R package version 1.0.2},
-    url = {https://CRAN.R-project.org/package=nlsic}
-}
-
 @Manual{nlshelper-manual,
     title = {nlshelper: Convenient Functions for Non-Linear Regression},
     author = {Remko Duursma},
@@ -87,32 +107,15 @@ Distributions},
     url = {https://CRAN.R-project.org/package=nlshelper},
   }
 
-@Manual{NISTnls-manual,
-    title = {NISTnls: Nonlinear least squares examples from NIST},
-    author = {original from National Institutes for Standards and Technology http://www.itl.nist.gov/div898/strd/nls/nls_main.shtml R port by Douglas Bates},
-    year = {2012},
-    note = {R package version 0.9-13},
-    url = {https://CRAN.R-project.org/package=NISTnls},
-  }
-
 
 @Manual{R-crsnls-manual,
-    title = {crsnls: Nonlinear Regression Parameters Estimation by 'CRS4HC' and
-'CRS4HCe'},
+    title = {{crsnls: Nonlinear Regression Parameters Estimation by 'CRS4HC' and
+            'CRS4HCe'}},
     author = {Josef Tvrdík},
     year = {2016},
     note = {R package version 0.2},
     url = {https://CRAN.R-project.org/package=crsnls},
 }
-
-@Manual{R-onls-manual,
-    title = {onls: Orthogonal Nonlinear Least-Squares Regression},
-    author = {{Andrej-Nikolai Spiess}},
-    year = {2022},
-    note = {R package version 0.1-2},
-    url = {https://CRAN.R-project.org/package=onls},
-}
-
 
 @book{GSL-manual,
 author = {Galassi, Mark and Davies, Jim and Theiler, James and Gough, Brian and Jungman, Gerard},
@@ -192,20 +195,12 @@ journal = {Agronomy Journal},
 doi = {10.2134/agronj2012.0506}
 }
 
-@Manual{nlsr2019manual,
-  title  = {{nlsr: Functions for Nonlinear Least Squares Solutions}},
-  author = {{John C Nash} and {Duncan Murdoch}},
-  month  = aug,
-  year   = {2019},
-  note   = {R package version 2019.8.7},
-}
-
 @Manual{nlsr2023manual,
   title  = {{nlsr: Functions for Nonlinear Least Squares Solutions}},
   author = {{John C Nash} and {Duncan Murdoch}},
   month  = aug,
   year   = {2023},
-  note   = {R package version 2019.8.7},
+  note   = {R package version 2023.8.31},
 }
 
 @InBook{SGN83,
@@ -635,16 +630,6 @@ pages = {223-235}
     note = {R package version 0.4.1},
     url = {https://CRAN.R-project.org/package=Ryacas},
   }
-
-@article{BatesWatts81,
-author = {{Bates, Douglas M.} and {Watts, Donald G.}},
-title = {A Relative Offset Orthogonality Convergence Criterion for Nonlinear least Squares},
-journal = {Technometrics},
-volume = {23},
-number = {2},
-pages = {179-183},
-year = {1981}
-}
 
 @Article{bolkernonlin13,
   Title                    = {Strategies for fitting nonlinear ecological models in R, AD Model Builder, and BUGS},
@@ -2765,7 +2750,6 @@ and George Labahn and Stefan M.~Vorkoetter and James McCarron and Paul DeMarco},
   Number                   = {4},
   Pages                    = {1--37},
   Volume                   = {53},
-
   Url                      = {http://www.jstatsoft.org/v53/i04/}
 }
 
@@ -2774,7 +2758,6 @@ and George Labahn and Stefan M.~Vorkoetter and James McCarron and Paul DeMarco},
   Author                   = {Seber, G. A. F. and Wild, C. J.},
   Publisher                = {Wiley},
   Year                     = {1989},
-
   Address                  = {New York}
 }
 
@@ -3391,16 +3374,6 @@ permutation-based problems},
   note      = {Ph. D. Dissertation},
   owner     = {john},
   timestamp = {2018.11.16},
-}
-
-@Article{Bates1981a,
-  author  = {Bates, Douglas M. and Watts, Donald G.},
-  title   = {A Relative Offset Orthogonality Convergence Criterion for Nonlinear least Squares},
-  journal = {Technometrics},
-  year    = {1981},
-  volume  = {23},
-  number  = {2},
-  pages   = {179-183},
 }
 
 @Misc{Dalzell2013,
@@ -4598,14 +4571,21 @@ permutation-based problems},
   volume  = {7},
   number  = {4},
   pages   = {308--313},
-  month   = {January},
+  month   = {January}
 }
 
 @Book{bateswatts,
   title     = {Nonlinear Regression Analysis and Its Applications},
   publisher = {Wiley},
   year      = {1988},
-  author    = {D. M. Bates and D. G. Watts},
+  author    = {Douglas M. Bates and Donald G. Watts},
+}
+
+@Book{Gallant87,
+  title     = {Nonlinear statistical models},
+  publisher = {Wiley},
+  year      = {1987},
+  author    = {A. Ronald Gallant}
 }
 
 @Article{Schnabel1985,
