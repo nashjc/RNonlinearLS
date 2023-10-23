@@ -145,7 +145,7 @@ dedicated  to predictive microbiology, including a vignette, by authors of the
 of nonlinear models, particularly using `nls()`. The vignette is actually a journal
 article,  and the authors have considerable experience in the subject.
 
-`nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal(NL-SMSN) 
+`nlsmsn` (@m-nlsmsn) -- Fit univariate non-linear scale mixture of skew-normal (NL-SMSN) 
 regression, with details in Garay, Lachos, and Abanto-Valle (2011). The problem 
 here is to minimize an objective that is modified from the traditional sum of squared
 residuals.
@@ -1316,3 +1316,4 @@ clarify aspects of `selfStart` models and instigated the "Introduction to nlsr"
 vignette. Colin Gillespie (package `benchmarkme`) has been helpful in guiding our 
 attempts to succinctly summarize computing environments.
 
+# References
