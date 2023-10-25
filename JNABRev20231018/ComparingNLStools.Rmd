@@ -485,7 +485,7 @@ print(badstart)
 We illustrate how to solve nonlinear least squares problems using
 a function to define the residual. Note that `gsl_nls()` requires
 a vector `y` that is the length of the vector returned by the
-function supplied e.g., `hobbs.res()`. `gsl_nls` uses 
+function supplied, e.g., `hobbs.res()`. `gsl_nls` uses 
 a numerical approximation for the Jacobian if the argument `jac` 
 is missing. Note function `nlsr::pnlslm()` for a 1-line display of
 the results of `minpack.lm::nls.lm()`.
