@@ -158,7 +158,26 @@ to save writing a negative sign in a formula for the Jacobian.
 
 >> We believe our comment above addresses this. We have explained our reasoning for the use
 >> of the Laplace residual in other works, but present usage or commentary is a red herring
->> that is irrelevant to today's software and practice. Indeed, the main advance that package
->> 'nlsr' represents is to automatically provide analytic derivatives that caused so much work
->> and introduced so many errors in the 1970s and 1980s.
+>> that is irrelevant to today's software and practice except for a note in the hobbs.res
+>> function definition. Indeed, the main advance that package 'nlsr' represents is to 
+>> automatically provide analytic derivatives that caused so much work and introduced 
+>> so many errors in the 1970s and 1980s.
+
+>> We have also removed the sentences (just after the definition of the Logistic models):
+>> "The residuals can be written either as r1=y−model(p) or r=model(p)−y since their sum of 
+>> squares has an identical value. The second form avoids a potential sign error if we need 
+>> to evaluate derivatives."
+
+>> Other notes:
+>>
+>> In re-reading our paper, made some minor wording changes to avoid what we believe may be
+>> confusing. In particular, we reworded the explanation of the `y` vector for gsl_nls() 
+>> under "Functional specification of problems" to accord better with the man page.
+
+>> We noticed the citation to the "illustrative example" lacked a "p." to indicate the
+>> page number. We added "csl: ./apa.csl" to the YAML header and downloaded and have
+>> included this file. 
+>> We have also changed all "NOT" occurrences to simply "not", and removed some boldface
+>> where it is unnecessary.
+
 
