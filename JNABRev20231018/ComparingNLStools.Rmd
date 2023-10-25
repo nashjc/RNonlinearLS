@@ -343,7 +343,7 @@ hobbs.res <- function(x){ # unscaled Hobbs weeds problem -- residual
   res <- x[1] / (1 + x[2] * exp(-x[3] * tt)) - y
   # Note: this form of the residual, from Laplace (1788) in the form
   # of "fitted - observed" has been used in our software for half
-  # a century, but sometimes offends users of the more traditional
+  # a century, but sometimes concerns users of the more traditional
   # "observed - fitted" form
 }
 
@@ -739,13 +739,8 @@ used in the call. Unfortunately, the documentation warns us:
 anlshob1b <- nls(frms, start = sts1, data = weeddf, lower = c(0,0,0),
              upper = c(2,6,3), algorithm = 'port')
 pnls(anlshob1b) #  check the answer (short form)
-<<<<<<< HEAD
-# nlsLM seems not to work with bounds in this example
-anlsLM1b <- nlsLM(frms, start=sts1, data=weeddf, lower=c(0,0,0), upper=c(2,6,3))
-=======
 # nlsLM seems NOT to work with bounds in this example
 anlsLM1b <- nlsLM(frms, start = sts1, data = weeddf, lower = c(0,0,0), upper = c(2,6,3))
->>>>>>> 25ce5d425b416d2808ffbdf138c814fff502a5cb
 pnls(anlsLM1b)
 # also no warning if starting out of bounds, but gets a good answer!!
 st4 <- c(c1 = 4, c2 = 4, c3 = 4)
@@ -1107,17 +1102,6 @@ nlsModel <- function(form, data, start, wts, upper = NULL, scaleOffset = 0,
 ```
 
 ```{r nlswtx, echo=TRUE}
-<<<<<<< HEAD
-wts <- 0.5^tt # simple weights
-frmlogis <- weed ~ Asym/(1 + exp((xmid - tt)/scal))
-Asym<-1; xmid<-1; scal<-1
-nowt<-nls(weed ~ SSlogis(tt, Asym, xmid, scal)) # UNWEIGHTED
-rnowt<-nowt$m$resid() # This has UNWEIGHTED residual and Jacobian. Does not take coefficients.
-attr(rnowt, "gradient")<-NULL; rnowt
-usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights=wts)
-rusewt<-usewt$m$resid() # WEIGHTED. Does not take coefficients.
-attr(rusewt,"gradient")<-NULL; rusewt
-=======
 wts <- 0.5 ^ tt # simple weights
 frmlogis <- weed ~ Asym / (1 + exp((xmid - tt)/scal))
 Asym <- 1; xmid <- 1; scal <- 1
@@ -1127,7 +1111,6 @@ attr(rnowt, "gradient") <- NULL; rnowt
 usewt <- nls(weed ~ SSlogis(tt, Asym, xmid, scal), weights = wts)
 rusewt <- usewt$m$resid() # WEIGHTED. Does NOT take coefficients.
 attr(rusewt, "gradient") <- NULL; rusewt
->>>>>>> 25ce5d425b416d2808ffbdf138c814fff502a5cb
 ## source("nlsModel.R") # or use {r nlsmodelsource, echo=FALSE} code chunk
 nmod0 <- nlsModel(frmlogis, data = weeddf, start = c(Asym = 1, xmid = 1, scal = 1), wts = wts)
 rn0 <- nmod0$resid() # Parameters are supplied in nlsModel() `start` above.
