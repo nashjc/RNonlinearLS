@@ -88,20 +88,25 @@ GitHub (https://github.com) and Gitlab (https://about.gitlab.com),
 while interesting, do not have the checking applied to CRAN packages.
 <!-- JN: revised text combining 2 copyedit comments -->
 
-## Principal messages
+<!-- ## Principal messages -->
+<!-- Ed: How does this relate to the comparisons? -->
+<!-- JN: It is a precis of the content.  -->
 
 Our work aimed at unifying nonlinear modeling functionality in R,
 <!-- JN: removed "was" as suggesgted -->
-ideally in a refactored `nls()` function. 
+ideally in a refactored `nls()` function. The primary messages from this work
+are:
 
-For R **users**, we would advise adapting working scripts, preferably those
+- For R **users**, we would advise that it is most efficient to carry out
+nonlinear modeling or least squares by adapting working scripts, preferably those
+<!-- JN: added wording to clarify what we are advising users to do -->
 with documentation and using recent tools. If there is a suspicion that there
 may be ill-conditioning, package `nlsr` or the example we give in the 
 section "Comparison notes for formula-setup solutions" below of how to
 find singular values of the Jacobian allow these diagnostics to be calculated.
 <!-- JN: reference to section added ??have I done this correctly? -->
 
-For R **developers**, we invite and encourage discussion of the design choices, 
+- For R **developers**, we invite and encourage discussion of the design choices, 
 since these
 have downstream implications for ease of use, adaptation to new features, and 
 efficiency of ongoing maintenance.
@@ -109,15 +114,17 @@ efficiency of ongoing maintenance.
 
 # Some other CRAN packages for nonlinear modeling
 
-`onls` (@R-onls-manual) -- The usual optimization in estimating nonlinear models
-is the vertical difference between the dependent variable and the functional
-model. `onls` minimizes the sum of **orthogonal** residuals. The objective is
-therefore different and involves nontrivial extra calculation. A vignette with
-the package and the blog article 
+<!-- JN: copyedit suggestion incorporated -->
+`onls` (@R-onls-manual) is used for optimising and estimating nonlinear models 
+by minimizing the sum of squares of **orthogonal** residuals rather than vertical
+residuals. The objective is therefore different and involves nontrivial extra
+calculation. A vignette with the package and the blog article 
 https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/ 
 give some description with illustrative graphs. `onls` appears to be limited to 
 problems with one independent and one dependent variable. The Wikipedia article
 https://en.wikipedia.org/wiki/Total_least_squares presents an overview of some
+<!-- Ed. Anything specific from the Wikipedia article that is worth citing? -->
+<!-- JN: Commentary would add too much material of tangential nature. -->
 ideas, with references to the literature. The approach needs a wider 
 discussion and tutorial examples to allow its merits to be judged than can be
 included here.
@@ -185,9 +192,12 @@ solvers.
 # An illustrative example
 
 The Hobbs weed infestation problem (@cnm79 [page 120]) is a growth-curve modeling 
-task that seems straightforward but is quite nasty. Its very succinct statement 
+task. Its very succinct statement 
 provides the "short reproducible example" much requested on R mailing lists. 
-This is a real problem from a field researcher. The data and graph follow.
+The problem is small and seemingly straightforward, yet presents such 
+difficulties that optimization researchers have asked if it is contrived
+rather than a real problem from a field researcher. The data and graph follow.
+<!-- JN: merged copyedit comments to explain "nasty". -->
 
 ```{r ex01, echo=TRUE}
 weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
@@ -896,9 +906,10 @@ effects of an option they may not even be aware has been set. Should `na.fail` b
 
 Indeed, the argument only gets used when `nls()` is about to return its result
 object, and the
-element `model` is NULL unless the calling argument `model` is TRUE. (Using the same 
-name could
-be confusing.) Despite this, the model frame is used within the function code in 
+element `model` is NULL unless the calling argument `model` is TRUE. Using the 
+same name for both function argument and object element could be confusing.
+<!-- JN: reworded to make clear our concern. -->
+Despite this, the model frame is used within the function code in 
 the form of the object
 `mf`. We feel that users could benefit from more extensive documentation and 
 examples of its use since it is used to implement features like `subset`.
@@ -925,8 +936,9 @@ in applying such ideas.
 
 ## Weights in returned functions from nls()
 
-The function `resid()` (an alias for `residuals()`) gives WEIGHTED residuals, 
-as does, for example, `result$m$resid()`. The function `nlsModel()` 
+The function `resid()` (an alias for `residuals()`) gives weighted residuals
+like `result$m$resid()`. The function `nlsModel()` 
+<!-- JN: copyedit suggestion accepted -->
 allows us to compute residuals for particular coefficient sets.
 We have had to extract `nlsModel()` from the base R code and include it via a code chunk 
 (not echoed here for space) because it is not exported to the working namespace,
@@ -1329,6 +1341,7 @@ clarify aspects of `selfStart` models and instigated the "Introduction to nlsr"
 vignette. Colin Gillespie (package `benchmarkme`) has been helpful in guiding our 
 attempts to succinctly summarize computing environments. We thank one of the referees 
 for pointing out that it is important to use background knowledge and graphs to
-guide modeling.
+guide modeling. Simon Urbanek gave some important practical help with preparing
+files for publication.
+<!-- JN: added Simon. Removed # References which duplicated subhead -->
 
-# References

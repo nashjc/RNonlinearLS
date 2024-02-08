@@ -60,31 +60,32 @@ specialized, and those on repositories such as
 GitHub (\url{https://github.com}) and Gitlab (\url{https://about.gitlab.com}),
 while interesting, do not have the checking applied to CRAN packages.
 
-\hypertarget{principal-messages}{%
-\subsection{Principal messages}\label{principal-messages}}
-
 Our work aimed at unifying nonlinear modeling functionality in R,
-ideally in a refactored \texttt{nls()} function.
+ideally in a refactored \texttt{nls()} function. The primary messages from this work
+are:
 
-For R \textbf{users}, we would advise adapting working scripts, preferably those
-with documentation and using recent tools. If there is a suspicion that there
-may be ill-conditioning, package \texttt{nlsr} or the example we give in the
-section ``Comparison notes for formula-setup solutions'' below of how to
-find singular values of the Jacobian allow these diagnostics to be calculated.
-
-For R \textbf{developers}, we invite and encourage discussion of the design choices,
-since these
-have downstream implications for ease of use, adaptation to new features, and
-efficiency of ongoing maintenance.
+\begin{itemize}
+\item
+  For R \textbf{users}, we would advise that it is most efficient to carry out
+  nonlinear modeling or least squares by adapting working scripts, preferably those
+  with documentation and using recent tools. If there is a suspicion that there
+  may be ill-conditioning, package \texttt{nlsr} or the example we give in the
+  section ``Comparison notes for formula-setup solutions'' below of how to
+  find singular values of the Jacobian allow these diagnostics to be calculated.
+\item
+  For R \textbf{developers}, we invite and encourage discussion of the design choices,
+  since these
+  have downstream implications for ease of use, adaptation to new features, and
+  efficiency of ongoing maintenance.
+\end{itemize}
 
 \hypertarget{some-other-cran-packages-for-nonlinear-modeling}{%
 \section{Some other CRAN packages for nonlinear modeling}\label{some-other-cran-packages-for-nonlinear-modeling}}
 
-\texttt{onls} (Spiess, Andrej-Nikolai (2022)) -- The usual optimization in estimating nonlinear models
-is the vertical difference between the dependent variable and the functional
-model. \texttt{onls} minimizes the sum of \textbf{orthogonal} residuals. The objective is
-therefore different and involves nontrivial extra calculation. A vignette with
-the package and the blog article
+\texttt{onls} (Spiess, Andrej-Nikolai (2022)) is used for optimising and estimating nonlinear models
+by minimizing the sum of squares of \textbf{orthogonal} residuals rather than vertical
+residuals. The objective is therefore different and involves nontrivial extra
+calculation. A vignette with the package and the blog article
 \url{https://www.r-bloggers.com/2015/01/introducing-orthogonal-nonlinear-least-squares-regression-in-r/}
 give some description with illustrative graphs. \texttt{onls} appears to be limited to
 problems with one independent and one dependent variable. The Wikipedia article
@@ -157,9 +158,11 @@ solvers.
 \section{An illustrative example}\label{an-illustrative-example}}
 
 The Hobbs weed infestation problem (John C. Nash (1979, 120)) is a growth-curve modeling
-task that seems straightforward but is quite nasty. Its very succinct statement
+task. Its very succinct statement
 provides the ``short reproducible example'' much requested on R mailing lists.
-This is a real problem from a field researcher. The data and graph follow.
+The problem is small and seemingly straightforward, yet presents such
+difficulties that optimization researchers have asked if it is contrived
+rather than a real problem from a field researcher. The data and graph follow.
 
 \begin{verbatim}
 weed <- c(5.308, 7.24, 9.638, 12.866, 17.069, 23.192, 31.443,
@@ -1029,9 +1032,9 @@ effects of an option they may not even be aware has been set. Should \texttt{na.
 
 Indeed, the argument only gets used when \texttt{nls()} is about to return its result
 object, and the
-element \texttt{model} is NULL unless the calling argument \texttt{model} is TRUE. (Using the same
-name could
-be confusing.) Despite this, the model frame is used within the function code in
+element \texttt{model} is NULL unless the calling argument \texttt{model} is TRUE. Using the
+same name for both function argument and object element could be confusing.
+Despite this, the model frame is used within the function code in
 the form of the object
 \texttt{mf}. We feel that users could benefit from more extensive documentation and
 examples of its use since it is used to implement features like \texttt{subset}.
@@ -1060,8 +1063,8 @@ in applying such ideas.
 \hypertarget{weights-in-returned-functions-from-nls}{%
 \subsection{Weights in returned functions from nls()}\label{weights-in-returned-functions-from-nls}}
 
-The function \texttt{resid()} (an alias for \texttt{residuals()}) gives WEIGHTED residuals,
-as does, for example, \texttt{result\$m\$resid()}. The function \texttt{nlsModel()}
+The function \texttt{resid()} (an alias for \texttt{residuals()}) gives weighted residuals
+like \texttt{result\$m\$resid()}. The function \texttt{nlsModel()}
 allows us to compute residuals for particular coefficient sets.
 We have had to extract \texttt{nlsModel()} from the base R code and include it via a code chunk
 (not echoed here for space) because it is not exported to the working namespace,
@@ -1341,13 +1344,11 @@ clarify aspects of \texttt{selfStart} models and instigated the ``Introduction t
 vignette. Colin Gillespie (package \texttt{benchmarkme}) has been helpful in guiding our
 attempts to succinctly summarize computing environments. We thank one of the referees
 for pointing out that it is important to use background knowledge and graphs to
-guide modeling.
+guide modeling. Simon Urbanek gave some important practical help with preparing
+files for publication.
 
 \hypertarget{references}{%
-\section{References}\label{references}}
-
-\hypertarget{references-1}{%
-\section*{References}\label{references-1}}
+\section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
 \hypertarget{refs}{}
